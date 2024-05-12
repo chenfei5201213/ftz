@@ -25,7 +25,8 @@ export default {
   data() {
     return {
       title: '饭团子 Admin',
-      logo: 'https://wpimg.wallstcn.com/69a1c46c-eb1c-4b46-8bd4-e9e686ef5251.png'
+      // logo: 'https://wpimg.wallstcn.com/69a1c46c-eb1c-4b46-8bd4-e9e686ef5251.png'
+      logo: 'http://www.ngsmq.online:8000/media/2024/05/12/ftz_logo.jpg'
     }
   }
 }
