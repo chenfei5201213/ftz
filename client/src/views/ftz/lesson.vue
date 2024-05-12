@@ -103,7 +103,7 @@
         <el-form-item label="课时序号" prop="lesson_number">
           <el-input v-model="tableData.lesson_number" placeholder="课时序号"/>
         </el-form-item>
-        <el-form-item label="卡片类型" prop="type">
+        <el-form-item label="课时类型" prop="type">
           <el-select
             v-model="tableData.type"
             placeholder="请选择"
@@ -114,6 +114,21 @@
               :key="item.value"
               :label="item.label"
               :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="关联卡片" prop="cards">
+          <el-select
+            v-model="tableData.cards"
+            :multiple="true"
+            placeholder="请选择"
+            style="width: 90%"
+          >
+            <el-option
+              v-for="item in cardDataList"
+              :key="item.id"
+              :label="item.title"
+              :value="item.id"
             />
           </el-select>
         </el-form-item>
@@ -149,6 +164,7 @@ import {getCourseList} from "@/api/course";
 import {genTree, deepClone} from "@/utils";
 import checkPermission from "@/utils/permission";
 import {getEnumConfigList} from "@/api/enum_config";
+import {getCardList} from "@/api/card";
 
 const defaultM = {
   title: "",
@@ -202,22 +218,29 @@ export default {
         module: 'lesson',
         service: 'type'
       },
+      cardDataList: [],
       total: 0
-    };
+    }
   },
   computed: {},
   created() {
-      this.getLessonTypeList();
+      this.getLessonTypeList()
       this.getCourseData().then(() => {
-        this.getList();
-    });
+        this.getList()
+    })
   },
   methods: {
     checkPermission,
-    changeStatus(value) {
-      this.tableData.status = value;
+    getCardListData() {
+      getCardList({ page: 1, page_size: 1000 }).then((response) => {
+        this.cardDataList = response.data
+        console.log(this.cardDataList)
+      })
     },
-    getLessonTypeList(){
+    changeStatus(value) {
+      this.tableData.status = value
+    },
+    getLessonTypeList() {
       getEnumConfigList(this.enumConfigQuery).then((response) => {
         this.typeOptions = response.data;
       })
@@ -232,22 +255,22 @@ export default {
           if (this.courseList && this.courseList.length > 0) {
             this.courseId = this.courseList[0].id;
           }
-          resolve();
-        });
-      });
+          resolve()
+        })
+      })
     },
 
     getList() {
-      this.listLoading = true;
-      this.listQuery.course_id = this.courseId;
+      this.listLoading = true
+      this.listQuery.course_id = this.courseId
       getLessonList(this.listQuery).then((response) => {
-        this.tableDataList = response.data;
-        this.tableData = response.data;
-        this.listLoading = false;
-      });
+        this.tableDataList = response.data
+        this.tableData = response.data
+        this.listLoading = false
+      })
     },
     resetFilter() {
-      this.getList();
+      this.getList()
     },
     handleFilter() {
       const newData = this.tableDataList.filter(
@@ -255,24 +278,26 @@ export default {
           !this.listQuery.search ||
           data.title.toLowerCase().includes(this.listQuery.search.toLowerCase())
       );
-      this.tableData = genTree(newData);
+      this.tableData = genTree(newData)
     },
     handleAdd() {
-      this.tableData = Object.assign({}, defaultM);
-      this.dialogType = "new";
-      this.dialogVisible = true;
-      this.tableData.course_id = this.courseId;
+      this.tableData = Object.assign({}, defaultM)
+      this.dialogType = "new"
+      this.dialogVisible = true
+      this.tableData.course_id = this.courseId
+      this.getCardListData()
       this.$nextTick(() => {
-        this.$refs["Form"].clearValidate();
-      });
+        this.$refs["Form"].clearValidate()
+      })
     },
     handleEdit(scope) {
       this.tableData = Object.assign({}, scope.row); // copy obj
-      this.dialogType = "edit";
-      this.dialogVisible = true;
+      this.dialogType = "edit"
+      this.dialogVisible = true
+      this.getCardListData()
       this.$nextTick(() => {
-        this.$refs["Form"].clearValidate();
-      });
+        this.$refs["Form"].clearValidate()
+      })
     },
     handleDelete(scope) {
       this.$confirm("确认删除?", "警告", {
@@ -298,8 +323,8 @@ export default {
           const isEdit = this.dialogType === "edit";
           if (isEdit) {
             updateLesson(this.tableData.id, this.tableData).then(() => {
-              this.getList();
-              this.dialogVisible = false;
+              this.getList()
+              this.dialogVisible = false
               this.$message({
                 message: "编辑成功",
                 type: "success",
