@@ -167,7 +167,20 @@
         </el-form-item>
         <!-- todo 这里需要支持获取素材列表，搜索-> 多选 -->
         <el-form-item label="关联素材" prop="study_materials">
-          <el-input v-model="tableData.study_materials" placeholder="关联素材"/>
+          <el-select
+            v-model="tableData.study_materials"
+            :multiple="true"
+            :filterable="true"
+            placeholder="请选择"
+            style="width: 90%"
+          >
+            <el-option
+              v-for="item in materialData"
+              :key="item.id"
+              :label="item.title"
+              :value="item.id"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input v-model="tableData.description" placeholder="课程描述" :autosize="{ minRows: 2, maxRows: 4 }"
@@ -194,6 +207,7 @@ import {genTree, deepClone} from "@/utils";
 import checkPermission from "@/utils/permission";
 import {upUrl,upHeaders} from "@/api/file";
 import {getEnumConfigList} from "@/api/enum_config";
+import {getMaterialList} from "@/api/material";
 
 const defaultM = {
   title: "",
@@ -235,7 +249,8 @@ export default {
         page_size: 20,
       },
       module_name: 'card',
-    };
+      materialData: [],
+    }
   },
   computed: {},
   created() {
@@ -252,7 +267,11 @@ export default {
         this.typeOptions = response.data;
       })
     },
-
+    getMaterialDataList() {
+      getMaterialList({page:1,page_size: 100 }).then((response) => {
+        this.materialData = response.data
+      })
+    },
     getDifficultyList(){
       let query = {module: this.module_name, service: 'difficulty'};
       getEnumConfigList(query).then((response) => {
@@ -293,16 +312,18 @@ export default {
       this.tableData = Object.assign({}, defaultM)
       this.dialogType = "new"
       this.dialogVisible = true
+      this.getMaterialDataList()
       this.$nextTick(() => {
         this.$refs["Form"].clearValidate()
       })
     },
     handleEdit(scope) {
       this.tableData = Object.assign({}, scope.row) // copy obj
-      this.dialogType = "edit";
-      this.dialogVisible = true;
+      this.dialogType = "edit"
+      this.dialogVisible = true
+      this.getMaterialDataList()
       this.$nextTick(() => {
-        this.$refs["Form"].clearValidate();
+        this.$refs["Form"].clearValidate()
       })
     },
     handleDelete(scope) {

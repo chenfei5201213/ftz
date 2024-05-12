@@ -233,6 +233,7 @@ export default {
   computed: {},
   created() {
     this.getList()
+    this.clearData()
   },
   methods: {
     checkPermission,
