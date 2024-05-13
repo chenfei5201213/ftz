@@ -2,10 +2,10 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig
+from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig, Survey, Question, UserResponse
 from .serializers import CourseSerializer, CardListSerializer, StudyMaterialListSerializer, LessonListSerializer, \
-    TagSerializer, \
-    StudyMaterialDetailSerializer, CardDetailSerializer, LessonDetailSerializer, EnumConfigSerializer
+    TagSerializer, StudyMaterialDetailSerializer, CardDetailSerializer, LessonDetailSerializer, EnumConfigSerializer, \
+    SurveySerializer, QuestionSerializer, UserResponseSerializer
 
 
 class CourseViewSet(ModelViewSet):
@@ -120,3 +120,51 @@ class EnumConfigViewSet(ModelViewSet):
     ordering = ['pk']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['module', 'service']
+
+
+class SurveyViewSet(ModelViewSet):
+    """
+    问卷-增删改查
+    """
+    perms_map = {'get': '*', 'post': 'role_create',
+                 'put': 'role_update', 'delete': 'role_delete'}
+    queryset = Survey.objects.all()
+    serializer_class = SurveySerializer
+    pagination_class = None
+    search_fields = ['title', 'description']
+    ordering_fields = ['pk']
+    ordering = ['pk']
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    # filterset_fields = ['module', 'service']
+
+
+class QuestionViewSet(ModelViewSet):
+    """
+    问卷题目-增删改查
+    """
+    perms_map = {'get': '*', 'post': 'role_create',
+                 'put': 'role_update', 'delete': 'role_delete'}
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+    pagination_class = None
+    search_fields = ['question_text', 'question_type']
+    ordering_fields = ['pk']
+    ordering = ['pk']
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['question_type', 'survey']
+
+
+class UserResponseViewSet(ModelViewSet):
+    """
+    问卷答复-增删改查
+    """
+    perms_map = {'get': '*', 'post': 'role_create',
+                 'put': 'role_update', 'delete': 'role_delete'}
+    queryset = UserResponse.objects.all()
+    serializer_class = UserResponseSerializer
+    pagination_class = None
+    search_fields = ['user_id', 'question', 'answer']
+    ordering_fields = ['pk']
+    ordering = ['pk']
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['user_id', 'survey', 'question']

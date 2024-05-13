@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Course, StudyMaterial, Lesson, Card, Tag, EnumConfig
+from .models import Course, StudyMaterial, Lesson, Card, Tag, EnumConfig, Survey, Question, UserResponse
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -92,4 +92,22 @@ class LessonDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
+        fields = '__all__'
+
+
+class SurveySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Survey
+        fields = '__all__'
+
+
+class QuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = '__all__'
+
+
+class UserResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserResponse
         fields = '__all__'
