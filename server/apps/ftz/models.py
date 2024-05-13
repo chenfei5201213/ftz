@@ -145,3 +145,46 @@ class Lesson(SoftModel):
     def __init__(self, *args, **kwargs):
         super(Lesson, self).__init__(*args, **kwargs)
         self._meta.get_field('type').choices = get_enum_choices(module='lesson', service='type')
+
+
+class Survey(SoftModel):
+    """
+    调查表，存储调查的基本信息。
+    """
+    title = models.CharField(max_length=200, verbose_name="调查标题")
+    description = models.TextField(verbose_name="调查描述")
+    start_time = models.DateTimeField(verbose_name="开始时间")
+    expiry_time = models.DateTimeField(verbose_name="截止日期")
+
+    class Meta:
+        verbose_name = "调查"
+        verbose_name_plural = "调查列表"
+
+
+class Question(SoftModel):
+    """
+    题目表，存储单个调查的具体问题。
+    """
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, verbose_name="所属调查")
+    question_text = models.TextField(verbose_name="问题内容")
+    question_type = models.CharField(max_length=20, verbose_name="问题类型")
+    options = models.TextField(verbose_name="选项", help_text="JSON格式存储选项")
+
+    class Meta:
+        verbose_name = "问题"
+        verbose_name_plural = "问题列表"
+
+
+class UserResponse(SoftModel):
+    """
+    用户回答表，记录用户对调查问题的回答。
+    """
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, verbose_name="所属调查")
+    user_id = models.CharField(max_length=100, verbose_name="用户标识")
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name="问题")
+    answer = models.TextField(verbose_name="回答")
+    response_time = models.DateTimeField(auto_now_add=True, verbose_name="回答时间")
+
+    class Meta:
+        verbose_name = "用户回答"
+        verbose_name_plural = "用户回答列表"
