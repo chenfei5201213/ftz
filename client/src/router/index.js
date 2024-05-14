@@ -79,9 +79,9 @@ export const constantRoutes = [
  */
 export const asyncRoutes = [
   {
-    path: '/ftz',
+    path: '/ftz/class',
     component: Layout,
-    redirect: '/ftz/course',
+    redirect: '/ftz/class/course',
     name: 'new',
     meta: { title: '课包管理', icon: 'example', perms: ['course_manage'] },
     children: [
@@ -114,6 +114,33 @@ export const asyncRoutes = [
         name: 'enum_config',
         component: () => import('@/views/ftz/enum_config'),
         meta: { title: '配置管理', icon: 'example', perms: ['enum_config_index'] }
+      }
+    ]
+  },
+  {
+    path: '/ftz/survey',
+    component: Layout,
+    redirect: '/ftz/survey/survey/',
+    name: 'new',
+    meta: { title: '问卷调查', icon: 'example', perms: ['course_manage'] },
+    children: [
+      {
+        path: 'survey',
+        name: 'survey',
+        component: () => import('@/views/ftz/survey.vue'),
+        meta: { title: '问卷列表', icon: 'example', perms: ['workflow_index'] }
+      },
+      {
+        path: 'questions',
+        name: 'questions',
+        component: () => import('@/views/ftz/questions.vue'),
+        meta: { title: '题目列表', icon: 'example', perms: ['workflow_index'] }
+      },
+      {
+        path: 'responses',
+        name: 'responses',
+        component: () => import('@/views/ftz/responses.vue'),
+        meta: { title: '问卷调查记录', icon: 'example', perms: ['workflow_index'] }
       }
     ]
   },
