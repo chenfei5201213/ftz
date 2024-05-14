@@ -130,6 +130,7 @@ import {genTree, deepClone} from "@/utils";
 import checkPermission from "@/utils/permission";
 import {getEnumConfigList} from "@/api/enum_config";
 import {getCourseList} from "@/api/course";
+import { useRoute } from 'vue-router';
 
 const defaultM = {
 };
@@ -168,7 +169,9 @@ export default {
     this.getSurveyList().then(()=>{
       this.getList();
     });
-
+    const scope = this.$route.params.scope;
+    // 现在你可以使用scope变量了，比如发送请求或者更新数据
+    console.log(scope);
   },
   methods: {
     checkPermission,

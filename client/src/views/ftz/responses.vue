@@ -148,7 +148,7 @@ import {genTree, deepClone} from "@/utils";
 import checkPermission from "@/utils/permission";
 import {getEnumConfigList} from "@/api/enum_config";
 
-const defaultM = {};
+const defaultM = {}
 export default {
   data() {
     return {
@@ -178,20 +178,21 @@ export default {
         search: null
       },
       enumConfigQuery: {}
-    };
+    }
   },
   computed: {},
-  created() {
+  created(options) {
+    this.survey = this.$route.query.survey
     this.getSurveyList().then(() => {
-      this.getQuestions();
-      this.getList();
-    });
+      this.getQuestions()
+      this.getList()
+    })
   },
   methods: {
     checkPermission,
-    getQuestions(){
-      getQuestionsList({survey: this.survey}).then((response) => {
-          this.questionList = response.data;
+    getQuestions() {
+      getQuestionsList({ survey: this.survey }).then((response) => {
+          this.questionList = response.data
         })
     },
     getSurveyList() {

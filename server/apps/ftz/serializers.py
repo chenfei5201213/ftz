@@ -102,12 +102,17 @@ class SurveySerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
+    survey = SurveySerializer(read_only=True)
+
     class Meta:
         model = Question
         fields = '__all__'
 
 
 class UserResponseSerializer(serializers.ModelSerializer):
+    survey = SurveySerializer(read_only=True)
+    question = QuestionSerializer(read_only=True)
+
     class Meta:
         model = UserResponse
         fields = '__all__'
