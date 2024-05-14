@@ -55,6 +55,13 @@
             @click="handleEdit(scope)"
           />
           <el-button
+            type="success"
+            size="small"
+            icon="el-icon-copy-document"
+            :disabled="checkPermission(['position_delete'])"
+            @click="copyEdit(scope)"
+          />
+          <el-button
             type="danger"
             size="small"
             icon="el-icon-delete"
@@ -296,10 +303,20 @@ export default {
       this.dialogVisible = true
       this.clearData()
     },
+    copyEdit(scope) {
+      this.clearData()
+      this.tableData = Object.assign({}, scope.row) // copy obj
+      this.type = this.tableData.type
+      this.fileData = this.typeOptions[this.type].datas
+      this.readyData = JSON.parse(this.tableData.context)
+      this.dialogType = 'new'
+      this.dialogVisible = true
+    },
     handleEdit(scope) {
       this.clearData()
       this.tableData = Object.assign({}, scope.row) // copy obj
       console.log(this.tableData)
+      this.tableData.id = ''
       this.type = this.tableData.type
       this.fileData = this.typeOptions[this.type].datas
       this.readyData = JSON.parse(this.tableData.context)
