@@ -30,7 +30,7 @@
       <template slot-scope="scope">{{ scope.row.id }}</template>
     </el-table-column>
     <el-table-column label="素材类型">
-      <template slot-scope="scope">{{ scope.row.type }}</template>
+      <template slot-scope="scope">{{ scope.row.type_description }}</template>
     </el-table-column>
     <el-table-column label="标题">
       <template slot-scope="scope">{{ scope.row.title }}</template>

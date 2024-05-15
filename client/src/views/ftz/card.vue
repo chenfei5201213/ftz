@@ -59,19 +59,19 @@
         <template slot-scope="scope">{{ scope.row.title }}</template>
       </el-table-column>
       <el-table-column label="类型">
-        <template slot-scope="scope">{{ scope.row.type }}</template>
+        <template slot-scope="scope">{{ scope.row.type_description }}</template>
       </el-table-column>
       <el-table-column label="分组">
         <template slot-scope="scope">{{ scope.row.group_name }}</template>
       </el-table-column>
       <el-table-column label="难度">
-        <template slot-scope="scope">{{ scope.row.difficulty }}</template>
+        <template slot-scope="scope">{{ scope.row.difficulty_description }}</template>
       </el-table-column>
       <el-table-column label="话题">
         <template slot-scope="scope">{{ scope.row.topic }}</template>
       </el-table-column>
       <el-table-column label="状态">
-        <template slot-scope="scope">{{ scope.row.status }}</template>
+        <template slot-scope="scope">{{ scope.row.status_description }}</template>
       </el-table-column>
       <el-table-column label="预览链接">
         <template slot-scope="scope">{{ scope.row.id }}</template>
@@ -229,12 +229,15 @@ export default {
         id: "",
         title: "",
         type: "",
+        type_description: "",
         description: "",
         status: 0,
+        status_description:"",
         card_core_image: "",
         group_name: "",
         topic: "",
         difficulty: "",
+        difficulty_description: "",
         study_materials: []
       },
       search: "",

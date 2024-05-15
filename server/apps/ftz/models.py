@@ -54,6 +54,13 @@ class Course(SoftModel):
         super(Course, self).__init__(*args, **kwargs)
         self._meta.get_field('type').choices = get_enum_choices(module='course', service='type')
 
+    @property
+    def type_description(self):
+        try:
+            enum_config = EnumConfig.objects.get(module='course', service='type', value=self.type)
+            return enum_config.name
+        except EnumConfig.DoesNotExist:
+            return None
 
 # class Word(SoftModel):
 #     """
@@ -85,6 +92,14 @@ class StudyMaterial(SoftModel):
     def __init__(self, *args, **kwargs):
         super(StudyMaterial, self).__init__(*args, **kwargs)
         self._meta.get_field('type').choices = get_enum_choices(module='material', service='type')
+
+    @property
+    def type_description(self):
+        try:
+            enum_config = EnumConfig.objects.get(module='material', service='type', value=self.type)
+            return enum_config.name
+        except EnumConfig.DoesNotExist:
+            return None
 
 
 class Card(SoftModel):
@@ -122,6 +137,30 @@ class Card(SoftModel):
         self._meta.get_field('difficulty').choices = get_enum_choices(module='card', service='difficulty')
         self._meta.get_field('status').choices = get_enum_choices(module='card', service='status')
 
+    @property
+    def type_description(self):
+        try:
+            enum_config = EnumConfig.objects.get(module='card', service='type', value=self.type)
+            return enum_config.name
+        except EnumConfig.DoesNotExist:
+            return None
+
+    @property
+    def difficulty_description(self):
+        try:
+            enum_config = EnumConfig.objects.get(module='card', service='difficulty', value=self.difficulty)
+            return enum_config.name
+        except EnumConfig.DoesNotExist:
+            return None
+
+    @property
+    def status_description(self):
+        try:
+            enum_config = EnumConfig.objects.get(module='card', service='status', value=self.status)
+            return enum_config.name
+        except EnumConfig.DoesNotExist:
+            return None
+
 
 class Lesson(SoftModel):
     """
@@ -145,6 +184,14 @@ class Lesson(SoftModel):
     def __init__(self, *args, **kwargs):
         super(Lesson, self).__init__(*args, **kwargs)
         self._meta.get_field('type').choices = get_enum_choices(module='lesson', service='type')
+
+    @property
+    def type_description(self):
+        try:
+            enum_config = EnumConfig.objects.get(module='lesson', service='type', value=self.type)
+            return enum_config.name
+        except EnumConfig.DoesNotExist:
+            return None
 
 
 class Survey(SoftModel):

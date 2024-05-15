@@ -51,7 +51,7 @@
         <template slot-scope="scope">{{ scope.row.title }}</template>
       </el-table-column>
       <el-table-column label="课程类型">
-        <template slot-scope="scope">{{ scope.row.type }}</template>
+        <template slot-scope="scope">{{ scope.row.type_description }}</template>
       </el-table-column>
       <el-table-column label="课程数量">
         <template slot-scope="scope">{{ scope.row.lesson_count }}</template>
