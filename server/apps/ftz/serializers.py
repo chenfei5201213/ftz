@@ -7,30 +7,52 @@ class CourseSerializer(serializers.ModelSerializer):
     """
     课程序列化
     """
+    type_description = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
         fields = '__all__'
+
+    def get_type_description(self, obj):
+        # 调用Course模型中的type_description属性
+        return obj.type_description
 
 
 class LessonListSerializer(serializers.ModelSerializer):
     """
     课时序列化
     """
+    type_description = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
         fields = '__all__'
+
+    def get_type_description(self, obj):
+        # 调用Course模型中的type_description属性
+        return obj.type_description
 
 
 class CardListSerializer(serializers.ModelSerializer):
     """
     卡片序列号
     """
+    type_description = serializers.SerializerMethodField()
+    difficulty_description = serializers.SerializerMethodField()
+    status_description = serializers.SerializerMethodField()
 
     class Meta:
         model = Card
         fields = '__all__'
+
+    def get_type_description(self, obj):
+        return obj.type_description
+
+    def get_difficulty_description(self, obj):
+        return obj.difficulty_description
+
+    def get_status_description(self, obj):
+        return obj.status_description
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -54,9 +76,15 @@ class TagDetailSerializer(serializers.ModelSerializer):
 
 
 class StudyMaterialListSerializer(serializers.ModelSerializer):
+    type_description = serializers.SerializerMethodField()
+
     class Meta:
         model = StudyMaterial
-        fields = ['id', 'title', 'sub_title', 'description', 'type', 'context', 'tags', 'create_time', 'update_time']
+        fields = ['id', 'title', 'sub_title', 'description', 'type_description', 'type', 'context', 'tags',
+                  'create_time', 'update_time']
+
+    def get_type_description(self, obj):
+        return obj.type_description
 
 
 class EnumConfigSerializer(serializers.ModelSerializer):
