@@ -30,7 +30,7 @@
       <template slot-scope="scope">{{ scope.row.id }}</template>
     </el-table-column>
     <el-table-column label="素材类型">
-      <template slot-scope="scope">{{ scope.row.type_description }}</template>
+      <template slot-scope="scope">{{ scope.row.type }}</template>
     </el-table-column>
     <el-table-column label="标题">
       <template slot-scope="scope">{{ scope.row.title }}</template>
@@ -55,12 +55,11 @@
             @click="handleEdit(scope)"
           />
           <el-button
-            type="success"
+            type="info"
             size="small"
-            icon="el-icon-copy-document"
             :disabled="checkPermission(['position_delete'])"
             @click="copyEdit(scope)"
-          />
+          >复制</el-button>
           <el-button
             type="danger"
             size="small"
@@ -118,6 +117,11 @@
               <block v-if="item.type == 'select'">
                 <el-select v-model="readyData[item.col]" placeholder="请选择" width="100%">
                   <el-option v-for="(item,index) in tagsOptions" :key="item.value" :label="item.name" :value="index"/>
+                </el-select>
+              </block>
+              <block v-if="item.type == 'select1'">
+                <el-select v-model="readyData[item.col]" placeholder="请选择" width="100%">
+                  <el-option v-for="(item,index) in fileOptions" :key="item.value" :label="item.name" :value="index"/>
                 </el-select>
               </block>
               <block v-if="item.type == 'content'">
@@ -207,6 +211,7 @@ export default {
       listLoading: true,
       dialogVisible: false,
       tagsOptions: [{value:'1',name:'第一模块过渡页'},{value:'2',name:'第二模块过渡页'},{value:'3',name:'第三模块过渡页'}],
+      fileOptions: [{value:'1',name:'音频'},{value:'2',name:'视频'},{value:'3',name:'图文'}],
       dialogType: 'new',
       type: '',
       typeOptions: [//file 图片 content富文本 char文字 video音频
@@ -229,6 +234,7 @@ export default {
         {value:16,name:'句子跟读页',datas:[{label:'日语句子',col:'char1',type:'char'},{label:'中文翻译',col:'char2',type:'char'},{label:'原始语音',col:'video1',type:'video'}]},
         {value:17,name:'书写页',datas:[{label:'文字',col:'char1',type:'char'},{label:'读音',col:'video1',type:'video'},{label:'字帖中展示的文字',col:'char2',type:'char'}]},
         {value:18,name:'连线页',datas:[{label:'汉字单词',col:'char1',type:'char'},{label:'日语单词',col:'char2',type:'char'},{label:'汉语单词',col:'char3',type:'char'},{label:'日语单词',col:'char4',type:'char'},{label:'汉语单词',col:'char5',type:'char'},{label:'日语单词',col:'char6',type:'char'},{label:'汉语单词',col:'char7',type:'char'},{label:'日语单词',col:'char8',type:'char'}]},
+        {value:19,name:'图文内容页',datas:[{label:'选择音视频类型',col:'num',type:'select1'},{label:'音视频素材',col:'video1',type:'video'},{label:'文字内容',col:'content1',type:'content'}]}
       ],
       listQuery: {
         page: 1,
