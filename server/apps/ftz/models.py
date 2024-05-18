@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 from utils.model import SoftModel, BaseModel
+from apps.system.models import User
 from simple_history.models import HistoricalRecords
 
 
@@ -61,6 +62,7 @@ class Course(SoftModel):
             return enum_config.name
         except EnumConfig.DoesNotExist:
             return None
+
 
 # class Word(SoftModel):
 #     """
@@ -212,7 +214,7 @@ class Question(SoftModel):
     """
     题目表，存储单个调查的具体问题。
     """
-    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, verbose_name="所属调查")
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, verbose_name="调查问卷")
     question_text = models.TextField(verbose_name="问题内容")
     question_type = models.CharField(max_length=20, verbose_name="问题类型")
     options = models.TextField(verbose_name="选项", help_text="JSON格式存储选项")
@@ -226,12 +228,73 @@ class UserResponse(SoftModel):
     """
     用户回答表，记录用户对调查问题的回答。
     """
-    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, verbose_name="所属调查")
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, verbose_name="调查问卷", related_name='r_survey')
     user_id = models.CharField(max_length=100, verbose_name="用户标识")
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name="问题")
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name="问题", related_name='r_question')
     answer = models.TextField(verbose_name="回答")
     response_time = models.DateTimeField(auto_now_add=True, verbose_name="回答时间")
 
     class Meta:
         verbose_name = "用户回答"
         verbose_name_plural = "用户回答列表"
+
+
+class TermCourse(SoftModel):
+    """
+    期课表
+    """
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, blank=True, default=3, null=True, verbose_name="课程", related_name='schedules')  # 课程id
+    term_number = models.IntegerField(blank=True)  # 期数
+    term_type = models.CharField(max_length=100, blank=True)  # 期课类型
+    version = models.CharField(max_length=100)  # 版本
+    total_days = models.IntegerField(blank=True)  # 总天数
+    enrollment_start = models.DateTimeField('报课开始时间', blank=True, null=True)
+    enrollment_end = models.DateTimeField('报课结束时间', blank=True, null=True)
+    course_start = models.DateTimeField('课程开始时间', blank=True, null=True)
+    course_end = models.DateTimeField('课程结束时间', blank=True, null=True)
+    teacher = models.CharField(max_length=100, blank=True)  # 老师
+    teacher_qr_code = models.CharField(max_length=100, blank=True)  # 老师二维码
+    assistant_teacher = models.CharField(max_length=100, blank=True)  # 助教老师
+    assistant_teacher_qr_code = models.CharField(max_length=100, blank=True)  # 助教老师二维码
+
+    # 联合唯一约束
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['course', 'term_number'], name='unique_course_schedule')
+        ]
+        # 联合索引
+        indexes = [
+            models.Index(fields=['course', 'term_number']),
+        ]
+
+    def __str__(self):
+        return f"{self.course} - {self.schedule_no}"
+
+
+class CourseScheduleStudent(SoftModel):
+    """
+    期课学员表
+    """
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)  # 用户id
+    exp_time = models.DateTimeField('过期时间', blank=True, null=True)  # 过期时间
+    study_status = models.IntegerField(blank=True, null=True)  # 学习状态
+    term_course = models.ForeignKey(TermCourse, on_delete=models.SET_NULL, blank=True, null=True)  # 期课id
+
+    def __str__(self):
+        return f"{self.user} - {self.term_course}"
+
+
+class UserStudyRecord(SoftModel):
+    """
+    用户学习记录表
+    """
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)  # 用户id
+    lesson_number = models.IntegerField()  # 课时序号
+    lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, blank=True, null=True)  # 课时id
+    study_material = models.ForeignKey(StudyMaterial, on_delete=models.SET_NULL, blank=True, null=True)  # 学习素材
+    open_time = models.DateTimeField()  # 开课时间
+    finish_time = models.DateTimeField(null=True, blank=True)  # 完成时间
+    study_status = models.IntegerField()  # 学习状态
+
+    def __str__(self):
+        return f"{self.user} - {self.lesson_number}"

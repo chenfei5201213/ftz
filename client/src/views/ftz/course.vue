@@ -31,7 +31,7 @@
     <el-table
       v-loading="listLoading"
       :data="
-        tableDataList.filter(
+        tableDataList.results.filter(
           (data) =>
             !search || data.title.toLowerCase().includes(search.toLowerCase())
         )
@@ -51,7 +51,7 @@
         <template slot-scope="scope">{{ scope.row.title }}</template>
       </el-table-column>
       <el-table-column label="课程类型">
-        <template slot-scope="scope">{{ scope.row.type_description }}</template>
+        <template slot-scope="scope">{{ scope.row.type }}</template>
       </el-table-column>
       <el-table-column label="课程数量">
         <template slot-scope="scope">{{ scope.row.lesson_count }}</template>
@@ -88,7 +88,14 @@
         </template>
       </el-table-column>
     </el-table>
-
+      <el-pagination
+            v-show="tableDataList.count>0"
+            :total="tableDataList.count"
+            :page-size.sync="listQuery.page_size"
+            :layout="prev,pager,next"
+            :current-page.sync="listQuery.page"
+            @current-change="getList"
+          ></el-pagination>
     <el-dialog
       :visible.sync="dialogVisible"
       :title="dialogType === 'edit' ? '编辑课程' : '新增课程'"
@@ -161,7 +168,7 @@ export default {
         update_time: ""
       },
       search: "",
-      tableDataList: [],
+      tableDataList: {},
       listLoading: true,
       dialogVisible: false,
       dialogType: "new",
@@ -200,14 +207,14 @@ export default {
     checkPermission,
     getCourseTypeList(){
       getEnumConfigList(this.enumConfigQuery).then((response) => {
-        this.typeOptions = response.data;
+        this.typeOptions = response.data.results;
       })
     },
-    getList() {
+    getList(page) {
+      this.listQuery.page = page;
       this.listLoading = true;
       getCourseList(this.listQuery).then((response) => {
         this.tableDataList = response.data;
-        this.tableData = response.data;
         this.listLoading = false;
       });
     },

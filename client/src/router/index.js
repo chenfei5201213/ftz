@@ -144,6 +144,33 @@ export const asyncRoutes = [
       }
     ]
   },
+  {
+    path: '/ftz/sc',
+    component: Layout,
+    redirect: '/ftz/sc/course/',
+    name: 'new',
+    meta: { title: '期课管理', icon: 'example', perms: ['course_manage'] },
+    children: [
+      {
+        path: 'course',
+        name: 'course',
+        component: () => import('@/views/ftz/sc_course.vue'),
+        meta: { title: '期课列表', icon: 'example', perms: ['workflow_index'] }
+      },
+      {
+        path: 'user',
+        name: 'user',
+        component: () => import('@/views/ftz/sc_user.vue'),
+        meta: { title: '期课用户', icon: 'example', perms: ['workflow_index'] }
+      },
+      {
+        path: 'study_record',
+        name: 'study_record',
+        component: () => import('@/views/ftz/sc_study_record.vue'),
+        meta: { title: '学习记录', icon: 'example', perms: ['workflow_index'] }
+      }
+    ]
+  },
   // {
   //   path: '/workflow',
   //   component: Layout,

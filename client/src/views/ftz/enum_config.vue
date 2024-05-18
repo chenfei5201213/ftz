@@ -4,7 +4,7 @@
       <div>
         <el-button type="primary" icon="el-icon-plus" @click="handleAdd">新增分类</el-button>
         <el-input
-        v-model="search"
+        v-model="list.listQuery.search"
         placeholder="输入名称进行搜索"
         style="width: 200px"
         class="filter-item"
@@ -84,7 +84,14 @@
         </template>
       </el-table-column>
     </el-table>
-
+    <el-pagination
+          v-show="tableDataList.count>0"
+          :total="tableDataList.count"
+          :page-size.sync="listQuery.page_size"
+          :layout="prev,pager,next"
+          :current-page.sync="listQuery.page"
+          @current-change="getList"
+        ></el-pagination>
     <el-dialog
       :visible.sync="dialogVisible"
       :title="dialogType === 'edit' ? '编辑配置' : '新增配置'"
@@ -174,7 +181,11 @@ export default {
         create_time: "",
         update_time: ""
       },
-      search: "",
+      listQuery: {
+        page: 1,
+        page_size: 20,
+        search:'',
+      },
       tableDataList: [],
       listLoading: true,
       dialogVisible: false,
@@ -219,11 +230,11 @@ export default {
   },
   methods: {
     checkPermission,
-    getList() {
+    getList(page) {
+      this.listQuery.page = page;
       this.listLoading = true;
-      getEnumConfigList(this.search).then((response) => {
-        this.tableDataList = response.data;
-        this.tableData = response.data;
+      getEnumConfigList(this.listQuery.search).then((response) => {
+        this.tableDataList = response.data.results
         this.listLoading = false;
       });
     },
