@@ -39,11 +39,7 @@
     <el-table
       v-loading="listLoading"
       :data="
-        tableDataList.filter(
-          (data) =>
-            !search || data.title.toLowerCase().includes(search.toLowerCase())
-        )
-      "
+        tableDataList.results"
       style="width: 100%; margin-top: 10px"
       highlight-current-row
       row-key="id"
@@ -59,19 +55,19 @@
         <template slot-scope="scope">{{ scope.row.title }}</template>
       </el-table-column>
       <el-table-column label="类型">
-        <template slot-scope="scope">{{ scope.row.type_description }}</template>
+        <template slot-scope="scope">{{ scope.row.type }}</template>
       </el-table-column>
       <el-table-column label="分组">
         <template slot-scope="scope">{{ scope.row.group_name }}</template>
       </el-table-column>
       <el-table-column label="难度">
-        <template slot-scope="scope">{{ scope.row.difficulty_description }}</template>
+        <template slot-scope="scope">{{ scope.row.difficulty }}</template>
       </el-table-column>
       <el-table-column label="话题">
         <template slot-scope="scope">{{ scope.row.topic }}</template>
       </el-table-column>
       <el-table-column label="状态">
-        <template slot-scope="scope">{{ scope.row.status_description }}</template>
+        <template slot-scope="scope">{{ scope.row.status }}</template>
       </el-table-column>
       <el-table-column label="预览链接">
         <template slot-scope="scope">{{ scope.row.id }}</template>
@@ -96,7 +92,13 @@
         </template>
       </el-table-column>
     </el-table>
-
+    <el-pagination
+          v-show="tableDataList.count>0"
+          :total="tableDataList.count"
+          :page-size.sync="listQuery.page_size"
+          :current-page.sync="listQuery.page"
+          @current-change="getList"
+        ></el-pagination>
     <el-dialog
       :visible.sync="dialogVisible"
       :title="dialogType === 'edit' ? '编辑卡片' : '新增卡片'"
@@ -229,15 +231,12 @@ export default {
         id: "",
         title: "",
         type: "",
-        type_description: "",
         description: "",
         status: 0,
-        status_description:"",
         card_core_image: "",
         group_name: "",
         topic: "",
         difficulty: "",
-        difficulty_description: "",
         study_materials: []
       },
       search: "",
@@ -263,22 +262,21 @@ export default {
   },
   methods: {
     checkPermission,
-
     getCardTypeList(){
       let query = {module: this.module_name, service: 'type'};
       getEnumConfigList(query).then((response) => {
-        this.typeOptions = response.data;
+        this.typeOptions = response.data.results;
       })
     },
     getMaterialDataList() {
-      getMaterialList({page:1,page_size: 100 }).then((response) => {
-        this.materialData = response.data
+      getMaterialList({page_size: 100 }).then((response) => {
+        this.materialData = response.data.results
       })
     },
     getDifficultyList(){
       let query = {module: this.module_name, service: 'difficulty'};
       getEnumConfigList(query).then((response) => {
-        this.difficultyOptions = response.data;
+        this.difficultyOptions = response.data.results;
       })
     },
     handleAvatarSuccess(res) {
@@ -292,24 +290,16 @@ export default {
       }
       return isLt2M;
     },
-    getList() {
+    getList(page) {
+      this.listQuery.page = page;
       this.listLoading = true;
       getCardList(this.listQuery).then((response) => {
-        this.tableDataList = response.data.results;
-        this.tableData = response.data;
+        this.tableDataList = response.data;
         this.listLoading = false;
       })
     },
     resetFilter() {
       this.getList()
-    },
-    handleFilter() {
-      const newData = this.tableDataList.filter(
-        (data) =>
-          !this.search ||
-          data.title.toLowerCase().includes(this.search.toLowerCase())
-      );
-      this.tableData = genTree(newData)
     },
     handleAdd() {
       this.tableData = Object.assign({}, defaultM)

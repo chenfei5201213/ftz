@@ -31,7 +31,7 @@
     <el-table
       v-loading="listLoading"
       :data="
-        tableDataList.filter(
+        tableDataList.results.filter(
           (data) =>
             !search || data.title.toLowerCase().includes(search.toLowerCase())
         )
@@ -89,7 +89,7 @@
             type="info"
             size="mini"
             :disabled="!checkPermission(['position_update'])"
-            @click="gotoListData(scope)">
+            @click="handleEdit(scope)">
             调查结果
           </el-button>
           <el-button
@@ -102,7 +102,14 @@
         </template>
       </el-table-column>
     </el-table>
-
+    <el-pagination
+            v-show="tableDataList.count>0"
+            :total="tableDataList.count"
+            :page-size.sync="listQuery.page_size"
+            :layout="prev,pager,next"
+            :current-page.sync="listQuery.page"
+            @current-change="getList"
+          ></el-pagination>
     <el-dialog
       :visible.sync="dialogVisible"
       :title="dialogType === 'edit' ? '编辑问卷' : '新增问卷'"
@@ -164,7 +171,7 @@ export default {
         update_time: ""
       },
       search: "",
-      tableDataList: [],
+      tableDataList: {},
       listLoading: true,
       dialogVisible: false,
       dialogType: "new",
@@ -189,45 +196,43 @@ export default {
     checkPermission,
     getCourseTypeList(){
       getEnumConfigList(this.enumConfigQuery).then((response) => {
-        this.typeOptions = response.data;
+        this.typeOptions = response.data.results;
       })
     },
     getList() {
       this.listLoading = true;
       getSurveyList(this.listQuery).then((response) => {
-        this.tableDataList = response.data.results;
+        this.tableDataList = response.data;
+        this.tableData = response.data;
         this.listLoading = false;
-      })
+      });
     },
     resetFilter() {
-      this.getList()
+      this.getList();
     },
     handleFilter() {
       const newData = this.tableDataList.filter(
         (data) =>
           !this.search ||
           data.title.toLowerCase().includes(this.search.toLowerCase())
-      )
+      );
       this.tableData = genTree(newData);
     },
     handleAdd() {
       this.tableData = Object.assign({}, defaultM);
-      this.dialogType = "new"
-      this.dialogVisible = true
+      this.dialogType = "new";
+      this.dialogVisible = true;
       this.$nextTick(() => {
-        this.$refs["Form"].clearValidate()
-      })
+        this.$refs["Form"].clearValidate();
+      });
     },
     handleEdit(scope) {
-      this.tableData = Object.assign({}, scope.row) // copy obj
-      this.dialogType = "edit"
-      this.dialogVisible = true
+      this.tableData = Object.assign({}, scope.row); // copy obj
+      this.dialogType = "edit";
+      this.dialogVisible = true;
       this.$nextTick(() => {
-        this.$refs["Form"].clearValidate()
-      })
-    },
-    gotoListData(scope) {
-      this.$router.push({ path: '/ftz/survey/responses?survey=' + scope.row.id })
+        this.$refs["Form"].clearValidate();
+      });
     },
     handleDelete(scope) {
       this.$confirm("确认删除?", "警告", {
@@ -265,7 +270,7 @@ export default {
             });
           } else {
             createSurvey(this.tableData).then((res) => {
-              this.getList()
+              this.getList();
               this.dialogVisible = false;
               this.$message({
                 message: "新增成功",
@@ -274,7 +279,7 @@ export default {
             });
           }
         } else {
-          return false
+          return false;
         }
       });
     },

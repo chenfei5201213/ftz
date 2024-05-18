@@ -346,7 +346,7 @@
         getWfStateList(this.ID).then((response) => {
 
           if (response.data) {
-            this.wfstateList = response.data.results;
+            this.wfstateList = response.data;
           }
 
         });

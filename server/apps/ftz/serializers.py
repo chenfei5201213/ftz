@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
 from .models import Course, StudyMaterial, Lesson, Card, Tag, EnumConfig, Survey, Question, UserResponse
+from .models import TermCourse, CourseScheduleStudent, UserStudyRecord
+from apps.system.serializers import UserSimpleSerializer
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -130,17 +132,48 @@ class SurveySerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    survey = SurveySerializer(read_only=True)
+    survey_info = SurveySerializer(source='survey', read_only=True)
 
     class Meta:
         model = Question
         fields = '__all__'
 
 
+class QuestionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = '__all__'
+
+
 class UserResponseSerializer(serializers.ModelSerializer):
-    survey = SurveySerializer(read_only=True)
-    question = QuestionSerializer(read_only=True)
+    survey_info = SurveySerializer(source='survey', read_only=True)
+    question_info = QuestionListSerializer(source='question', read_only=True)
 
     class Meta:
         model = UserResponse
+        # fields = ['id', 'survey_title', 'question_text', 'answer', 'response_time', 'update_time', 'create_time']
+        fields = '__all__'
+
+
+class CourseScheduleSerializer(serializers.ModelSerializer):
+    course_info = CourseSerializer(read_only=True, source='course')
+
+    class Meta:
+        model = TermCourse
+        fields = '__all__'
+
+
+class CourseScheduleStudentSerializer(serializers.ModelSerializer):
+    term_course_info = CourseScheduleSerializer(read_only=True, source='term_course')
+
+    class Meta:
+        model = CourseScheduleStudent
+        fields = '__all__'
+
+
+class UserStudyRecordSerializer(serializers.ModelSerializer):
+    lesson_info = LessonListSerializer(source='lesson', read_only=True)
+
+    class Meta:
+        model = UserStudyRecord
         fields = '__all__'

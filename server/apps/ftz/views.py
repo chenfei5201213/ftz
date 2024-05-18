@@ -3,11 +3,12 @@ from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
 
-
 from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig, Survey, Question, UserResponse
-from .serializers import CourseSerializer, CardListSerializer, StudyMaterialListSerializer, LessonListSerializer, \
-    TagSerializer, StudyMaterialDetailSerializer, CardDetailSerializer, LessonDetailSerializer, EnumConfigSerializer, \
-    SurveySerializer, QuestionSerializer, UserResponseSerializer
+from .models import TermCourse, CourseScheduleStudent, UserStudyRecord
+from .serializers import CourseSerializer, CardListSerializer, StudyMaterialListSerializer, LessonListSerializer
+from .serializers import TagSerializer, StudyMaterialDetailSerializer, CardDetailSerializer, LessonDetailSerializer
+from .serializers import EnumConfigSerializer, SurveySerializer, QuestionSerializer, UserResponseSerializer
+from .serializers import CourseScheduleSerializer, CourseScheduleStudentSerializer, UserStudyRecordSerializer
 
 
 class CourseViewSet(CacheResponseMixin, ModelViewSet):
@@ -148,7 +149,7 @@ class QuestionViewSet(CacheResponseMixin, ModelViewSet):
     filterset_fields = ['question_type', 'survey']
 
 
-class UserResponseViewSet(CacheResponseMixin, ModelViewSet):
+class UserResponseViewSet(ModelViewSet):
     """
     问卷答复-增删改查
     """
@@ -161,3 +162,48 @@ class UserResponseViewSet(CacheResponseMixin, ModelViewSet):
     ordering = ['pk']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['user_id', 'survey', 'question']
+
+
+class CourseScheduleViewSet(ModelViewSet):
+    """
+    期课管理-增删改查
+    """
+    perms_map = {'get': '*', 'post': 'role_create',
+                 'put': 'role_update', 'delete': 'role_delete'}
+    queryset = TermCourse.objects.all()
+    serializer_class = CourseScheduleSerializer
+    search_fields = ['version', 'teacher', 'assistant_teacher']
+    ordering_fields = ['pk']
+    ordering = ['pk']
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['course']
+
+
+class CourseScheduleStudentViewSet(CacheResponseMixin, ModelViewSet):
+    """
+    期课学员记录-增删改查
+    """
+    perms_map = {'get': '*', 'post': 'role_create',
+                 'put': 'role_update', 'delete': 'role_delete'}
+    queryset = CourseScheduleStudent.objects.all()
+    serializer_class = CourseScheduleStudentSerializer
+    search_fields = ['user']
+    ordering_fields = ['pk']
+    ordering = ['pk']
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['user']
+
+
+class UserStudyRecordViewSet(ModelViewSet):
+    """
+    学习记录-增删改查
+    """
+    perms_map = {'get': '*', 'post': 'role_create',
+                 'put': 'role_update', 'delete': 'role_delete'}
+    queryset = UserStudyRecord.objects.all()
+    serializer_class = UserStudyRecordSerializer
+    search_fields = ['user']
+    ordering_fields = ['pk']
+    ordering = ['pk']
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['user']

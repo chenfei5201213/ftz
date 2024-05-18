@@ -30,7 +30,12 @@
 
     <el-table
       v-loading="listLoading"
-      :data="tableDataList.results"
+      :data="
+        tableDataList.results.filter(
+          (data) =>
+            !search || data.title.toLowerCase().includes(search.toLowerCase())
+        )
+      "
       style="width: 100%; margin-top: 10px"
       highlight-current-row
       row-key="id"
@@ -46,7 +51,7 @@
         <template slot-scope="scope">{{ scope.row.title }}</template>
       </el-table-column>
       <el-table-column label="课程类型">
-        <template slot-scope="scope">{{ scope.row.type_description }}</template>
+        <template slot-scope="scope">{{ scope.row.type }}</template>
       </el-table-column>
       <el-table-column label="课程数量">
         <template slot-scope="scope">{{ scope.row.lesson_count }}</template>
@@ -83,13 +88,14 @@
         </template>
       </el-table-column>
     </el-table>
-    <pagination
-          v-show="tableDataList.count>0"
-          :total="tableDataList.count"
-          :page.sync="listQuery.page"
-          :limit.sync="listQuery.page_size"
-          @pagination="getList"
-        />
+      <el-pagination
+            v-show="tableDataList.count>0"
+            :total="tableDataList.count"
+            :page-size.sync="listQuery.page_size"
+            :layout="prev,pager,next"
+            :current-page.sync="listQuery.page"
+            @current-change="getList"
+          ></el-pagination>
     <el-dialog
       :visible.sync="dialogVisible"
       :title="dialogType === 'edit' ? '编辑课程' : '新增课程'"
@@ -110,7 +116,7 @@
                 style="width: 90%"
               >
                 <el-option
-                  v-for="item in typeOptions"
+                  v-for="item in dataOptions"
                   :key="item.value"
                   :label="item.label"
                   :value="item.value"
@@ -144,7 +150,6 @@ import {
 import {genTree, deepClone} from "@/utils";
 import checkPermission from "@/utils/permission";
 import {getEnumConfigList} from "@/api/enum_config";
-import Pagination from "@/components/Pagination/index.vue";
 
 const defaultM = {
   title: "",
@@ -152,7 +157,6 @@ const defaultM = {
   description: ""
 };
 export default {
-  components: {Pagination},
   data() {
     return {
       tableData: {
@@ -161,28 +165,27 @@ export default {
         type: "",
         description: "",
         create_time: "",
-        update_time: "",
-        lesson_count: 0
+        update_time: ""
       },
       search: "",
-      tableDataList: {count: 0},
+      tableDataList: {},
       listLoading: true,
       dialogVisible: false,
       dialogType: "new",
-      // dataOptions: [
-      //   {
-      //     value: "公开课",
-      //     label: "公开课",
-      //   },
-      //   {
-      //     value: "入门课",
-      //     label: "入门课",
-      //   },
-      //   {
-      //     value: "进阶课",
-      //     label: "进阶课",
-      //   }
-      // ],
+      dataOptions: [
+        {
+          value: "公开课",
+          label: "公开课",
+        },
+        {
+          value: "入门课",
+          label: "入门课",
+        },
+        {
+          value: "进阶课",
+          label: "进阶课",
+        }
+      ],
       typeOptions: [],
       listQuery: {
         page: 1,
@@ -204,10 +207,11 @@ export default {
     checkPermission,
     getCourseTypeList(){
       getEnumConfigList(this.enumConfigQuery).then((response) => {
-        this.typeOptions = response.data;
+        this.typeOptions = response.data.results;
       })
     },
-    getList() {
+    getList(page) {
+      this.listQuery.page = page;
       this.listLoading = true;
       getCourseList(this.listQuery).then((response) => {
         this.tableDataList = response.data;

@@ -6,42 +6,48 @@ from rest_framework import serializers
 from .models import (Dict, DictType, File, Organization, Permission, Position,
                      Role, User)
 
+
 class IntervalSerializer(serializers.ModelSerializer):
     class Meta:
         model = IntervalSchedule
         fields = '__all__'
+
 
 class CrontabSerializer(serializers.ModelSerializer):
     class Meta:
         model = CrontabSchedule
         exclude = ['timezone']
 
+
 class PTaskCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PeriodicTask
         fields = ['name', 'task', 'interval', 'crontab', 'args', 'kwargs']
+
 
 class PTaskSerializer(serializers.ModelSerializer):
     interval_ = IntervalSerializer(source='interval', read_only=True)
     crontab_ = CrontabSerializer(source='crontab', read_only=True)
     schedule = serializers.SerializerMethodField()
     timetype = serializers.SerializerMethodField()
+
     class Meta:
         model = PeriodicTask
         fields = '__all__'
+
     @staticmethod
     def setup_eager_loading(queryset):
         """ Perform necessary eager loading of data. """
-        queryset = queryset.select_related('interval','crontab')
+        queryset = queryset.select_related('interval', 'crontab')
         return queryset
-    
+
     def get_schedule(self, obj):
         if obj.interval:
             return obj.interval.__str__()
         if obj.crontab:
             return obj.crontab.__str__()
         return ''
-    
+
     def get_timetype(self, obj):
         if obj.interval:
             return 'interval'
@@ -49,15 +55,18 @@ class PTaskSerializer(serializers.ModelSerializer):
             return 'crontab'
         return 'interval'
 
+
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
         fields = "__all__"
 
+
 class DictTypeSerializer(serializers.ModelSerializer):
     """
     数据字典类型序列化
     """
+
     class Meta:
         model = DictType
         fields = '__all__'
@@ -67,6 +76,7 @@ class DictSerializer(serializers.ModelSerializer):
     """
     数据字典序列化
     """
+
     class Meta:
         model = Dict
         fields = '__all__'
@@ -76,6 +86,7 @@ class PositionSerializer(serializers.ModelSerializer):
     """
     岗位序列化
     """
+
     class Meta:
         model = Position
         fields = '__all__'
@@ -85,6 +96,7 @@ class RoleSerializer(serializers.ModelSerializer):
     """
     角色序列化
     """
+
     class Meta:
         model = Role
         fields = '__all__'
@@ -94,6 +106,7 @@ class PermissionSerializer(serializers.ModelSerializer):
     """
     权限序列化
     """
+
     class Meta:
         model = Permission
         fields = '__all__'
@@ -110,10 +123,12 @@ class OrganizationSerializer(serializers.ModelSerializer):
         model = Organization
         fields = '__all__'
 
+
 class UserSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'name']
+
 
 class UserListSerializer(serializers.ModelSerializer):
     """
@@ -121,6 +136,7 @@ class UserListSerializer(serializers.ModelSerializer):
     """
     dept_name = serializers.StringRelatedField(source='dept')
     roles_name = serializers.StringRelatedField(source='roles', many=True)
+
     class Meta:
         model = User
         fields = ['id', 'name', 'phone', 'email', 'position',
@@ -129,9 +145,10 @@ class UserListSerializer(serializers.ModelSerializer):
     @staticmethod
     def setup_eager_loading(queryset):
         """ Perform necessary eager loading of data. """
-        queryset = queryset.select_related('superior','dept')
-        queryset = queryset.prefetch_related('roles',)
+        queryset = queryset.select_related('superior', 'dept')
+        queryset = queryset.prefetch_related('roles', )
         return queryset
+
 
 class UserModifySerializer(serializers.ModelSerializer):
     """

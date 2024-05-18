@@ -38,7 +38,7 @@
     <el-table
       v-loading="listLoading"
       :data="
-        tableDataList.filter(
+        tableDataList.results.filter(
           (data) =>
             !search || data.title.toLowerCase().includes(search.toLowerCase())
         )
@@ -58,13 +58,13 @@
         <template slot-scope="scope">{{ scope.row.user_id }}</template>
       </el-table-column>
       <el-table-column label="问卷标题">
-        <template slot-scope="scope">{{ scope.row.survey.title }}</template>
+        <template slot-scope="scope">{{ scope.row.survey_info.title }}</template>
       </el-table-column>
       <el-table-column label="问题">
-        <template slot-scope="scope">{{ scope.row.question.question_text }}</template>
+        <template slot-scope="scope">{{ scope.row.question_info.question_text }}</template>
       </el-table-column>
       <el-table-column label="答案">
-        <template slot-scope="scope">{{ scope.row.question.answer }}</template>
+        <template slot-scope="scope">{{ scope.row.answer }}</template>
       </el-table-column>
       <el-table-column label="回答时间">
         <template slot-scope="scope">
@@ -104,7 +104,14 @@
       <!--        </template>-->
       <!--      </el-table-column>-->
     </el-table>
-
+    <el-pagination
+            v-show="tableDataList.count>0"
+            :total="tableDataList.count"
+            :page-size.sync="listQuery.page_size"
+            :layout="prev,pager,next"
+            :current-page.sync="listQuery.page"
+            @current-change="getList"
+    ></el-pagination>
     <!--    <el-dialog-->
     <!--      :visible.sync="dialogVisible"-->
     <!--      :title="dialogType === 'edit' ? '编辑问卷' : '新增问卷'"-->
@@ -148,7 +155,7 @@ import {genTree, deepClone} from "@/utils";
 import checkPermission from "@/utils/permission";
 import {getEnumConfigList} from "@/api/enum_config";
 
-const defaultM = {}
+const defaultM = {};
 export default {
   data() {
     return {
@@ -178,27 +185,26 @@ export default {
         search: null
       },
       enumConfigQuery: {}
-    }
+    };
   },
   computed: {},
-  created(options) {
-    this.survey = this.$route.query.survey
+  created() {
     this.getSurveyList().then(() => {
-      this.getQuestions()
-      this.getList()
-    })
+      this.getQuestions();
+      this.getList();
+    });
   },
   methods: {
     checkPermission,
-    getQuestions() {
-      getQuestionsList({ survey: this.survey }).then((response) => {
-          this.questionList = response.data
+    getQuestions(){
+      getQuestionsList({survey: this.survey}).then((response) => {
+          this.questionList = response.data.results;
         })
     },
     getSurveyList() {
       return new Promise((resolve, reject) => {
         getSurveyList({}).then((response) => {
-          this.surveyList = response.data;
+          this.surveyList = response.data.results;
           if (this.surveyList && this.surveyList.length > 0) {
             this.survey = this.surveyList[0].id;
           }
@@ -211,7 +217,8 @@ export default {
       this.listQuery.survey = this.survey;
       this.listQuery.question = this.question;
       getResponsesList(this.listQuery).then((response) => {
-        this.tableDataList = response.data.results;
+        this.tableDataList = response.data;
+        this.tableData = response.data;
         this.listLoading = false;
       });
     },

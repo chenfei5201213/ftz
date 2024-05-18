@@ -13,7 +13,7 @@
     <el-table
       v-loading="listLoading"
       :data="
-        tableDataList.filter(
+        tableDataList.results.filter(
           (data) =>
             !this.listQuery.search || data.title.toLowerCase().includes(this.listQuery.search.toLowerCase())
         )
@@ -70,6 +70,14 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-pagination
+          v-show="tableDataList.count>0"
+          :total="tableDataList.count"
+          :page-size.sync="listQuery.page_size"
+          :layout="prev,pager,next"
+          :current-page.sync="listQuery.page"
+          @current-change="getList"
+        ></el-pagination>
     <el-dialog
       :visible.sync="dialogVisible"
       :title="dialogType === 'edit' ? '编辑素材' : '新增素材'">
@@ -234,7 +242,9 @@ export default {
         {value:16,name:'句子跟读页',datas:[{label:'日语句子',col:'char1',type:'char'},{label:'中文翻译',col:'char2',type:'char'},{label:'原始语音',col:'video1',type:'video'}]},
         {value:17,name:'书写页',datas:[{label:'文字',col:'char1',type:'char'},{label:'读音',col:'video1',type:'video'},{label:'字帖中展示的文字',col:'char2',type:'char'}]},
         {value:18,name:'连线页',datas:[{label:'汉字单词',col:'char1',type:'char'},{label:'日语单词',col:'char2',type:'char'},{label:'汉语单词',col:'char3',type:'char'},{label:'日语单词',col:'char4',type:'char'},{label:'汉语单词',col:'char5',type:'char'},{label:'日语单词',col:'char6',type:'char'},{label:'汉语单词',col:'char7',type:'char'},{label:'日语单词',col:'char8',type:'char'}]},
-        {value:19,name:'图文内容页',datas:[{label:'选择音视频类型',col:'num',type:'select1'},{label:'音视频素材',col:'video1',type:'video'},{label:'文字内容',col:'content1',type:'content'}]}
+        {value:19,name:'图文内容页',datas:[{label:'选择音视频类型',col:'num',type:'select1'},{label:'音视频素材',col:'video1',type:'video'},{label:'文字内容',col:'content1',type:'content'}]},
+        {value:20,name:'双图文内容页',datas:[{label:'图文素材1',col:'file1',type:'file'},{label:'图文素材2',col:'file2',type:'file'},{label:'文字内容',col:'content1',type:'content'}]},
+        {value:21,name:'纯文本页',datas:[{label:'文字内容',col:'content1',type:'content'}]}
       ],
       listQuery: {
         page: 1,
@@ -284,10 +294,11 @@ export default {
       }
       return isLt2M
     },
-    getList() {
+    getList(page) {
+      this.listQuery.page = page;
       this.listLoading = true
       getMaterialList(this.listQuery).then((response) => {
-        this.tableDataList = response.data.results
+        this.tableDataList = response.data
         this.listLoading = false
       })
     },

@@ -33,7 +33,7 @@
     <el-table
       v-loading="listLoading"
       :data="
-        tableDataList.filter(
+        tableDataList.results.filter(
           (data) =>
             !search || data.title.toLowerCase().includes(search.toLowerCase())
         )
@@ -56,7 +56,7 @@
         <template slot-scope="scope">{{ scope.row.title }}</template>
       </el-table-column>
       <el-table-column label="类型">
-        <template slot-scope="scope">{{ scope.row.type_description }}</template>
+        <template slot-scope="scope">{{ scope.row.type }}</template>
       </el-table-column>
       <el-table-column label="分组">
         <template slot-scope="scope">{{ scope.row.group_name }}</template>
@@ -86,7 +86,14 @@
         </template>
       </el-table-column>
     </el-table>
-
+      <el-pagination
+            v-show="tableDataList.count>0"
+            :total="tableDataList.count"
+            :page-size.sync="listQuery.page_size"
+            :layout="prev,pager,next"
+            :current-page.sync="listQuery.page"
+            @current-change="getList"
+          ></el-pagination>
     <el-dialog
       :visible.sync="dialogVisible"
       :title="dialogType === 'edit' ? '编辑课时' : '新增课时'"
@@ -186,7 +193,6 @@ export default {
         id: "",
         title: "",
         type: "",
-        type_description: "",
         description: "",
         lesson_number: 1,
         group_name: "默认分组",
@@ -234,7 +240,7 @@ export default {
     checkPermission,
     getCardListData() {
       getCardList({ page: 1, page_size: 1000 }).then((response) => {
-        this.cardDataList = response.data
+        this.cardDataList = response.data.results
         console.log(this.cardDataList)
       })
     },
@@ -243,7 +249,7 @@ export default {
     },
     getLessonTypeList() {
       getEnumConfigList(this.enumConfigQuery).then((response) => {
-        this.typeOptions = response.data;
+        this.typeOptions = response.data.results;
       })
     },
     handleCourseChange() {
@@ -252,7 +258,7 @@ export default {
     getCourseData() {
       return new Promise((resolve, reject) => {
         getCourseList(this.courseSearch).then((response) => {
-          this.courseList = response.data;
+          this.courseList = response.data.results;
           if (this.courseList && this.courseList.length > 0) {
             this.courseId = this.courseList[0].id;
           }
@@ -261,11 +267,12 @@ export default {
       })
     },
 
-    getList() {
+    getList(page) {
+      this.listQuery.page = page;
       this.listLoading = true
       this.listQuery.course_id = this.courseId
       getLessonList(this.listQuery).then((response) => {
-        this.tableDataList = response.data.results
+        this.tableDataList = response.data
         this.listLoading = false
       })
     },
