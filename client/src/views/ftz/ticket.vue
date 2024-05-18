@@ -224,7 +224,7 @@ export default {
       this.listLoading = true;
       getCardList(this.listQuery).then((response) => {
         if (response.data) {
-          this.workflowList = response.data;
+          this.workflowList = response.data.results;
         }
         this.listLoading = false;
       });

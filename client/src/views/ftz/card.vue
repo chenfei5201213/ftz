@@ -295,7 +295,7 @@ export default {
     getList() {
       this.listLoading = true;
       getCardList(this.listQuery).then((response) => {
-        this.tableDataList = response.data;
+        this.tableDataList = response.data.results;
         this.tableData = response.data;
         this.listLoading = false;
       })

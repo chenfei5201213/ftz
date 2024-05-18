@@ -195,8 +195,7 @@ export default {
     getList() {
       this.listLoading = true;
       getSurveyList(this.listQuery).then((response) => {
-        this.tableDataList = response.data;
-        this.tableData = response.data;
+        this.tableDataList = response.data.results;
         this.listLoading = false;
       })
     },

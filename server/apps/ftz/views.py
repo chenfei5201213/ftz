@@ -1,6 +1,8 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework_extensions.cache.mixins import CacheResponseMixin
+
 
 from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig, Survey, Question, UserResponse
 from .serializers import CourseSerializer, CardListSerializer, StudyMaterialListSerializer, LessonListSerializer, \
@@ -8,7 +10,7 @@ from .serializers import CourseSerializer, CardListSerializer, StudyMaterialList
     SurveySerializer, QuestionSerializer, UserResponseSerializer
 
 
-class CourseViewSet(ModelViewSet):
+class CourseViewSet(CacheResponseMixin, ModelViewSet):
     """
     课程-增删改查
     """
@@ -16,7 +18,6 @@ class CourseViewSet(ModelViewSet):
                  'put': 'role_update', 'delete': 'role_delete'}
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    pagination_class = None
     search_fields = ['title']
     ordering_fields = ['pk']
     ordering = ['pk']
@@ -28,7 +29,7 @@ class CourseViewSet(ModelViewSet):
     #     return Course.objects.get_queryset(all=all)
 
 
-class LessonViewSet(ModelViewSet):
+class LessonViewSet(CacheResponseMixin, ModelViewSet):
     """
     课时-增删改查
     """
@@ -36,7 +37,6 @@ class LessonViewSet(ModelViewSet):
                  'put': 'role_update', 'delete': 'role_delete'}
     queryset = Lesson.objects.all()
     serializer_class = LessonListSerializer
-    pagination_class = None
     search_fields = ['title', 'version', 'course_id__title', 'group_name']
     ordering_fields = ['pk']
     ordering = ['pk']
@@ -50,7 +50,7 @@ class LessonViewSet(ModelViewSet):
         return self.serializer_class
 
 
-class CardViewSet(ModelViewSet):
+class CardViewSet(CacheResponseMixin, ModelViewSet):
     """
     卡片-增删改查
     """
@@ -58,7 +58,6 @@ class CardViewSet(ModelViewSet):
                  'put': 'role_update', 'delete': 'role_delete'}
     queryset = Card.objects.all()
     serializer_class = CardListSerializer
-    pagination_class = None
     search_fields = ['title', 'group_name', 'topic']
     ordering_fields = ['pk']
     ordering = ['pk']
@@ -71,7 +70,7 @@ class CardViewSet(ModelViewSet):
         return self.serializer_class
 
 
-class StudyMaterialViewSet(ModelViewSet):
+class StudyMaterialViewSet(CacheResponseMixin, ModelViewSet):
     """
     学习素材-增删改查
     """
@@ -79,7 +78,6 @@ class StudyMaterialViewSet(ModelViewSet):
                  'put': 'role_update', 'delete': 'role_delete'}
     queryset = StudyMaterial.objects.all()
     serializer_class = StudyMaterialListSerializer
-    pagination_class = None
     search_fields = ['title']
     ordering_fields = ['pk']
     ordering = ['pk']
@@ -92,7 +90,7 @@ class StudyMaterialViewSet(ModelViewSet):
         return self.serializer_class
 
 
-class TagViewSet(ModelViewSet):
+class TagViewSet(CacheResponseMixin, ModelViewSet):
     """
     标签-增删改查
     """
@@ -100,13 +98,12 @@ class TagViewSet(ModelViewSet):
                  'put': 'role_update', 'delete': 'role_delete'}
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    pagination_class = None
     search_fields = ['name', 'value', 'module', 'service']
     ordering_fields = ['pk']
     ordering = ['pk']
 
 
-class EnumConfigViewSet(ModelViewSet):
+class EnumConfigViewSet(CacheResponseMixin, ModelViewSet):
     """
     枚举配置-增删改查
     """
@@ -114,7 +111,6 @@ class EnumConfigViewSet(ModelViewSet):
                  'put': 'role_update', 'delete': 'role_delete'}
     queryset = EnumConfig.objects.all()
     serializer_class = EnumConfigSerializer
-    pagination_class = None
     search_fields = ['name', 'module', 'service', 'value']
     ordering_fields = ['pk']
     ordering = ['pk']
@@ -122,7 +118,7 @@ class EnumConfigViewSet(ModelViewSet):
     filterset_fields = ['module', 'service']
 
 
-class SurveyViewSet(ModelViewSet):
+class SurveyViewSet(CacheResponseMixin, ModelViewSet):
     """
     问卷-增删改查
     """
@@ -130,7 +126,6 @@ class SurveyViewSet(ModelViewSet):
                  'put': 'role_update', 'delete': 'role_delete'}
     queryset = Survey.objects.all()
     serializer_class = SurveySerializer
-    pagination_class = None
     search_fields = ['title', 'description']
     ordering_fields = ['pk']
     ordering = ['pk']
@@ -138,7 +133,7 @@ class SurveyViewSet(ModelViewSet):
     # filterset_fields = ['module', 'service']
 
 
-class QuestionViewSet(ModelViewSet):
+class QuestionViewSet(CacheResponseMixin, ModelViewSet):
     """
     问卷题目-增删改查
     """
@@ -146,7 +141,6 @@ class QuestionViewSet(ModelViewSet):
                  'put': 'role_update', 'delete': 'role_delete'}
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
-    pagination_class = None
     search_fields = ['question_text', 'question_type']
     ordering_fields = ['pk']
     ordering = ['pk']
@@ -154,7 +148,7 @@ class QuestionViewSet(ModelViewSet):
     filterset_fields = ['question_type', 'survey']
 
 
-class UserResponseViewSet(ModelViewSet):
+class UserResponseViewSet(CacheResponseMixin, ModelViewSet):
     """
     问卷答复-增删改查
     """
@@ -162,7 +156,6 @@ class UserResponseViewSet(ModelViewSet):
                  'put': 'role_update', 'delete': 'role_delete'}
     queryset = UserResponse.objects.all()
     serializer_class = UserResponseSerializer
-    pagination_class = None
     search_fields = ['user_id', 'question', 'answer']
     ordering_fields = ['pk']
     ordering = ['pk']

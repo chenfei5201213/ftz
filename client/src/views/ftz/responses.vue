@@ -211,8 +211,7 @@ export default {
       this.listQuery.survey = this.survey;
       this.listQuery.question = this.question;
       getResponsesList(this.listQuery).then((response) => {
-        this.tableDataList = response.data;
-        this.tableData = response.data;
+        this.tableDataList = response.data.results;
         this.listLoading = false;
       });
     },

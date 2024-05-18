@@ -30,12 +30,7 @@
 
     <el-table
       v-loading="listLoading"
-      :data="
-        tableDataList.filter(
-          (data) =>
-            !search || data.title.toLowerCase().includes(search.toLowerCase())
-        )
-      "
+      :data="tableDataList.results"
       style="width: 100%; margin-top: 10px"
       highlight-current-row
       row-key="id"
@@ -88,7 +83,13 @@
         </template>
       </el-table-column>
     </el-table>
-
+    <pagination
+          v-show="tableDataList.count>0"
+          :total="tableDataList.count"
+          :page.sync="listQuery.page"
+          :limit.sync="listQuery.page_size"
+          @pagination="getList"
+        />
     <el-dialog
       :visible.sync="dialogVisible"
       :title="dialogType === 'edit' ? '编辑课程' : '新增课程'"
@@ -109,7 +110,7 @@
                 style="width: 90%"
               >
                 <el-option
-                  v-for="item in dataOptions"
+                  v-for="item in typeOptions"
                   :key="item.value"
                   :label="item.label"
                   :value="item.value"
@@ -143,6 +144,7 @@ import {
 import {genTree, deepClone} from "@/utils";
 import checkPermission from "@/utils/permission";
 import {getEnumConfigList} from "@/api/enum_config";
+import Pagination from "@/components/Pagination/index.vue";
 
 const defaultM = {
   title: "",
@@ -150,6 +152,7 @@ const defaultM = {
   description: ""
 };
 export default {
+  components: {Pagination},
   data() {
     return {
       tableData: {
@@ -158,27 +161,28 @@ export default {
         type: "",
         description: "",
         create_time: "",
-        update_time: ""
+        update_time: "",
+        lesson_count: 0
       },
       search: "",
-      tableDataList: [],
+      tableDataList: {count: 0},
       listLoading: true,
       dialogVisible: false,
       dialogType: "new",
-      dataOptions: [
-        {
-          value: "公开课",
-          label: "公开课",
-        },
-        {
-          value: "入门课",
-          label: "入门课",
-        },
-        {
-          value: "进阶课",
-          label: "进阶课",
-        }
-      ],
+      // dataOptions: [
+      //   {
+      //     value: "公开课",
+      //     label: "公开课",
+      //   },
+      //   {
+      //     value: "入门课",
+      //     label: "入门课",
+      //   },
+      //   {
+      //     value: "进阶课",
+      //     label: "进阶课",
+      //   }
+      // ],
       typeOptions: [],
       listQuery: {
         page: 1,
@@ -207,7 +211,6 @@ export default {
       this.listLoading = true;
       getCourseList(this.listQuery).then((response) => {
         this.tableDataList = response.data;
-        this.tableData = response.data;
         this.listLoading = false;
       });
     },
