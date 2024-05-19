@@ -1,4 +1,5 @@
 from rest_framework.viewsets import ModelViewSet
+
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
@@ -9,6 +10,7 @@ from .serializers import CourseSerializer, CardListSerializer, StudyMaterialList
 from .serializers import TagSerializer, StudyMaterialDetailSerializer, CardDetailSerializer, LessonDetailSerializer
 from .serializers import EnumConfigSerializer, SurveySerializer, QuestionSerializer, UserResponseSerializer
 from .serializers import CourseScheduleSerializer, CourseScheduleStudentSerializer, UserStudyRecordSerializer
+from .serializers import StudyMaterialSimpleListSerializer
 
 
 class CourseViewSet(CacheResponseMixin, ModelViewSet):
@@ -91,6 +93,20 @@ class StudyMaterialViewSet(CacheResponseMixin, ModelViewSet):
         return self.serializer_class
 
 
+class StudyMaterialSimpleViewSet(CacheResponseMixin, ModelViewSet):
+    """
+    学习素材-增删改查
+    """
+    perms_map = {'get': '*', 'post': 'role_create',
+                 'put': 'role_update', 'delete': 'role_delete'}
+    queryset = StudyMaterial.objects.all()
+    serializer_class = StudyMaterialSimpleListSerializer
+    search_fields = ['title']
+    ordering_fields = ['pk']
+    ordering = ['pk']
+    filterset_fields = ['type']
+
+
 class TagViewSet(CacheResponseMixin, ModelViewSet):
     """
     标签-增删改查
@@ -149,7 +165,7 @@ class QuestionViewSet(CacheResponseMixin, ModelViewSet):
     filterset_fields = ['question_type', 'survey']
 
 
-class UserResponseViewSet(ModelViewSet):
+class UserResponseViewSet(CacheResponseMixin, ModelViewSet):
     """
     问卷答复-增删改查
     """
@@ -164,7 +180,7 @@ class UserResponseViewSet(ModelViewSet):
     filterset_fields = ['user_id', 'survey', 'question']
 
 
-class CourseScheduleViewSet(ModelViewSet):
+class CourseScheduleViewSet(CacheResponseMixin, ModelViewSet):
     """
     期课管理-增删改查
     """
@@ -194,7 +210,7 @@ class CourseScheduleStudentViewSet(CacheResponseMixin, ModelViewSet):
     filterset_fields = ['user']
 
 
-class UserStudyRecordViewSet(ModelViewSet):
+class UserStudyRecordViewSet(CacheResponseMixin, ModelViewSet):
     """
     学习记录-增删改查
     """
