@@ -9,6 +9,10 @@ import os
 from rest_framework import serializers, status
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+
+from suntone_ise_cn_python.ai_voice import recognize_audio
+
+
 # Create your views here.
 
 class ServerInfoView(APIView):
@@ -91,3 +95,4 @@ class LogDetailView(APIView):
             return Response(data)
         except:
             return Response('未找到', status=status.HTTP_404_NOT_FOUND)
+

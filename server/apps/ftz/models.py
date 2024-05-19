@@ -86,7 +86,7 @@ class StudyMaterial(SoftModel):
     sub_title = models.CharField('副标题', max_length=512, blank=True)
     description = models.TextField('描述', blank=True)
     type = models.CharField('课程类型', max_length=128, choices=[])
-    context = models.TextField('素材内容', blank=True)
+    context = models.TextField('素材内容', blank=True, max_length=65535)
     # words = models.ManyToManyField(Word, blank=True, verbose_name='单词', related_name='words')
     # grammars = models.ManyToManyField(Grammar, blank=True, verbose_name='语法', related_name='grammars')
     tags = models.ManyToManyField(Tag, blank=True, verbose_name='标签', related_name='tags')

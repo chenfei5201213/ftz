@@ -51,6 +51,7 @@ urlpatterns = [
     path('api/file/', include(router.urls)),
     path('api/system/', include('apps.system.urls')),
     path('api/monitor/', include('apps.monitor.urls')),
+    path('api/ai/', include('apps.ai_voice.urls')),
     path('api/wf/', include('apps.wf.urls')),
     path('api/ftz/', include('apps.ftz.urls')),
 
