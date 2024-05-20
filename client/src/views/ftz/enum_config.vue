@@ -4,7 +4,7 @@
       <div>
         <el-button type="primary" icon="el-icon-plus" @click="handleAdd">新增分类</el-button>
         <el-input
-        v-model="list.listQuery.search"
+        v-model="listQuery.search"
         placeholder="输入名称进行搜索"
         style="width: 200px"
         class="filter-item"
@@ -24,9 +24,9 @@
     <el-table
       v-loading="listLoading"
       :data="
-        tableDataList.filter(
+        tableDataList.results.filter(
           (data) =>
-            !search || data.title.toLowerCase().includes(search.toLowerCase())
+            !listQuery.search || data.title.toLowerCase().includes(listQuery.search.toLowerCase())
         )
       "
       style="width: 100%; margin-top: 10px"
@@ -181,10 +181,10 @@ export default {
         create_time: "",
         update_time: ""
       },
-      listQuery: {
+      listQuery : {
         page: 1,
         page_size: 20,
-        search:'',
+        search : ''
       },
       tableDataList: [],
       listLoading: true,
@@ -226,41 +226,42 @@ export default {
   },
   computed: {},
   created() {
-    this.getList();
+    this.getList()
   },
   methods: {
     checkPermission,
     getList(page) {
-      this.listQuery.page = page;
-      this.listLoading = true;
-      getEnumConfigList(this.listQuery.search).then((response) => {
-        this.tableDataList = response.data.results
-        this.listLoading = false;
-      });
+      this.listQuery.page = page
+      this.listLoading = true
+      getEnumConfigList(this.listQuery).then((response) => {
+        this.tableDataList = response.data
+        this.tableData = response.data
+        this.listLoading = false
+      })
     },
     resetFilter() {
-      this.getList();
+      this.getList()
     },
     handleFilter() {
-      const newData = this.tableDataList.filter(
+      const newData = this.tableDataList.results.filter(
         (data) =>
-          !this.search ||
-          data.title.toLowerCase().includes(this.search.toLowerCase())
-      );
-      this.tableData = genTree(newData);
+          !this.listQuery.search ||
+          data.title.toLowerCase().includes(this.listQuery.search.toLowerCase())
+      )
+      this.tableData = genTree(newData)
     },
     handleAdd() {
       this.tableData = Object.assign({}, defaultM);
-      this.dialogType = "new";
-      this.dialogVisible = true;
+      this.dialogType = "new"
+      this.dialogVisible = true
       this.$nextTick(() => {
-        this.$refs["Form"].clearValidate();
+        this.$refs["Form"].clearValidate()
       });
     },
     handleEdit(scope) {
-      this.tableData = Object.assign({}, scope.row); // copy obj
-      this.dialogType = "edit";
-      this.dialogVisible = true;
+      this.tableData = Object.assign({}, scope.row) // copy obj
+      this.dialogType = "edit"
+      this.dialogVisible = true
       this.$nextTick(() => {
         this.$refs["Form"].clearValidate();
       });

@@ -56,7 +56,7 @@
         <template slot-scope="scope">{{ scope.row.title }}</template>
       </el-table-column>
       <el-table-column label="类型">
-        <template slot-scope="scope">{{ scope.row.type }}</template>
+        <template slot-scope="scope">{{ scope.row.type_description }}</template>
       </el-table-column>
       <el-table-column label="分组">
         <template slot-scope="scope">{{ scope.row.group_name }}</template>

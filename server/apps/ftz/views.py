@@ -13,7 +13,7 @@ from .serializers import CourseScheduleSerializer, CourseScheduleStudentSerializ
 from .serializers import StudyMaterialSimpleListSerializer
 
 
-class CourseViewSet(CacheResponseMixin, ModelViewSet):
+class CourseViewSet(ModelViewSet):
     """
     课程-增删改查
     """
@@ -32,7 +32,7 @@ class CourseViewSet(CacheResponseMixin, ModelViewSet):
     #     return Course.objects.get_queryset(all=all)
 
 
-class LessonViewSet(CacheResponseMixin, ModelViewSet):
+class LessonViewSet(ModelViewSet):
     """
     课时-增删改查
     """
@@ -53,7 +53,7 @@ class LessonViewSet(CacheResponseMixin, ModelViewSet):
         return self.serializer_class
 
 
-class CardViewSet(CacheResponseMixin, ModelViewSet):
+class CardViewSet(ModelViewSet):
     """
     卡片-增删改查
     """
@@ -73,7 +73,7 @@ class CardViewSet(CacheResponseMixin, ModelViewSet):
         return self.serializer_class
 
 
-class StudyMaterialViewSet(CacheResponseMixin, ModelViewSet):
+class StudyMaterialViewSet(ModelViewSet):
     """
     学习素材-增删改查
     """
@@ -93,7 +93,7 @@ class StudyMaterialViewSet(CacheResponseMixin, ModelViewSet):
         return self.serializer_class
 
 
-class StudyMaterialSimpleViewSet(CacheResponseMixin, ModelViewSet):
+class StudyMaterialSimpleViewSet(ModelViewSet):
     """
     学习素材-增删改查
     """
@@ -107,7 +107,7 @@ class StudyMaterialSimpleViewSet(CacheResponseMixin, ModelViewSet):
     filterset_fields = ['type']
 
 
-class TagViewSet(CacheResponseMixin, ModelViewSet):
+class TagViewSet(ModelViewSet):
     """
     标签-增删改查
     """
@@ -120,7 +120,7 @@ class TagViewSet(CacheResponseMixin, ModelViewSet):
     ordering = ['pk']
 
 
-class EnumConfigViewSet(CacheResponseMixin, ModelViewSet):
+class EnumConfigViewSet(ModelViewSet):
     """
     枚举配置-增删改查
     """
@@ -135,7 +135,7 @@ class EnumConfigViewSet(CacheResponseMixin, ModelViewSet):
     filterset_fields = ['module', 'service']
 
 
-class SurveyViewSet(CacheResponseMixin, ModelViewSet):
+class SurveyViewSet(ModelViewSet):
     """
     问卷-增删改查
     """
@@ -150,7 +150,7 @@ class SurveyViewSet(CacheResponseMixin, ModelViewSet):
     # filterset_fields = ['module', 'service']
 
 
-class QuestionViewSet(CacheResponseMixin, ModelViewSet):
+class QuestionViewSet(ModelViewSet):
     """
     问卷题目-增删改查
     """
@@ -165,7 +165,7 @@ class QuestionViewSet(CacheResponseMixin, ModelViewSet):
     filterset_fields = ['question_type', 'survey']
 
 
-class UserResponseViewSet(CacheResponseMixin, ModelViewSet):
+class UserResponseViewSet(ModelViewSet):
     """
     问卷答复-增删改查
     """
@@ -180,7 +180,7 @@ class UserResponseViewSet(CacheResponseMixin, ModelViewSet):
     filterset_fields = ['user_id', 'survey', 'question']
 
 
-class CourseScheduleViewSet(CacheResponseMixin, ModelViewSet):
+class CourseScheduleViewSet(ModelViewSet):
     """
     期课管理-增删改查
     """
@@ -195,7 +195,7 @@ class CourseScheduleViewSet(CacheResponseMixin, ModelViewSet):
     filterset_fields = ['course']
 
 
-class CourseScheduleStudentViewSet(CacheResponseMixin, ModelViewSet):
+class CourseScheduleStudentViewSet(ModelViewSet):
     """
     期课学员记录-增删改查
     """
@@ -210,7 +210,7 @@ class CourseScheduleStudentViewSet(CacheResponseMixin, ModelViewSet):
     filterset_fields = ['user']
 
 
-class UserStudyRecordViewSet(CacheResponseMixin, ModelViewSet):
+class UserStudyRecordViewSet(ModelViewSet):
     """
     学习记录-增删改查
     """
