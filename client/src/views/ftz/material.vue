@@ -275,11 +275,11 @@ export default {
       this.readyData.file2 = res.data.file
     },
     beforeAvatarUpload(file) {
-      const isLt2M = file.size / 1024 / 1024 < 2
-      if (!isLt2M) {
-        this.$message.error('上传图片大小不能超过 2MB!')
+      const isLt15M = file.size / 1024 / 1024 < 15
+      if (!isLt15M) {
+        this.$message.error('上传图片大小不能超过 15MB!')
       }
-      return isLt2M
+      return isLt15M
     },
     handleAvatarSuccessVideo(res) {
       console.log('video1', res)
@@ -289,11 +289,11 @@ export default {
       this.readyData.video2 = res.data.file
     },
     beforeAvatarUploadVideo(file) {
-      const isLt2M = file.size / 1024 / 1024 < 2
-      if (!isLt2M) {
-        this.$message.error('上传文件大小不能超过 2MB!')
+      const isLt15M = file.size / 1024 / 1024 < 15
+      if (!isLt15M) {
+        this.$message.error('上传文件大小不能超过 15MB!')
       }
-      return isLt2M
+      return isLt15M
     },
     getList(page) {
       this.listQuery.page = page;
