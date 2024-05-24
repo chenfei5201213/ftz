@@ -86,8 +86,8 @@
           <el-input v-model="tableData.title" :placeholder="标题" />
         </el-form-item>
         <el-form-item label="素材类型" prop="type">
-          <el-select @change="changeType" v-model="type" placeholder="请选择" style="width: 100%">
-            <el-option v-for="(item,index) in typeOptions" :key="item.value" :label="item.name" :value="index" />
+          <el-select @change="changeType" v-model="tableData.type" placeholder="请选择" style="width: 100%">
+            <el-option v-for="(item) in typeOptions" :label="item.name" :value="item.value" />
           </el-select>
         </el-form-item>
         <block v-if="type >=0">
@@ -275,11 +275,11 @@ export default {
       this.readyData.file2 = res.data.file
     },
     beforeAvatarUpload(file) {
-      const isLt15M = file.size / 1024 / 1024 < 15
-      if (!isLt15M) {
-        this.$message.error('上传图片大小不能超过 15MB!')
+      const isLt2M = file.size / 1024 / 1024 < 2
+      if (!isLt2M) {
+        this.$message.error('上传图片大小不能超过 2MB!')
       }
-      return isLt15M
+      return isLt2M
     },
     handleAvatarSuccessVideo(res) {
       console.log('video1', res)
@@ -289,14 +289,14 @@ export default {
       this.readyData.video2 = res.data.file
     },
     beforeAvatarUploadVideo(file) {
-      const isLt15M = file.size / 1024 / 1024 < 15
-      if (!isLt15M) {
-        this.$message.error('上传文件大小不能超过 15MB!')
+      const isLt2M = file.size / 1024 / 1024 < 2
+      if (!isLt2M) {
+        this.$message.error('上传文件大小不能超过 2MB!')
       }
-      return isLt15M
+      return isLt2M
     },
     getList(page) {
-      this.listQuery.page = page;
+      this.listQuery.page = page
       this.listLoading = true
       getMaterialList(this.listQuery).then((response) => {
         this.tableDataList = response.data
@@ -323,8 +323,8 @@ export default {
     copyEdit(scope) {
       this.clearData()
       this.tableData = Object.assign({}, scope.row) // copy obj
-      this.type = this.tableData.type
-      this.fileData = this.typeOptions[this.type].datas
+      this.tableData.id = '';
+      this.fileData = this.typeOptions[this.tableData.type].datas
       this.readyData = JSON.parse(this.tableData.context)
       this.dialogType = 'new'
       this.dialogVisible = true
@@ -332,10 +332,7 @@ export default {
     handleEdit(scope) {
       this.clearData()
       this.tableData = Object.assign({}, scope.row) // copy obj
-      console.log(this.tableData)
-      this.tableData.id = ''
-      this.type = this.tableData.type
-      this.fileData = this.typeOptions[this.type].datas
+      this.fileData = this.typeOptions[this.tableData.type].datas
       this.readyData = JSON.parse(this.tableData.context)
       this.dialogType = 'edit'
       this.dialogVisible = true
@@ -364,7 +361,7 @@ export default {
         this.$message.error('标题不能为空')
         return
       }
-      if (this.type >= 0 ) {
+      if (this.tableData.type >= 0 ) {
         for (let key in this.fileData) {
           var k = this.fileData[key].col
           var label = this.fileData[key].label
@@ -376,7 +373,7 @@ export default {
             this.addData[k] = this.readyData[k]
           }
         }
-        this.tableData.type = this.type
+        //this.tableData.type = this.type
         this.tableData.context = JSON.stringify(this.addData)
       } else {
         this.$message.error('请选择素材类型')
