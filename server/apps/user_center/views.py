@@ -72,6 +72,7 @@ class WechatCallback(generics.ListCreateAPIView):
 
 class WechatEchoStr(APIView):
     permission_classes = [AllowAny]
+
     def get(self, request):
         try:
             data = request.query_params
@@ -82,16 +83,17 @@ class WechatEchoStr(APIView):
             token = settings.WECHAT_TOKEN  # 从 Django 设置中获取 Token
 
             # 验证消息的确来自微信服务器
-            list_ = [token, timestamp, nonce]
+            list_ = [token.encode('utf-8'), timestamp.encode('utf-8'), nonce.encode('utf-8')]
             list_.sort()
             sha1 = hashlib.sha1()
-            map(sha1.update, list_)
+            # map(sha1.update, list_)
+            [sha1.update(item) for item in list_]
             hashcode = sha1.hexdigest()
 
             if hashcode == signature:
-                return Response(echostr)
+                return HttpResponse(echostr)
             else:
-                return Response('验证失败', status=400)  # 返回 400 错误
+                return HttpResponse('')  # 返回 400 错误
         except Exception as e:
             return Response({"error": str(e)}, status=500)  # 返回 500 错误
 
