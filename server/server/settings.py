@@ -310,3 +310,4 @@ PROXY = None
 
 # 请求超时时间配置
 TIMEOUT = (10, 30)  # 建立连接最大超时时间是10s，读取响应的最大超时时间是30s
+WECHAT_TOKEN = "aaabbb"
