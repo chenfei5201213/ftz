@@ -17,7 +17,6 @@ from . import conf
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -28,7 +27,6 @@ SECRET_KEY = 'ez9z3a4m*$%srn9ve_t71yd!v+&xn9@0k(e(+l6#g1h=e5i4da'
 DEBUG = conf.DEBUG
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -48,7 +46,9 @@ INSTALLED_APPS = [
     'apps.system',
     'apps.monitor',
     'apps.wf',
-    'apps.ftz'
+    'apps.ftz',
+    'apps.user_center',
+    # 'apps.payments'
 ]
 
 MIDDLEWARE = [
@@ -83,7 +83,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'server.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 DATABASES = conf.DATABASES
@@ -106,7 +105,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
@@ -119,7 +117,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -189,7 +186,7 @@ CACHES = {
 }
 
 # celery配置,celery正常运行必须安装redis
-CELERY_BROKER_URL = "redis://106.55.197.173:6379/0"   # 任务存储
+CELERY_BROKER_URL = "redis://106.55.197.173:6379/0"  # 任务存储
 CELERYD_MAX_TASKS_PER_CHILD = 100  # 每个worker最多执行300个任务就会被销毁，可防止内存泄露
 CELERY_TIMEZONE = 'Asia/Shanghai'  # 设置时区
 CELERY_ENABLE_UTC = True  # 启动时区设置
@@ -197,8 +194,8 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 # swagger配置
 SWAGGER_SETTINGS = {
-   'LOGIN_URL':'/django/admin/login/',
-   'LOGOUT_URL':'/django/admin/logout/'
+    'LOGIN_URL': '/django/admin/login/',
+    'LOGOUT_URL': '/django/admin/logout/'
 }
 
 # 日志配置
@@ -281,3 +278,35 @@ LOGGING = {
         },
     }
 }
+
+# 微信支付商户号（直连模式）或服务商商户号（服务商模式，即sp_mchid)
+MCHID = '1677478605'
+PRIVATE_KEY = ''
+# 商户证书私钥
+with open('./server/apiclient_key.pem') as f:
+    PRIVATE_KEY = f.read()
+
+# 商户证书序列号
+CERT_SERIAL_NO = '3C6674C05A876E0D0561CD18C12FA4B2243839B3'
+
+# API v3密钥， https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay3_2.shtml
+APIV3_KEY = 'Fantuanzigogogo66666888882025068'
+
+# APPID，应用ID或服务商模式下的sp_appid
+APPID = 'wxf1b19d71f836bb72'  # 服务号
+
+# 回调地址，也可以在调用接口的时候覆盖
+NOTIFY_URL = 'https://www.xxxx.com/notify'
+
+# 微信支付平台证书缓存目录，减少证书下载调用次数，首次使用确保此目录为空目录.
+# 初始调试时可不设置，调试通过后再设置，示例值:'./cert'
+CERT_DIR = None
+
+# 接入模式:False=直连商户模式，True=服务商模式
+PARTNER_MODE = False
+
+# 代理设置，None或者{"https": "http://10.10.1.10:1080"}，详细格式参见https://requests.readthedocs.io/en/latest/user/advanced/#proxies
+PROXY = None
+
+# 请求超时时间配置
+TIMEOUT = (10, 30)  # 建立连接最大超时时间是10s，读取响应的最大超时时间是30s
