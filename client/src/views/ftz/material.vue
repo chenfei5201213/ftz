@@ -21,11 +21,8 @@
       style="width: 100%; margin-top: 10px"
       highlight-current-row
       row-key="id"
-      height="100"
-      stripe
-      border
-      v-el-height-adaptive-table="{ bottomOffset: 50 }"
-    >
+      height="100" stripe border
+      v-el-height-adaptive-table="{ bottomOffset: 50 }">
     <el-table-column label="ID" width="60">
       <template slot-scope="scope">{{ scope.row.id }}</template>
     </el-table-column>
@@ -87,11 +84,11 @@
         </el-form-item>
         <el-form-item label="素材类型" prop="type">
           <el-select @change="changeType" v-model="tableData.type" placeholder="请选择" style="width: 100%">
-            <el-option v-for="(item) in typeOptions" :label="item.name" :value="item.value" />
+            <el-option v-for="(item,index) in typeOptions" :label="item.name" :value="item.value" />
           </el-select>
         </el-form-item>
         <block v-if="type >=0">
-          <block v-for="item,index in fileData">
+          <block v-for="(item) in fileData">
             <el-form-item :label="item.label" :prop="item.col">
               <block v-if="item.type == 'file' ">
                 <el-upload
@@ -223,29 +220,29 @@ export default {
       dialogType: 'new',
       type: '',
       typeOptions: [//file 图片 content富文本 char文字 video音频
-        {value:0,name:'问卷',datas:[{label:'问卷图文',col:'file1',type:'file'},{label:'富文本内容',col:'content1',type:'content'}]},
-        {value:1,name:'50音卡片展示页A',datas:[{label:'单词图片',col:'file1',type:'file'},{label: '图片',col:'file2',type:'file'},{label:'汉子',col:'content1',type:'content'},{label:'片假名',col:'content2',type:'content'}]},
-        {value:2,name:'50音卡片展示页B',datas:[{label:'配置图片',col:'file1',type:'file'},{label:'罗马音',col:'char1',type:'char'},{label:'词源',col:'char2',type:'char'},{label:'慢速发音',col:'video1',type:'video'},{label:'快速发音',col:'video2',type:'video'},{label:'发音技巧',col:'content1',type:'content'},{label:'单词',col:'content2',type:'content'}]},
-        {value:3,name:'单词卡A面',datas:[{label:'配置图片',col:'file1',type:'file'},{label:'图片',col:'file2',type:'file'},{label:'句子',col:'content1',type:'content'}]},
-        {value:4,name:'单词卡B面',datas:[{label:'单词',col:'char1',type:'char'},{label:'词性',col:'char2',type:'char'},{label:'含义',col:'char3',type:'char'},{label:'慢速发音',col:'video1',type:'video'},{label:'快速发音',col:'video2',type:'video'},{label:'常见搭配',col:'content1',type:'content'},{label:'例句',col:'content2',type:'content'}]},
-        {value:5,name:'语法卡A面',datas:[{label:'文法图片',col:'file1',type:'file'},{label:'示意图片',col:'file2',type:'file'}]},
-        {value:6,name:'语法卡B面',datas:[{label:'配置图片',col:'file1',type:'file'},{label:'慢速发音',col:'video1',type:'video'},{label:'快速发音',col:'video2',type:'video'},{label:'含义',col:'content1',type:'content'},{label:'例句',col:'content2',type:'content'}]},
-        {value:7,name:'板块过渡页',datas:[{label:'选择板块',col:'num',type:'select'},{label:'板块介绍文字',col:'char1',type:'char'}]},
-        {value:8,name:'图文选择题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'图片',col:'file1',type:'file'},{label:'选项文字',col:'char2',type:'char'},{label:'选项文字',col:'char3',type:'char'},{label:'答案文字',col:'char4',type:'char'}]},
-        {value:9,name:'文图选择题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'文字',col:'char2',type:'char'},{label:'选项图片',col:'file1',type:'file'},{label:'选项文字',col:'char3',type:'char'},{label:'选项图片',col:'file2',type:'file'},{label:'选项文字',col:'char4',type:'char'},{label:'答案文字',col:'char5',type:'char'}]},
-        {value:10,name:'文字选择题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'文字',col:'char2',type:'char'},{label:'选项文字',col:'char3',type:'char'},{label:'选项文字',col:'char4',type:'char'},{label:'答案文字',col:'char5',type:'char'}]},
-        {value:22,name:'文字选择题B',datas:[{label:'文字',col:'char1',type:'char'},{label:'选项文字',col:'char2',type:'char'},{label:'选项文字',col:'char3',type:'char'},{label:'答案文字',col:'char4',type:'char'}]},
-        {value:11,name:'语音文字选择题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'语音',col:'video1',type:'video'},{label:'选项文字',col:'char2',type:'char'},{label:'选项文字',col:'char3',type:'char'},{label:'答案文字',col:'char4',type:'char'}]},
-        {value:12,name:'语音图片选择题',datas:[{label:'问题描述',cl:'char1',type:'char'},{label:'语音',col:'video1',type:'video'},{label:'选项图片',col:'file1',type:'file'},{label:'选项文字',col:'char2',type:'char'},{label:'选项图片',col:'file2',type:'file'},{label:'选项文字',col:'char3',type:'char'},{label:'答案文字',col:'char4',type:'char'}]},
-        {value:13,name:'文字语音选择题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'文字',col:'char2',type:'char'},{label:'选项语音',col:'video1',type:'video'},{label:'选项文字',col:'char3',type:'char'},{label:'选项语音',col:'video2',type:'video'},{label:'选项文字',col:'char4',type:'char'},{label:'答案文字',col:'char5',type:'char'}]},
-        {value:14,name:'填空题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'翻译文字',col:'char2',type:'char'},{label:'正确文字顺序',col:'char3',type:'char'},{label:'预录制文字内容',col:'char4',type:'char'}]},
-        {value:15,name:'单词跟读',datas:[{label:'单词',col:'char1',type:'char'},{label:'片假名',col:'content1',type:'content'},{label:'文字解释',col:'char2',type:'char'},{label:'原始语音',col:'video1',type:'video'}]},
-        {value:16,name:'句子跟读页',datas:[{label:'日语句子',col:'char1',type:'char'},{label:'中文翻译',col:'char2',type:'char'},{label:'原始语音',col:'video1',type:'video'}]},
-        {value:17,name:'书写页',datas:[{label:'文字',col:'char1',type:'char'},{label:'读音',col:'video1',type:'video'},{label:'字帖中展示的文字',col:'char2',type:'char'}]},
-        {value:18,name:'连线页',datas:[{label:'汉字单词',col:'char1',type:'char'},{label:'日语单词',col:'char2',type:'char'},{label:'汉语单词',col:'char3',type:'char'},{label:'日语单词',col:'char4',type:'char'},{label:'汉语单词',col:'char5',type:'char'},{label:'日语单词',col:'char6',type:'char'},{label:'汉语单词',col:'char7',type:'char'},{label:'日语单词',col:'char8',type:'char'}]},
-        {value:19,name:'图文内容页',datas:[{label:'选择音视频类型',col:'num',type:'select1'},{label:'音视频素材',col:'video1',type:'video'},{label:'文字内容',col:'content1',type:'content'}]},
-        {value:20,name:'双图文内容页',datas:[{label:'图文素材1',col:'file1',type:'file'},{label:'图文素材2',col:'file2',type:'file'},{label:'文字内容',col:'content1',type:'content'}]},
-        {value:21,name:'纯文本页',datas:[{label:'文字内容',col:'content1',type:'content'}]}
+        {value:'0',name:'问卷',datas:[{label:'问卷图文',col:'file1',type:'file'},{label:'富文本内容',col:'content1',type:'content'}]},
+        {value:'1',name:'50音卡片展示页A',datas:[{label:'单词图片',col:'file1',type:'file'},{label: '图片',col:'file2',type:'file'},{label:'汉子',col:'content1',type:'content'},{label:'片假名',col:'content2',type:'content'}]},
+        {value:'2',name:'50音卡片展示页B',datas:[{label:'配置图片',col:'file1',type:'file'},{label:'罗马音',col:'char1',type:'char'},{label:'词源',col:'char2',type:'char'},{label:'慢速发音',col:'video1',type:'video'},{label:'快速发音',col:'video2',type:'video'},{label:'发音技巧',col:'content1',type:'content'},{label:'单词',col:'content2',type:'content'}]},
+        {value:'3',name:'单词卡A面',datas:[{label:'配置图片',col:'file1',type:'file'},{label:'图片',col:'file2',type:'file'},{label:'句子',col:'content1',type:'content'}]},
+        {value:'4',name:'单词卡B面',datas:[{label:'单词',col:'char1',type:'char'},{label:'词性',col:'char2',type:'char'},{label:'含义',col:'char3',type:'char'},{label:'慢速发音',col:'video1',type:'video'},{label:'快速发音',col:'video2',type:'video'},{label:'常见搭配',col:'content1',type:'content'},{label:'例句',col:'content2',type:'content'}]},
+        {value:'5',name:'语法卡A面',datas:[{label:'文法图片',col:'file1',type:'file'},{label:'示意图片',col:'file2',type:'file'}]},
+        {value:'6',name:'语法卡B面',datas:[{label:'配置图片',col:'file1',type:'file'},{label:'慢速发音',col:'video1',type:'video'},{label:'快速发音',col:'video2',type:'video'},{label:'含义',col:'content1',type:'content'},{label:'例句',col:'content2',type:'content'}]},
+        {value:'7',name:'板块过渡页',datas:[{label:'选择板块',col:'num',type:'select'},{label:'板块介绍文字',col:'char1',type:'char'}]},
+        {value:'8',name:'图文选择题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'图片',col:'file1',type:'file'},{label:'选项文字',col:'char2',type:'char'},{label:'选项文字',col:'char3',type:'char'},{label:'答案文字',col:'char4',type:'char'}]},
+        {value:'9',name:'文图选择题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'文字',col:'char2',type:'char'},{label:'选项图片',col:'file1',type:'file'},{label:'选项文字',col:'char3',type:'char'},{label:'选项图片',col:'file2',type:'file'},{label:'选项文字',col:'char4',type:'char'},{label:'答案文字',col:'char5',type:'char'}]},
+        {value:'10',name:'文字选择题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'文字',col:'char2',type:'char'},{label:'选项文字',col:'char3',type:'char'},{label:'选项文字',col:'char4',type:'char'},{label:'答案文字',col:'char5',type:'char'}]},
+        {value:'11',name:'语音文字选择题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'语音',col:'video1',type:'video'},{label:'选项文字',col:'char2',type:'char'},{label:'选项文字',col:'char3',type:'char'},{label:'答案文字',col:'char4',type:'char'}]},
+        {value:'12',name:'语音图片选择题',datas:[{label:'问题描述',cl:'char1',type:'char'},{label:'语音',col:'video1',type:'video'},{label:'选项图片',col:'file1',type:'file'},{label:'选项文字',col:'char2',type:'char'},{label:'选项图片',col:'file2',type:'file'},{label:'选项文字',col:'char3',type:'char'},{label:'答案文字',col:'char4',type:'char'}]},
+        {value:'13',name:'文字语音选择题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'文字',col:'char2',type:'char'},{label:'选项语音',col:'video1',type:'video'},{label:'选项文字',col:'char3',type:'char'},{label:'选项语音',col:'video2',type:'video'},{label:'选项文字',col:'char4',type:'char'},{label:'答案文字',col:'char5',type:'char'}]},
+        {value:'14',name:'填空题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'翻译文字',col:'char2',type:'char'},{label:'正确文字顺序',col:'char3',type:'char'},{label:'预录制文字内容',col:'char4',type:'char'}]},
+        {value:'15',name:'单词跟读',datas:[{label:'单词',col:'char1',type:'char'},{label:'片假名',col:'content1',type:'content'},{label:'文字解释',col:'char2',type:'char'},{label:'原始语音',col:'video1',type:'video'}]},
+        {value:'16',name:'句子跟读页',datas:[{label:'日语句子',col:'char1',type:'char'},{label:'中文翻译',col:'char2',type:'char'},{label:'原始语音',col:'video1',type:'video'}]},
+        {value:'17',name:'书写页',datas:[{label:'文字',col:'char1',type:'char'},{label:'读音',col:'video1',type:'video'},{label:'字帖中展示的文字',col:'char2',type:'char'}]},
+        {value:'18',name:'连线页',datas:[{label:'汉字单词',col:'char1',type:'char'},{label:'日语单词',col:'char2',type:'char'},{label:'汉语单词',col:'char3',type:'char'},{label:'日语单词',col:'char4',type:'char'},{label:'汉语单词',col:'char5',type:'char'},{label:'日语单词',col:'char6',type:'char'},{label:'汉语单词',col:'char7',type:'char'},{label:'日语单词',col:'char8',type:'char'}]},
+        {value:'19',name:'图文内容页',datas:[{label:'选择音视频类型',col:'num',type:'select1'},{label:'音视频素材',col:'video1',type:'video'},{label:'文字内容',col:'content1',type:'content'}]},
+        {value:'20',name:'双图文内容页',datas:[{label:'图文素材1',col:'file1',type:'file'},{label:'图文素材2',col:'file2',type:'file'},{label:'文字内容',col:'content1',type:'content'}]},
+        {value:'21',name:'纯文本页',datas:[{label:'文字内容',col:'content1',type:'content'}]},
+        {value:'22',name:'文字选择题B',datas:[{label:'文字',col:'char1',type:'char'},{label:'选项文字',col:'char2',type:'char'},{label:'选项文字',col:'char3',type:'char'},{label:'答案文字',col:'char4',type:'char'}]}
       ],
       listQuery: {
         page: 1,
@@ -262,6 +259,7 @@ export default {
   methods: {
     checkPermission,
     changeType(e) {
+      console.log(e)
       this.fileData = this.typeOptions[e].datas
       var datas = this.typeOptions[e].datas
       for (var i = 0; i < datas.length; i++) {
