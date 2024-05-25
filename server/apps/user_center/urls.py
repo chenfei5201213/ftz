@@ -1,8 +1,8 @@
 from django.urls import path, include
-from .views import UserLogin, WechatCallback
+from .views import WechatLogin, WechatEchoStr
 
 
 urlpatterns = [
-    path('login/', UserLogin.as_view()),
-    path('wx/callback/', WechatCallback.as_view()),
+    path('login/', WechatLogin.as_view()),
+    path('wx/handle/', WechatEchoStr.as_view())
 ]
