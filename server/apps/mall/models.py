@@ -1,8 +1,10 @@
 from django.db import models
 
 from utils.model import SoftModel
+from apps.user_center.models import ExternalUser
 from apps.system.models import User
 from apps.ftz.models import Course, get_enum_choices, EnumConfig
+
 
 
 class Product(SoftModel):
@@ -15,7 +17,7 @@ class Product(SoftModel):
     status = models.CharField(max_length=20, choices=[])
 
     def __init__(self, *args, **kwargs):
-        super(Course, self).__init__(*args, **kwargs)
+        super(Product, self).__init__(*args, **kwargs)
         self._meta.get_field('type').choices = get_enum_choices(module='product', service='type')
         self._meta.get_field('status').choices = get_enum_choices(module='product', service='status')
 
@@ -41,15 +43,24 @@ class Product(SoftModel):
 
 # 订单模型
 class Order(SoftModel):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
+    user = models.ForeignKey(ExternalUser, on_delete=models.SET_NULL, blank=True, null=True)
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, blank=True, null=True)
     order_date = models.DateTimeField(auto_now_add=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=[])
 
     def __init__(self, *args, **kwargs):
-        super(Course, self).__init__(*args, **kwargs)
+        super(Order, self).__init__(*args, **kwargs)
         self._meta.get_field('status').choices = get_enum_choices(module='order', service='status')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'product'], name='unique_user_product')
+        ]
+        # 联合索引
+        indexes = [
+            models.Index(fields=['user', 'product']),
+        ]
 
     @property
     def status_description(self):
@@ -67,12 +78,12 @@ class Order(SoftModel):
 class PaymentRecord(SoftModel):
     order = models.ForeignKey(Order, on_delete=models.SET_NULL, blank=True, null=True)
     payment_method = models.CharField(max_length=10, choices=[])
-    payment_date = models.DateTimeField()
+    payment_date = models.DateTimeField(null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=[])
 
     def __init__(self, *args, **kwargs):
-        super(Course, self).__init__(*args, **kwargs)
+        super(PaymentRecord, self).__init__(*args, **kwargs)
         self._meta.get_field('status').choices = get_enum_choices(module='payment', service='status')
         self._meta.get_field('payment_method').choices = get_enum_choices(module='payment', service='type')
 

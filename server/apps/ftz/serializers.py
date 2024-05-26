@@ -98,6 +98,7 @@ class StudyMaterialSimpleListSerializer(serializers.ModelSerializer):
     def get_type_description(self, obj):
         return obj.type_description
 
+
 class EnumConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = EnumConfig
