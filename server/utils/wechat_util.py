@@ -2,7 +2,7 @@
 import requests
 from urllib.parse import urlencode
 
-from server.settings import APPID
+from server.settings import APPID, MINIAPP_KEY
 
 WX_AUTH_URL = "https://open.weixin.qq.com/connect/oauth2/authorize"
 
@@ -35,10 +35,10 @@ class WechatUtil:
     @staticmethod
     def access_token(code):
         params = {
-            "appid": "your_app_id",
-            "secret": "your_app_secret",
+            "appid": APPID,
+            "secret": MINIAPP_KEY,
             "code": code,
-            "grant_type": "authorization_code"
+            "grant_type": "client_credential"
         }
         response = requests.get(WX_ACCESS_TOKEN_URL, params=params)
         access_token_data = response.json()

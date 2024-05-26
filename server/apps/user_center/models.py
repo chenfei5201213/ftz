@@ -52,7 +52,7 @@ class ExternalOauth(SoftModel):
 
     user = models.ForeignKey(ExternalUser, on_delete=models.SET_NULL, verbose_name='用户id', blank=True, null=True)
     access_token = models.CharField(max_length=255, null=True, blank=True, help_text="授权的访问令牌")
-    expires_in = models.IntegerField(max_length=12, null=True, blank=True, help_text="访问令牌过期时间")
+    expires_in = models.IntegerField(null=True, blank=True, help_text="访问令牌过期时间")
     refresh_token = models.CharField(max_length=255, null=True, blank=True, help_text="刷新令牌")
     scope = models.CharField(max_length=128, null=True, blank=True, help_text="授权作用域")
 

@@ -206,6 +206,23 @@ export default {
         {
           label: "素材",
           value: "material",
+        },
+        {
+          label: "期课",
+          value: "sc",
+        },
+
+        {
+          label: "订单",
+          value: "order",
+        },
+        {
+          label: "商品",
+          value: "product",
+        },
+        {
+          label: "支付",
+          value: "payment",
         }
       ],
       serviceOptions: [

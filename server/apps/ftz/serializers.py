@@ -2,7 +2,6 @@ from rest_framework import serializers
 
 from .models import Course, StudyMaterial, Lesson, Card, Tag, EnumConfig, Survey, Question, UserResponse
 from .models import TermCourse, CourseScheduleStudent, UserStudyRecord
-from apps.system.serializers import UserSimpleSerializer
 
 
 class CourseSerializer(serializers.ModelSerializer):
