@@ -48,7 +48,7 @@ class LessonViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         # 如果是根据ID查询详情，则使用详细查询序列化器
-        if self.action == 'retrieve':
+        if self.action == 'retrieve' or self.request.query_params.get('course_id'):
             return LessonDetailSerializer
         return self.serializer_class
 
