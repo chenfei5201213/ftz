@@ -1,9 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 
-from utils.model import SoftModel, BaseModel
+from utils.model import SoftModel
 from apps.system.models import User
-from simple_history.models import HistoricalRecords
 
 
 class Tag(SoftModel):
@@ -243,7 +241,8 @@ class TermCourse(SoftModel):
     """
     期课表
     """
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, blank=True, default=3, null=True, verbose_name="课程", related_name='schedules')  # 课程id
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, blank=True, default=3, null=True, verbose_name="课程",
+                               related_name='schedules')  # 课程id
     term_number = models.IntegerField(blank=True)  # 期数
     term_type = models.CharField(max_length=100, blank=True)  # 期课类型
     version = models.CharField(max_length=100)  # 版本

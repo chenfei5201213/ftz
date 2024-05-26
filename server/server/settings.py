@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'apps.wf',
     'apps.ftz',
     'apps.user_center',
-    # 'apps.payments'
+    'apps.mall'
 ]
 
 MIDDLEWARE = [
@@ -291,9 +291,14 @@ CERT_SERIAL_NO = '3C6674C05A876E0D0561CD18C12FA4B2243839B3'
 
 # API v3密钥， https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay3_2.shtml
 APIV3_KEY = 'Fantuanzigogogo66666888882025068'
+APIV3_KEY = '9d277900d826618a74dc35e323e14393'
 
 # APPID，应用ID或服务商模式下的sp_appid
-APPID = 'wxf1b19d71f836bb72'  # 服务号
+# APPID = 'wxf1b19d71f836bb72'  # 服务号
+APPID = 'wx8dc38edd7b81d08e'  # 小程序
+MINIAPP_KEY = '9d277900d826618a74dc35e323e14393'
+
+
 
 # 回调地址，也可以在调用接口的时候覆盖
 NOTIFY_URL = 'https://www.xxxx.com/notify'

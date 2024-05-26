@@ -53,6 +53,7 @@ urlpatterns = [
     path('api/monitor/', include('apps.monitor.urls')),
     path('api/ai/', include('apps.ai_voice.urls')),
     path('api/us/', include('apps.user_center.urls')),
+    path('api/mall/', include('apps.mall.urls')),
     path('api/wf/', include('apps.wf.urls')),
     path('api/ftz/', include('apps.ftz.urls')),
 
