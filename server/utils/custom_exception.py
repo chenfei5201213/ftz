@@ -3,13 +3,17 @@ from enum import Enum
 
 class ErrorCode(Enum):
     DefaultError = 100000  # '自定义未知异常'
+
     ProductException = 100100  # '商品未知异常'
     ProductNotExit = 100101  # '商品不存在'
     ProductOff = 100102  # '商品已下线'
+
     OrderException = 100200  # '订单未知异常'
     OrderNotExit = 100201  # '订单不存在'
     OrderDuplication = 100202  # '订单已存在'
     OrderCreateException = 100203  # '订单已存在'
+
+    TermCourseException = 100300  # 期课未知异常
 
 
 class FtzException(Exception):

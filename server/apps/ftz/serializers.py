@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from .models import Course, StudyMaterial, Lesson, Card, Tag, EnumConfig, Survey, Question, UserResponse
+from .models import Course, StudyMaterial, Lesson, Card, Tag, EnumConfig, Survey, Question, UserResponse, \
+    CourseScheduleContent
 from .models import TermCourse, CourseScheduleStudent, UserStudyRecord
 
 
@@ -165,16 +166,29 @@ class UserResponseSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CourseScheduleSerializer(serializers.ModelSerializer):
+class TermCourseDetailSerializer(serializers.ModelSerializer):
     course_info = CourseSerializer(read_only=True, source='course')
 
     class Meta:
         model = TermCourse
         fields = '__all__'
 
+class TermCourseSerializer(serializers.ModelSerializer):
+    # course_info = CourseSerializer(read_only=True, source='course')
+
+    class Meta:
+        model = TermCourse
+        fields = '__all__'
+
+
+class CourseScheduleContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourseScheduleContent
+        fields = '__all__'
+
 
 class CourseScheduleStudentSerializer(serializers.ModelSerializer):
-    term_course_info = CourseScheduleSerializer(read_only=True, source='term_course')
+    term_course_info = TermCourseSerializer(read_only=True, source='term_course')
 
     class Meta:
         model = CourseScheduleStudent

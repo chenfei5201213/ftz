@@ -1,7 +1,7 @@
 from django.db import models
 
+from apps.user_center.models import ExternalUser
 from utils.model import SoftModel
-from apps.system.models import User
 
 
 class Tag(SoftModel):
@@ -185,6 +185,15 @@ class Lesson(SoftModel):
         super(Lesson, self).__init__(*args, **kwargs)
         self._meta.get_field('type').choices = get_enum_choices(module='lesson', service='type')
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['course_id', 'lesson_number'], name='unique_course_lesson_number')
+        ]
+        # 联合索引
+        indexes = [
+            models.Index(fields=['course_id', 'lesson_number']),
+        ]
+
     @property
     def type_description(self):
         try:
@@ -274,7 +283,7 @@ class CourseScheduleStudent(SoftModel):
     """
     期课学员表
     """
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)  # 用户id
+    user = models.ForeignKey(ExternalUser, on_delete=models.SET_NULL, blank=True, null=True)  # 用户id
     exp_time = models.DateTimeField('过期时间', blank=True, null=True)  # 过期时间
     study_status = models.IntegerField(blank=True, null=True)  # 学习状态
     term_course = models.ForeignKey(TermCourse, on_delete=models.SET_NULL, blank=True, null=True)  # 期课id
@@ -282,18 +291,40 @@ class CourseScheduleStudent(SoftModel):
     def __str__(self):
         return f"{self.user} - {self.term_course}"
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'term_course'], name='unique_user_term_course')
+        ]
+        # 联合索引
+        indexes = [
+            models.Index(fields=['user', 'term_course']),
+        ]
 
-class UserStudyRecord(SoftModel):
+
+class CourseScheduleContent(SoftModel):
     """
-    用户学习记录表
+    期课内容表
     """
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)  # 用户id
+    user = models.ForeignKey(ExternalUser, on_delete=models.SET_NULL, blank=True, null=True)  # 用户id
     lesson_number = models.IntegerField()  # 课时序号
     lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, blank=True, null=True)  # 课时id
     study_material = models.ForeignKey(StudyMaterial, on_delete=models.SET_NULL, blank=True, null=True)  # 学习素材
     open_time = models.DateTimeField()  # 开课时间
     finish_time = models.DateTimeField(null=True, blank=True)  # 完成时间
-    study_status = models.IntegerField()  # 学习状态
+    study_status = models.IntegerField(null=True, blank=True)  # 学习状态
+    term_course = models.ForeignKey(TermCourse, on_delete=models.SET_NULL, blank=True, null=True,
+                                    verbose_name="期课")  # 期课id
+
+
+class UserStudyRecord(SoftModel):
+    """
+    用户学习记录表
+    """
+    user = models.ForeignKey(ExternalUser, on_delete=models.SET_NULL, blank=True, null=True)  # 用户id
+    lesson_number = models.IntegerField()  # 课时序号
+    lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, blank=True, null=True)  # 课时id
+    study_material = models.ForeignKey(StudyMaterial, on_delete=models.SET_NULL, blank=True, null=True)  # 学习素材
+    study_duration = models.IntegerField()  # 学习时长
 
     def __str__(self):
         return f"{self.user} - {self.lesson_number}"

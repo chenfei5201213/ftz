@@ -9,3 +9,8 @@ class ProductException(FtzException):
     pass
 
 
+class InsertTermContext(FtzException):
+    pass
+
+
+
