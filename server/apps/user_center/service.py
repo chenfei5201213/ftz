@@ -2,7 +2,7 @@ import logging
 
 from apps.ftz.models import TermCourse, CourseScheduleStudent, CourseScheduleContent, UserStudyRecord, StudyMaterial, \
     Course, Lesson
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from apps.ftz.serializers import CourseScheduleContentSerializer
 from apps.mall.exception import InsertTermContext
@@ -77,7 +77,7 @@ class TermCourseService:
                                     study_material=study_material,
                                     # term_course=term_course,
                                     study_status=1,
-                                    open_time=term_course.course_start,
+                                    open_time=term_course.course_start + timedelta(days=lesson.lesson_number-1),
                                     term_course=term_course
                                     # 设置其他必要字段，例如open_time, finish_time, study_status等
                                 )
