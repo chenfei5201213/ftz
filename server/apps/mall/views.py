@@ -1,4 +1,3 @@
-
 from django.db import IntegrityError
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -10,7 +9,7 @@ from rest_framework.viewsets import ModelViewSet
 from utils.custom_exception import FtzException
 from .models import Product, Order, PaymentRecord
 from .serializers import ProductSerializer, PaymentRecordSerializer, OrderSerializer, ProductSellSerializer
-from .service import ProductService
+from .service import ProductService, StudyContentService
 from ..ftz.models import TermCourse
 
 
@@ -128,6 +127,121 @@ class PaymentCreate(APIView):
             payment_record = product_service.create_payment_record(order_id=request.data['order_id'],
                                                                    amount=request.data['amount'])
             return Response(payment_record)
+        except FtzException as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class MyOrderView(APIView):
+    # serializer_class = OrderSerializer
+    """
+    我的订单
+    """
+
+    def get(self, request, *args, **kwargs):
+        """
+        参数用户名
+        """
+        try:
+            user_id = request.query_params.get('user_id')
+            study_service = StudyContentService(user_id)
+            data = study_service.my_order()
+            return Response(data)
+        except FtzException as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class MyCourseView(APIView):
+    # serializer_class = OrderSerializer
+    """
+    我的课程
+    """
+
+    def get(self, request, *args, **kwargs):
+        """
+        参数用户名，默认已支付的课程列表
+        """
+        try:
+            user_id = request.query_params.get('user_id')
+            study_service = StudyContentService(user_id)
+            data = study_service.my_course()
+            return Response(data)
+        except FtzException as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CourseLessonListView(APIView):
+    # serializer_class = OrderSerializer
+    """
+    课程对应的课时，不分页
+    """
+
+    def get(self, request, *args, **kwargs):
+        """
+        参数课程id
+        """
+        try:
+            user_id = request.query_params.get('user_id')
+            course_id = request.query_params.get('course_id')
+            study_service = StudyContentService(user_id)
+            data = study_service.course_lessons(course_id)
+            return Response(data)
+        except FtzException as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CourseLessonDetailView(APIView):
+    # serializer_class = OrderSerializer
+    """
+    单个课时详情，包含卡片信息（需要处理课时释放逻辑）
+    """
+
+    def get(self, request, *args, **kwargs):
+        """
+        参数，课时id
+        """
+        try:
+            user_id = request.query_params.get('user_id')
+            course_id = request.query_params.get('course_id')
+            lesson_id = request.query_params.get('lesson_id')
+            study_service = StudyContentService(user_id)
+            data = study_service.lesson_detail(course_id, lesson_id)
+            return Response(data)
+        except FtzException as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class StudyMaterialView(APIView):
+    # serializer_class = OrderSerializer
+    """
+    单个课时详情，包含卡片信息（需要处理前一个学习了，后一个才能查看的问题）
+    """
+
+    def get(self, request, *args, **kwargs):
+        """
+        参数，课时id
+        """
+        try:
+            user_id = request.query_params.get('user_id')
+            course_id = request.query_params.get('course_id')
+            card_id = request.query_params.get('card_id')
+            study_service = StudyContentService(user_id)
+            data = study_service.study_material_list(course_id, card_id)
+            return Response(data)
         except FtzException as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:

@@ -68,6 +68,21 @@ class OrderSerializer(serializers.ModelSerializer):
         return obj.status_description
 
 
+class OrderDetailSerializer(serializers.ModelSerializer):
+    """
+    订单序列化
+    """
+    status_description = serializers.SerializerMethodField()
+    product_info = ProductSerializer(source='product')
+
+    class Meta:
+        model = Order
+        fields = '__all__'
+
+    def get_status_description(self, obj):
+        return obj.status_description
+
+
 class PaymentRecordSerializer(serializers.ModelSerializer):
     """
     支付记录列化

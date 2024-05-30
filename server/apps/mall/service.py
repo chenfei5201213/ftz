@@ -6,7 +6,10 @@ from rest_framework import serializers
 from utils.custom_exception import ErrorCode
 from .exception import OrderException, ProductException, InsertTermContext
 from .models import Product, Order, PaymentRecord
-from .serializers import ProductSerializer, OrderSerializer, PaymentRecordSerializer
+from .serializers import ProductSerializer, OrderSerializer, PaymentRecordSerializer, OrderDetailSerializer
+from ..ftz.models import Lesson, CourseScheduleContent, Course
+from ..ftz.serializers import LessonListSerializer, LessonDetailSerializer, CourseScheduleContentDetailSerializer, \
+    CourseSerializer
 from ..user_center.models import ExternalUser
 from .enum_config import OrderStatus, PaymentStatus, ProductStatus, PaymentMethod
 from ..user_center.service import TermCourseService
@@ -105,3 +108,74 @@ class PaymentService:
         return serializer.data
 
 
+class StudyContentService:
+
+    def __init__(self, user_id):
+        self.user_id = user_id
+
+    def check_order_paid(self, course_id):
+        """这里先不做校验"""
+        # product = Product.objects.filter(course=course_id).first()
+        # paid_order = Order.objects.filter(product=product, status=OrderStatus.PAID.value).first()
+        # if not paid_order:
+        #     raise ErrorCode.OrderNotPaidException("订单未支付，请先完成订单支付再学习")
+
+    def my_order(self,
+                  # status=OrderStatus.PAID.value
+                  ):
+        """
+        订单状态
+        """
+        orders = Order.objects.filter(user=self.user_id).all()
+        serializer = OrderDetailSerializer(orders, many=True)
+        return serializer.data
+
+    def my_course(self,
+                  status=OrderStatus.PAID.value
+                  ):
+        """x
+        我的课程
+        """
+
+        course_ids = Order.objects.filter(user=self.user_id, status=status).values('product__course_id').all()
+        courses = Course.objects.filter(id__in=course_ids).all()
+
+        serializer = CourseSerializer(courses, many=True)
+        return serializer.data
+
+    def course_lessons(self, course_id):
+        """
+        仅展示支付的订单，某个课程的课时
+        """
+        self.check_order_paid(course_id)
+        lessons = Lesson.objects.filter(course_id=course_id).order_by('lesson_number').all()
+        serializer = LessonListSerializer(lessons, many=True)
+        lessons_info = serializer.data
+        for lesson_info in lessons_info:
+            study_content = CourseScheduleContent.objects.filter(lesson=lesson_info['id']).first()
+            lesson_info.update({
+                "open_time": study_content.open_time,
+                "study_status": study_content.study_status
+            })
+        return lessons_info
+
+    def lesson_detail(self, course_id, lesson_id):
+        """
+        展示某一个课时所有的内容，到卡片维度
+        """
+        self.check_order_paid(course_id)
+        lesson = Lesson.objects.filter(id=lesson_id).first()
+        serializer = LessonDetailSerializer(lesson)
+        study_content = CourseScheduleContent.objects.filter(lesson=lesson_id).first()
+        lesson_info = serializer.data
+        lesson_info.update({
+            "open_time": study_content.open_time,
+            "study_status": study_content.study_status
+        })
+        return lesson_info
+
+    def study_material_list(self, course_id, card_id):
+        self.check_order_paid(course_id)
+        contents = CourseScheduleContent.objects.filter(card=card_id, user=self.user_id).all()
+        serializer = CourseScheduleContentDetailSerializer(contents, many=True)
+        return serializer.data

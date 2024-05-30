@@ -314,6 +314,8 @@ class CourseScheduleContent(SoftModel):
     study_status = models.IntegerField(null=True, blank=True)  # 学习状态
     term_course = models.ForeignKey(TermCourse, on_delete=models.SET_NULL, blank=True, null=True,
                                     verbose_name="期课")  # 期课id
+    card = models.ForeignKey(Card, on_delete=models.SET_NULL, blank=True, null=True,
+                                    verbose_name="卡片")  # 卡片id
 
 
 class UserStudyRecord(SoftModel):

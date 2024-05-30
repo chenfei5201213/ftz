@@ -129,7 +129,7 @@ class LessonDetailSerializer(serializers.ModelSerializer):
     """
     课时序列化
     """
-    cards = CardDetailSerializer(many=True, read_only=True)
+    cards = CardListSerializer(many=True, read_only=True)
 
     class Meta:
         model = Lesson
@@ -173,6 +173,7 @@ class TermCourseDetailSerializer(serializers.ModelSerializer):
         model = TermCourse
         fields = '__all__'
 
+
 class TermCourseSerializer(serializers.ModelSerializer):
     # course_info = CourseSerializer(read_only=True, source='course')
 
@@ -182,6 +183,14 @@ class TermCourseSerializer(serializers.ModelSerializer):
 
 
 class CourseScheduleContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourseScheduleContent
+        fields = '__all__'
+
+
+class CourseScheduleContentDetailSerializer(serializers.ModelSerializer):
+    study_material_info = CourseSerializer(read_only=True, source='study_material')
+
     class Meta:
         model = CourseScheduleContent
         fields = '__all__'

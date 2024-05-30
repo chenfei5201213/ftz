@@ -23,3 +23,10 @@ class ProductStatus(Enum):
 class PaymentMethod(Enum):
     WECHAT = 'wechat'
     ALIPAY = 'alipay'
+
+
+class StudyStatus(Enum):
+    LOCKED = 0, "已锁定"
+    UNLOCKED = 1, "已解锁"
+    IN_PROGRESS = 2, "学习中"
+    COMPLETED = 3, "已学完"
