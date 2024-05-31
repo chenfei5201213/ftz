@@ -55,3 +55,25 @@ class WechatUtil:
         response = requests.get(WX_USER_INFO_URL, params=user_info_params)
         user_info = response.json()
         return user_info
+
+
+class WechatMiniUtil:
+    """
+    微信小程序
+    """
+
+    def __init__(self):
+        self.appid = "wx8dc38edd7b81d08e"
+        self.secret = "9d277900d826618a74dc35e323e14393"
+
+    def login(self, code):
+        url = "https://api.weixin.qq.com/sns/jscode2session"
+        params = {
+            "appid": self.appid,
+            "secret": self.secret,
+            "js_code": code,
+            "grant_type": "authorization_code"
+        }
+        response = requests.get(url, params=params)
+        data = response.json()
+        return data

@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework import filters
 from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
-from utils.wechat_util import WechatUtil
+from utils.wechat_util import WechatUtil, WechatMiniUtil
 
 from server import settings
 
@@ -43,6 +43,24 @@ class WechatLogin(APIView):
         user_info = WechatUtil.get_user_info(access_token_data['access_token'], access_token_data['openid'])
         logger.info(f"user_info: {user_info}")
         return Response(data=user_info)
+
+
+class WechatMiniLogin(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        code = request.query_params.get('code')
+        logger.info(f"code: ={code}")
+        if not code:
+            return Response("授权失败", status=400)
+        wx = WechatMiniUtil()
+        data = wx.login(code)
+        # if access_token_data:
+        #     return Response(data=access_token_data)
+        # logger.info(f"access_token_data: {access_token_data}")
+        # user_info = WechatUtil.get_user_info(access_token_data['access_token'], access_token_data['openid'])
+        # logger.info(f"user_info: {user_info}")
+        return Response(data=data)
 
 
 class WechatCallback(generics.ListCreateAPIView):
