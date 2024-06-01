@@ -140,16 +140,17 @@ class StudyContentService:
         if courses:
             serializer = CourseSerializer(courses, many=True)
             data.update({
-                'user_type': UserType.Member.value,
-                'course': serializer.data
+                'user_type': UserType.Member.value[0],
+                'courses': serializer.data
             })
         else:
-            course_ids = Order.objects.filter(user=self.user_id, status=OrderStatus.FREE.value).values('product__course_id').all()
+            course_ids = Order.objects.filter(user=self.user_id, status=OrderStatus.FREE.value).values(
+                'product__course_id').all()
             courses = Course.objects.filter(id__in=course_ids).all()
             serializer = CourseSerializer(courses, many=True)
             data.update({
-                'user_type': UserType.Guest.value,
-                'course': serializer.data
+                'user_type': UserType.Guest.value[0],
+                'courses': serializer.data
             })
         return data
 
