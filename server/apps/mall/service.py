@@ -167,11 +167,11 @@ class StudyContentService:
         lessons_groups = {}
         for lesson_info in lessons_info:
             study_content = CourseScheduleContent.objects.filter(lesson=lesson_info['id']).first()
-            if study_content:
-                lesson_info.update({
-                    "open_time": study_content.open_time,
-                    "study_status": study_content.study_status
-                })
+
+            lesson_info.update({
+                "open_time": study_content.open_time if study_content else None,
+                "study_status": self.check_study_status(study_content)
+            })
             if not lessons_groups.get(lesson_info['group_name']):
                 lessons_groups[lesson_info['group_name']] = [lesson_info]
             else:
@@ -190,8 +190,8 @@ class StudyContentService:
         lesson_info = serializer.data
 
         lesson_info.update({
-            "open_time": study_content.open_time,
-            "study_status": study_content.study_status if datetime.now() >= study_content.open_time else StudyStatus.LOCKED.value
+            "open_time": study_content.open_time if study_content else None,
+            "study_status": self.check_study_status(study_content)
         })
         return lesson_info
 
@@ -200,3 +200,11 @@ class StudyContentService:
         contents = CourseScheduleContent.objects.filter(card=card_id, user=self.user_id).all()
         serializer = CourseScheduleContentDetailSerializer(contents, many=True)
         return serializer.data
+
+    def check_study_status(self, study_content: CourseScheduleContent):
+        if study_content:
+            if study_content.open_time == StudyStatus.LOCKED.value[0] and datetime.now() >= study_content.open_time:
+                return StudyStatus.UNLOCKED.value[0]
+        else:
+            return StudyStatus.LOCKED.value[0]
+        return study_content.study_status
