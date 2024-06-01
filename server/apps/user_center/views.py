@@ -55,11 +55,9 @@ class WechatMiniLogin(APIView):
             return Response("授权失败", status=400)
         wx = WechatMiniUtil()
         data = wx.login(code)
-        # if access_token_data:
-        #     return Response(data=access_token_data)
-        # logger.info(f"access_token_data: {access_token_data}")
-        # user_info = WechatUtil.get_user_info(access_token_data['access_token'], access_token_data['openid'])
-        # logger.info(f"user_info: {user_info}")
+
+        # access_token = wx.access_token()
+        # user_info = wx.get_user_info(access_token, data.get('openid'))
         return Response(data=data)
 
 

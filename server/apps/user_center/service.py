@@ -119,3 +119,7 @@ class TermCourseService:
         serializer = CourseScheduleContentSerializer(term_course_content, many=True)
 
         return serializer.data
+
+
+class ExternalUserService:
+    pass

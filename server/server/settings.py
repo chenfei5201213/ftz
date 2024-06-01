@@ -175,6 +175,7 @@ CORS_ALLOW_CREDENTIALS = False
 AUTH_USER_MODEL = 'system.User'
 AUTHENTICATION_BACKENDS = (
     'apps.system.authentication.CustomBackend',
+    # 'apps.system.authentication.WeChatBackend',
 )
 
 # 缓存配置,使用redis
@@ -291,7 +292,7 @@ CERT_SERIAL_NO = '3C6674C05A876E0D0561CD18C12FA4B2243839B3'
 
 # API v3密钥， https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay3_2.shtml
 APIV3_KEY = 'Fantuanzigogogo66666888882025068'
-APIV3_KEY = '9d277900d826618a74dc35e323e14393'
+# APIV3_KEY = '9d277900d826618a74dc35e323e14393'
 
 # APPID，应用ID或服务商模式下的sp_appid
 APPID = 'wxf1b19d71f836bb72'  # 服务号
