@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class OrderStatus(Enum):
+    FREE = 'free'
     PENDING = 'pending'
     PAID = 'paid'
     FAILED = 'failed'
@@ -30,3 +31,8 @@ class StudyStatus(Enum):
     UNLOCKED = 1, "已解锁"
     IN_PROGRESS = 2, "学习中"
     COMPLETED = 3, "已学完"
+
+
+class UserType(Enum):
+    Guest = 1, "游客"
+    Member = 2, "会员"

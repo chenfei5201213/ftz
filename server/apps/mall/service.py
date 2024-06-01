@@ -11,7 +11,7 @@ from ..ftz.models import Lesson, CourseScheduleContent, Course
 from ..ftz.serializers import LessonListSerializer, LessonDetailSerializer, CourseScheduleContentDetailSerializer, \
     CourseSerializer
 from ..user_center.models import ExternalUser
-from .enum_config import OrderStatus, PaymentStatus, ProductStatus, PaymentMethod
+from .enum_config import OrderStatus, PaymentStatus, ProductStatus, PaymentMethod, UserType
 from ..user_center.service import TermCourseService
 
 logger = logging.getLogger(__name__)
@@ -121,8 +121,8 @@ class StudyContentService:
         #     raise ErrorCode.OrderNotPaidException("订单未支付，请先完成订单支付再学习")
 
     def my_order(self,
-                  # status=OrderStatus.PAID.value
-                  ):
+                 # status=OrderStatus.PAID.value
+                 ):
         """
         订单状态
         """
@@ -130,18 +130,28 @@ class StudyContentService:
         serializer = OrderDetailSerializer(orders, many=True)
         return serializer.data
 
-    def my_course(self,
-                  status=OrderStatus.PAID.value
-                  ):
-        """x
+    def my_course(self, status=OrderStatus.PAID.value):
+        """
         我的课程
         """
-
+        data = {}
         course_ids = Order.objects.filter(user=self.user_id, status=status).values('product__course_id').all()
         courses = Course.objects.filter(id__in=course_ids).all()
-
-        serializer = CourseSerializer(courses, many=True)
-        return serializer.data
+        if courses:
+            serializer = CourseSerializer(courses, many=True)
+            data.update({
+                'user_type': UserType.Member.value,
+                'course': serializer.data
+            })
+        else:
+            course_ids = Order.objects.filter(user=self.user_id, status=OrderStatus.FREE.value).values('product__course_id').all()
+            courses = Course.objects.filter(id__in=course_ids).all()
+            serializer = CourseSerializer(courses, many=True)
+            data.update({
+                'user_type': UserType.Guest.value,
+                'course': serializer.data
+            })
+        return data
 
     def course_lessons(self, course_id):
         """

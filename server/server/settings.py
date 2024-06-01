@@ -294,8 +294,8 @@ APIV3_KEY = 'Fantuanzigogogo66666888882025068'
 APIV3_KEY = '9d277900d826618a74dc35e323e14393'
 
 # APPID，应用ID或服务商模式下的sp_appid
-# APPID = 'wxf1b19d71f836bb72'  # 服务号
-APPID = 'wx8dc38edd7b81d08e'  # 小程序
+APPID = 'wxf1b19d71f836bb72'  # 服务号
+# APPID = 'wx8dc38edd7b81d08e'  # 小程序
 MINIAPP_KEY = '9d277900d826618a74dc35e323e14393'
 
 

@@ -22,7 +22,7 @@ logger = logging.getLogger('__name__')
 
 # Create your views here.
 class UserLogin(APIView):
-
+    permission_classes = [AllowAny]
     def get(self, request):
         redirect_url = WechatUtil.wechat_login()
         return Response(data={'redirect_url': redirect_url})
