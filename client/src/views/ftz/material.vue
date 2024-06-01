@@ -221,7 +221,7 @@ export default {
       type: '',
       typeOptions: [//file 图片 content富文本 char文字 video音频
         {value:'0',name:'问卷',datas:[{label:'问卷图文',col:'file1',type:'file'},{label:'富文本内容',col:'content1',type:'content'}]},
-        {value:'1',name:'50音卡片展示页A',datas:[{label:'单词图片',col:'file1',type:'file'},{label: '图片',col:'file2',type:'file'},{label:'汉子',col:'content1',type:'content'},{label:'片假名',col:'content2',type:'content'}]},
+        {value:'1',name:'50音卡片展示页A',datas:[{label:'单词图片',col:'file1',type:'file'},{label: '图片',col:'file2',type:'file'},{label:'汉字',col:'content1',type:'content'},{label:'片假名',col:'content2',type:'content'}]},
         {value:'2',name:'50音卡片展示页B',datas:[{label:'配置图片',col:'file1',type:'file'},{label:'罗马音',col:'char1',type:'char'},{label:'词源',col:'char2',type:'char'},{label:'慢速发音',col:'video1',type:'video'},{label:'快速发音',col:'video2',type:'video'},{label:'发音技巧',col:'content1',type:'content'},{label:'单词',col:'content2',type:'content'}]},
         {value:'3',name:'单词卡A面',datas:[{label:'配置图片',col:'file1',type:'file'},{label:'图片',col:'file2',type:'file'},{label:'句子',col:'content1',type:'content'}]},
         {value:'4',name:'单词卡B面',datas:[{label:'单词',col:'char1',type:'char'},{label:'词性',col:'char2',type:'char'},{label:'含义',col:'char3',type:'char'},{label:'慢速发音',col:'video1',type:'video'},{label:'快速发音',col:'video2',type:'video'},{label:'常见搭配',col:'content1',type:'content'},{label:'例句',col:'content2',type:'content'}]},
@@ -287,9 +287,9 @@ export default {
       this.readyData.video2 = res.data.file
     },
     beforeAvatarUploadVideo(file) {
-      const isLt2M = file.size / 1024 / 1024 < 2
+      const isLt2M = file.size / 1024 / 1024 < 15
       if (!isLt2M) {
-        this.$message.error('上传文件大小不能超过 2MB!')
+        this.$message.error('上传文件大小不能超过 15MB!')
       }
       return isLt2M
     },
