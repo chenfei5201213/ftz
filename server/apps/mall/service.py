@@ -171,7 +171,10 @@ class StudyContentService:
                     "open_time": study_content.open_time,
                     "study_status": study_content.study_status
                 })
-            lessons_groups[lesson_info['group_name']] = lesson_info
+            if not lessons_groups.get(lesson_info['group_name']):
+                lessons_groups[lesson_info['group_name']] = [lesson_info]
+            else:
+                lessons_groups[lesson_info['group_name']].append(lesson_info)
         d = [{'group_name': k, 'lessons': v} for k, v in lessons_groups.items()]
         return d
 
