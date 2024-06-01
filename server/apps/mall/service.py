@@ -166,10 +166,11 @@ class StudyContentService:
         lessons_groups = {}
         for lesson_info in lessons_info:
             study_content = CourseScheduleContent.objects.filter(lesson=lesson_info['id']).first()
-            lesson_info.update({
-                "open_time": study_content.open_time,
-                "study_status": study_content.study_status
-            })
+            if study_content:
+                lesson_info.update({
+                    "open_time": study_content.open_time,
+                    "study_status": study_content.study_status
+                })
             lessons_groups[lesson_info['group_name']] = lesson_info
         d = [{'group_name': k, 'lessons': v} for k, v in lessons_groups.items()]
         return d
