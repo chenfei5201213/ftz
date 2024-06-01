@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from django.db import IntegrityError
 from django.db.models import Count, Prefetch
@@ -12,7 +13,7 @@ from ..ftz.models import Lesson, CourseScheduleContent, Course
 from ..ftz.serializers import LessonListSerializer, LessonDetailSerializer, CourseScheduleContentDetailSerializer, \
     CourseSerializer
 from ..user_center.models import ExternalUser
-from .enum_config import OrderStatus, PaymentStatus, ProductStatus, PaymentMethod, UserType
+from .enum_config import OrderStatus, PaymentStatus, ProductStatus, PaymentMethod, UserType, StudyStatus
 from ..user_center.service import TermCourseService
 
 logger = logging.getLogger(__name__)
@@ -187,9 +188,10 @@ class StudyContentService:
         serializer = LessonDetailSerializer(lesson)
         study_content = CourseScheduleContent.objects.filter(lesson=lesson_id).first()
         lesson_info = serializer.data
+
         lesson_info.update({
             "open_time": study_content.open_time,
-            "study_status": study_content.study_status
+            "study_status": study_content.study_status if datetime.now() >= study_content.open_time else StudyStatus.LOCKED.value
         })
         return lesson_info
 
