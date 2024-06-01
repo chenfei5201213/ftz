@@ -2,6 +2,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
@@ -102,6 +103,7 @@ class PaymentRecordViewSet(ModelViewSet):
 
 
 class OrderCreate(APIView):
+    permission_classes = [AllowAny]
     serializer_class = OrderSerializer
     http_method_names = ['post']
 
@@ -119,6 +121,7 @@ class OrderCreate(APIView):
 
 
 class PaymentCreate(APIView):
+    permission_classes = [AllowAny]
     # serializer_class = OrderSerializer
 
     def post(self, request, *args, **kwargs):
@@ -135,6 +138,7 @@ class PaymentCreate(APIView):
 
 
 class MyOrderView(APIView):
+    permission_classes = [AllowAny]
     # serializer_class = OrderSerializer
     """
     我的订单
@@ -157,6 +161,7 @@ class MyOrderView(APIView):
 
 
 class MyCourseView(APIView):
+    permission_classes = [AllowAny]
     # serializer_class = OrderSerializer
     """
     我的课程
@@ -179,6 +184,7 @@ class MyCourseView(APIView):
 
 
 class CourseLessonListView(APIView):
+    permission_classes = [AllowAny]
     # serializer_class = OrderSerializer
     """
     课程对应的课时，不分页
@@ -202,6 +208,7 @@ class CourseLessonListView(APIView):
 
 
 class CourseLessonDetailView(APIView):
+    permission_classes = [AllowAny]
     # serializer_class = OrderSerializer
     """
     单个课时详情，包含卡片信息（需要处理课时释放逻辑）
@@ -226,6 +233,7 @@ class CourseLessonDetailView(APIView):
 
 
 class StudyMaterialView(APIView):
+    permission_classes = [AllowAny]
     # serializer_class = OrderSerializer
     """
     单个课时详情，包含卡片信息（需要处理前一个学习了，后一个才能查看的问题）
