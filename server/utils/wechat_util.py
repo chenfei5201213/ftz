@@ -15,9 +15,11 @@ WX_ACCESS_REFRESH_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/refresh_toke
 
 # 微信换取用户信息的URL
 WX_USER_INFO_URL = "https://api.weixin.qq.com/sns/userinfo"
+# WX_USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info"
 
 # 设置授权回调URL
-REDIRECT_URI = "http://www.ngsmq.online/api/us/wx/login/"
+# REDIRECT_URI = "http://www.ngsmq.online/api/us/wx/login/"
+REDIRECT_URI = "http://www.ngsmq.online/web/index.html"
 
 
 class WechatUtil:
@@ -44,7 +46,7 @@ class WechatUtil:
             "code": code,
             "grant_type": "authorization_code"
         }
-        appid_ac_redis_key = f'ac:appid:{APPID}'
+        appid_ac_redis_key = f'ac:appid:{APPID}:code:{code}'
         data = cache.get(appid_ac_redis_key)
         if data is None:
             response = requests.get(WX_ACCESS_TOKEN_URL, params=params)
@@ -116,20 +118,36 @@ class WechatMiniUtil:
         params = {
             "appid": self.appid,
             "secret": self.secret,
-            "grant_type": "client_credential"
+            "grant_type": "client_credential",
+
         }
+        url = 'https://api.weixin.qq.com/cgi-bin/token'
         ac_redis_key = f'ac:appid:{self.appid}'
-        data = cache.get(ac_redis_key)
-        if data is None:
-            response = requests.get('https://api.weixin.qq.com/cgi-bin/token', params=params)
-            access_token_data = response.json()
-            data = access_token_data.get('access_token')
+        access_token = cache.get(ac_redis_key)
+
+        if access_token is None:
+            response = requests.get(url, params=params)
+            access_token_data = response.json()  # {'access_token': '81__wVcqpTV29-gJVpdLn81L_1BqjiDUp9ovdyLd14P9TXzR0C5_6hjxcmqK-DdNe7qpfx5Dvnxovgh-xfiLMI7Pvx_jQ5pYilT-wf9uBAgYKgrf10UK-kLvP3h7usVYRgAGAPSL','expires_in': 7200}
+            access_token = access_token_data.get('access_token')
             if not access_token_data.get('errcode'):
-                cache.set(ac_redis_key, data, timeout=access_token_data.get('expires_in'))
-        return data
+                cache.set(ac_redis_key, access_token, timeout=access_token_data.get('expires_in'))
+        return access_token
+
+    def get_phone_number(self, access_token, code, openid):
+        params = {
+            "access_token": access_token,
+            "code": code,
+            "openid": openid
+        }
+        url = 'https://api.weixin.qq.com/wxa/business/getuserphonenumber'
+        response = requests.post(url, json=params, params=params)
+        return response.json()
 
 
 if __name__ == '__main__':
-    wx = WechatUtil()
-    # print(wx.get_user_info('81_YOahQcAeS-627hADZPMFSuztFZ_rsk4CYHuM6laETJ6BI8guSd59TFOTKvCQVFBZJu9qf6itgEpEN_40-bBRomlcw1LedXeJYXJfACdwjwo', 'o77756JY-IHm6zh-Ez3HVsLJIKvA'))
-    print(wx.refresh_token('81_H5Z0wxr8i3yauI3jC2QrsNjxkRF1yJ0dUVYEqMoQwCVXYx3EF-VhmO1rTzIvfxSb_89hveTlOZw8I9z1lVJcohUQzVEutVH0T4dkF4j2oB0'))
+    # wx = WechatUtil()
+    # # print(wx.get_user_info('81_YOahQcAeS-627hADZPMFSuztFZ_rsk4CYHuM6laETJ6BI8guSd59TFOTKvCQVFBZJu9qf6itgEpEN_40-bBRomlcw1LedXeJYXJfACdwjwo', 'o77756JY-IHm6zh-Ez3HVsLJIKvA'))
+    # print(wx.refresh_token('81_H5Z0wxr8i3yauI3jC2QrsNjxkRF1yJ0dUVYEqMoQwCVXYx3EF-VhmO1rTzIvfxSb_89hveTlOZw8I9z1lVJcohUQzVEutVH0T4dkF4j2oB0'))
+    xcx = WechatMiniUtil()
+    # r = xcx.login()
+    xcx.access_token('0b1jUIGa1svyxH0MRyHa1pzfCA3jUIGh')

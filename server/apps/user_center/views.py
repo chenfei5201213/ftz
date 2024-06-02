@@ -202,18 +202,11 @@ class StudyReportView(APIView):
     permission_classes = [ExternalUserPermission]
 
     def post(self, request):
-        user = request.data.get('user')
+        user = request.user.id
         course = request.data.get('course')
         term_service = TermCourseService(user, course)
         term_service.insert_student_context()
         return Response(data='插入成功')
 
-    def get(self, request):
-        user = request.query_params.get('user')
-        course = request.query_params.get('course')
-        term_course_id = request.query_params.get('term_course_id')
-        term_service = TermCourseService(user, course)
-        data = term_service.get_term_course_content(term_course_id)
-        return Response(data=data)
 
 
