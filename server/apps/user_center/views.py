@@ -1,5 +1,8 @@
 import hashlib
 import logging
+
+from django.core.cache import cache
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny
 from django.http import HttpResponse, HttpResponseBadRequest
 from rest_framework.response import Response
@@ -79,7 +82,11 @@ class WechatCallbackLogin(generics.ListCreateAPIView):
 
     def get(self, request):
         code = request.query_params.get('code')
+        code_token_redis_key = f'tk:code:{code}'
         logger.info(f"code: ={code}")
+        cache_data = cache.get(code_token_redis_key)
+        if cache_data:
+            return Response(data=cache_data)
         if not code:
             return Response("授权失败", status=400)
         access_token_data = WechatUtil.access_token(code)
@@ -100,11 +107,13 @@ class WechatCallbackLogin(generics.ListCreateAPIView):
 
         # 生成JWT Token
         token = ExternalUserTokenObtainPairSerializer.get_token(_user)
-
+        result = {'access': str(token.access_token), 'refresh': str(token)}
+        cache.set(code_token_redis_key, result, timeout=7200)
         return Response({'access': str(token.access_token), 'refresh': str(token)})
 
 
-class WechatEchoStr(APIView):
+class WechatEchoStr(GenericAPIView):
+    serializer_class = ExternalUserTokenObtainPairSerializer  # 设置serializer_class属性
     permission_classes = [AllowAny]
 
     def get(self, request):
