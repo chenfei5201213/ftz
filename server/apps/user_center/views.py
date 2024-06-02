@@ -77,7 +77,8 @@ class WechatMiniLogin(APIView):
         return Response(data=data)
 
 
-class WechatCallbackLogin(generics.ListCreateAPIView):
+class WechatCallbackLogin(GenericAPIView):
+    serializer_class = ExternalUserTokenObtainPairSerializer  # 设置serializer_class属性
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -112,8 +113,7 @@ class WechatCallbackLogin(generics.ListCreateAPIView):
         return Response({'access': str(token.access_token), 'refresh': str(token)})
 
 
-class WechatEchoStr(GenericAPIView):
-    serializer_class = ExternalUserTokenObtainPairSerializer  # 设置serializer_class属性
+class WechatEchoStr(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
