@@ -67,14 +67,24 @@ class WechatMiniLogin(APIView):
     def get(self, request):
         code = request.query_params.get('code')
         logger.info(f"code: ={code}")
+        code_token_redis_key = f'tk:code:{code}'
         if not code:
             return Response("授权失败", status=400)
         wx = WechatMiniUtil()
-        data = wx.login(code)
+        user_info = wx.login(code)
 
-        # access_token = wx.access_token()
-        # user_info = wx.get_user_info(access_token, data.get('openid'))
-        return Response(data=data)
+        if not user_info:
+            return Response("获取用户信息失败", status=400)
+        user_service = ExternalUserService(user_info['openid'])
+        _user = user_service.get_user()
+        if not _user:
+            _user = user_service.save(user_info)
+
+        # 生成JWT Token
+        token = ExternalUserTokenObtainPairSerializer.get_token(_user)
+        result = {'access': str(token.access_token), 'refresh': str(token)}
+        cache.set(code_token_redis_key, result, timeout=7200)
+        return Response({'access': str(token.access_token), 'refresh': str(token)})
 
 
 class WechatCallbackLogin(GenericAPIView):
@@ -184,3 +194,26 @@ class TermCourseContentView(APIView):
         term_service = TermCourseService(user, course)
         data = term_service.get_term_course_content(term_course_id)
         return Response(data=data)
+
+
+class StudyReportView(APIView):
+    # permission_classes = [AllowAny]
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+
+    def post(self, request):
+        user = request.data.get('user')
+        course = request.data.get('course')
+        term_service = TermCourseService(user, course)
+        term_service.insert_student_context()
+        return Response(data='插入成功')
+
+    def get(self, request):
+        user = request.query_params.get('user')
+        course = request.query_params.get('course')
+        term_course_id = request.query_params.get('term_course_id')
+        term_service = TermCourseService(user, course)
+        data = term_service.get_term_course_content(term_course_id)
+        return Response(data=data)
+
+
