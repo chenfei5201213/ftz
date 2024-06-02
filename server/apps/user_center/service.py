@@ -1,12 +1,16 @@
 import logging
 
+from django.db import IntegrityError
+
 from apps.ftz.models import TermCourse, CourseScheduleStudent, CourseScheduleContent, UserStudyRecord, StudyMaterial, \
     Course, Lesson
 from datetime import datetime, timedelta
 
 from apps.ftz.serializers import CourseScheduleContentSerializer
 from apps.mall.exception import InsertTermContext
+from apps.user_center.exception import ExternalUserCreateException
 from apps.user_center.models import ExternalUser
+from apps.user_center.serializers import ExternalUserSerializer
 from utils.custom_exception import ErrorCode
 
 logger = logging.getLogger(__name__)
@@ -29,11 +33,11 @@ class TermCourseService:
         """
         now = datetime.now()
         try:
-            term_course = TermCourse.objects.get(
+            term_course = TermCourse.objects.filter(
                 course=self.course,
                 enrollment_start__lte=now,
                 enrollment_end__gte=now,
-            )
+            ).first()
             return term_course
         except TermCourse.DoesNotExist:
             return None
@@ -77,7 +81,7 @@ class TermCourseService:
                                     study_material=study_material,
                                     # term_course=term_course,
                                     study_status=1,
-                                    open_time=term_course.course_start + timedelta(days=lesson.lesson_number-1),
+                                    open_time=term_course.course_start + timedelta(days=lesson.lesson_number - 1),
                                     term_course=term_course
                                     # 设置其他必要字段，例如open_time, finish_time, study_status等
                                 )
@@ -113,13 +117,48 @@ class TermCourseService:
             term_course = TermCourse.objects.filter(id=term_course_id).first()
         else:
             term_course = self.get_only_term()
-        term_course_content = CourseScheduleContent.objects.filter(user=self.user,
-                                                                   term_course=term_course).all()
+        if term_course:
+            term_course_content = CourseScheduleContent.objects.filter(user=self.user,
+                                                                       term_course=term_course).all()
 
-        serializer = CourseScheduleContentSerializer(term_course_content, many=True)
+            serializer = CourseScheduleContentSerializer(term_course_content, many=True)
 
-        return serializer.data
+            return serializer.data
+        else:
+            return []
 
 
 class ExternalUserService:
-    pass
+    def __init__(self, openid):
+        self.openid = openid
+        self.user_info = {}
+
+    def save(self, user_info):
+        try:
+            data = {
+                'openid': self.openid,
+                'nickname': user_info.get('nickname'),
+                'gender': user_info.get('sex'),
+                'country': user_info.get('country'),
+                'province': user_info.get('province'),
+                'city': user_info.get('city'),
+                'avatar': user_info.get('headimgurl'),
+            }
+            self.user_info = user_info
+            external_user = ExternalUser(**data)
+            external_user.save()
+            self.user = external_user
+            return external_user
+        except IntegrityError:
+            raise ErrorCode.ExternalUserDuplication("用户已存在，请直接登录")
+        except Exception as e:
+            raise ErrorCode.ExternalUserException(e)
+
+    def get_user(self):
+        return ExternalUser.objects.filter(openid=self.openid).first()
+
+    def check_user_is_exits(self):
+        if self.get_user():
+            return True
+        else:
+            return False

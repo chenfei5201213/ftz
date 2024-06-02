@@ -95,3 +95,21 @@ def has_obj_perm(user, obj):
         if obj.belong_dept is not user.dept:
             return False
     return True
+
+
+class ExternalUserPermission(BasePermission):
+    """
+    基于角色的权限校验类
+    """
+
+    def has_permission(self, request, view):
+        """
+        权限校验逻辑
+        :param request:
+        :param view:
+        :return:
+        """
+        if not request.user:
+            return False
+        else:
+            return True

@@ -11,6 +11,8 @@ class ExternalUser(SoftModel):
     # 微信用户唯一标识
     openid = models.CharField(max_length=50, unique=True, null=True, blank=True,
                               help_text="微信用户唯一标识，用于身份验证和授权")
+    unionid = models.CharField(max_length=50, unique=True, null=True, blank=True,
+                               help_text="微信开放平台提供的一个唯一标识符，用于标识微信开放平台下的用户")
     # 用户昵称
     nickname = models.CharField(max_length=100, null=True, blank=True, help_text="用户的昵称，用于展示和称呼")
     # 用户头像URL
@@ -43,6 +45,9 @@ class ExternalUser(SoftModel):
 
     def __str__(self):
         return f"{self.nickname}"
+
+    def is_authenticated(self):
+        return True
 
 
 class ExternalOauth(SoftModel):

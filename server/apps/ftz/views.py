@@ -1,8 +1,11 @@
+import logging
+
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework_extensions.cache.mixins import CacheResponseMixin
 
 from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig, Survey, Question, UserResponse
 from .models import TermCourse, CourseScheduleStudent, UserStudyRecord
@@ -11,6 +14,26 @@ from .serializers import TagSerializer, StudyMaterialDetailSerializer, CardDetai
 from .serializers import EnumConfigSerializer, SurveySerializer, QuestionSerializer, UserResponseSerializer
 from .serializers import TermCourseSerializer, CourseScheduleStudentSerializer, UserStudyRecordSerializer
 from .serializers import StudyMaterialSimpleListSerializer
+from ..system.authentication import ExternalUserTokenObtainPairSerializer
+from ..user_center.models import ExternalUser
+
+logger = logging.getLogger(__name__)
+
+
+class MyTokenObtainPairView(APIView):
+    def post(self, request):
+        user = request.data.get('user')
+        logger.info(f"user: ={user}")
+        if not user:
+            return Response("参数错误", status=400)
+        _user = ExternalUser.objects.filter(id=user).first()
+        if not _user:
+            return Response("用户不存在", status=400)
+
+        # 生成JWT Token
+        token = ExternalUserTokenObtainPairSerializer.get_token(_user)
+
+        return Response({'access': str(token.access_token), 'refresh': str(token)})
 
 
 class CourseViewSet(ModelViewSet):

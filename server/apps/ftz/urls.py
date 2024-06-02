@@ -1,7 +1,8 @@
 from django.urls import path, include
 from rest_framework import routers
 
-from .views import CourseViewSet, LessonViewSet, CardViewSet, StudyMaterialViewSet, TagViewSet, EnumConfigViewSet
+from .views import CourseViewSet, LessonViewSet, CardViewSet, StudyMaterialViewSet, TagViewSet, EnumConfigViewSet, \
+    MyTokenObtainPairView
 from .views import SurveyViewSet, QuestionViewSet, UserResponseViewSet, CourseScheduleViewSet
 from .views import CourseScheduleStudentViewSet, UserStudyRecordViewSet, StudyMaterialSimpleViewSet
 
@@ -21,4 +22,5 @@ router.register('sc/user', CourseScheduleStudentViewSet, basename='user')
 router.register('sc/study_record', UserStudyRecordViewSet, basename='study_record')
 urlpatterns = [
     path('', include(router.urls)),
+    path('token/', MyTokenObtainPairView.as_view()),
 ]

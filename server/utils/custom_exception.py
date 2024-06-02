@@ -16,6 +16,10 @@ class ErrorCode(Enum):
 
     TermCourseException = 100300  # 期课未知异常
 
+    ExternalUserException = 100400  # 用户未知异常
+    ExternalUserDuplication = 100400  # 用户已存在
+
+
 
 class FtzException(Exception):
     def __init__(self, message, error_code=ErrorCode.DefaultError.value):

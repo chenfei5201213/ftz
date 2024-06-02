@@ -2,7 +2,16 @@ import requests
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
 from django.contrib.auth import get_user_model
+from rest_framework import status
+from rest_framework.authentication import BaseAuthentication
+from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.response import Response
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import UntypedToken
 
+from apps.user_center.models import ExternalUser
 from server.settings import APPID, APIV3_KEY
 
 UserModel = get_user_model()
@@ -74,3 +83,42 @@ class WeChatBackend(ModelBackend):
             user.save()
 
         return user
+
+
+class ExternalUserAuth(BaseAuthentication):
+    def authenticate(self, request):
+        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        if not auth_header:
+            return None
+
+        try:
+            token = auth_header.split(' ')[1]
+        except IndexError:
+            return None
+
+        try:
+
+            decoded_token = UntypedToken(token)
+            # decoded_token = untyped_token.decode()
+        except (TokenError, InvalidToken):
+            raise AuthenticationFailed({"detail": "token 无效或已过期"})
+        openid = decoded_token['openid']
+
+        try:
+            user = ExternalUser.objects.get(openid=openid)
+        except ExternalUser.DoesNotExist:
+            raise AuthenticationFailed({"detail": "用户不存在"})
+
+        return (user, token)
+
+
+class ExternalUserTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super(ExternalUserTokenObtainPairSerializer, cls).get_token(user)
+
+        # Add custom claims
+        token['openid'] = user.openid
+        # ...
+
+        return token
