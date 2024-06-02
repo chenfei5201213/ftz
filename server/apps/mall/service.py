@@ -1,17 +1,20 @@
 import logging
 from datetime import datetime
+import pandas as pd
 
 from django.db import IntegrityError
 from django.db.models import Count, Prefetch
+from django.utils import timezone
 from rest_framework import serializers
 
 from utils.custom_exception import ErrorCode
 from .exception import OrderException, ProductException, InsertTermContext
 from .models import Product, Order, PaymentRecord
-from .serializers import ProductSerializer, OrderSerializer, PaymentRecordSerializer, OrderDetailSerializer
-from ..ftz.models import Lesson, CourseScheduleContent, Course
+from .serializers import ProductSerializer, OrderSerializer, PaymentRecordSerializer, OrderDetailSerializer, \
+    ProductSellSerializer
+from ..ftz.models import Lesson, CourseScheduleContent, Course, TermCourse
 from ..ftz.serializers import LessonListSerializer, LessonDetailSerializer, CourseScheduleContentDetailSerializer, \
-    CourseSerializer
+    CourseSerializer, TermCourseDetailSerializer
 from ..user_center.models import ExternalUser
 from .enum_config import OrderStatus, PaymentStatus, ProductStatus, PaymentMethod, UserType, StudyStatus
 from ..user_center.service import TermCourseService
@@ -74,6 +77,34 @@ class ProductService:
         except Exception as e:
             logger.exception('创建支付记录异常')
             raise e
+
+    def selling_product(self):
+
+        # # 获取当前时间
+        now = timezone.now()
+        #
+        # # 过滤出期课即将开始到未结束的商品
+        # # 使用 Q 对象来构建复杂的查询
+        # term_courses = TermCourse.objects.filter(
+        #     # enrollment_start__lte=now,
+        #     enrollment_end__gte=now
+        # )
+        # course_ids = term_courses.values_list('course_id', flat=True).distinct()
+        # queryset = queryset.filter(course_id__in=course_ids)
+
+        course_ids = Product.objects.filter(status=ProductStatus.OnSale.value[0]).values_list('course_id',
+                                                                                              flat=True).distinct()
+        term_course = TermCourse.objects.filter(enrollment_end__gte=now, course_id__in=course_ids).all()
+        serializer = TermCourseDetailSerializer(term_course, many=True)
+        term_course_list = serializer.data
+        products = Product.objects.filter(course_id__in=course_ids).all()
+        products_serializer = ProductSellSerializer(products)
+        product_course_info = {i['course_id']: i for i in products_serializer.data}
+        for term_course_info in term_course_list:
+            term_course_info.update({
+                'product': product_course_info.get(term_course_info['course'])
+            })
+        return term_course_list
 
 
 class OrderService:
@@ -188,10 +219,32 @@ class StudyContentService:
         serializer = LessonDetailSerializer(lesson)
         study_content = CourseScheduleContent.objects.filter(lesson=lesson_id).first()
         lesson_info = serializer.data
-
+        study_card_count = 0
+        total_card_count = len(lesson_info.get("cards", []))
+        for card in lesson_info.get("cards", []):
+            _result = self.study_material_list(course_id, card.get('id'))
+            total_count = _result.get("total_count")
+            finish_count = _result.get("finish_count")
+            card.update({
+                "total_count": total_count,
+                "finish_count": finish_count,
+                "current_index": _result.get("current_index"),
+                "next_index": _result.get("next_index"),
+            })
+            if finish_count == total_count:
+                study_card_count += 1
+        cards = lesson_info.get("cards", [{}])
+        current_index = cards[study_card_count - 1]['id'] if study_card_count != 0 else cards[0]['id'],
+        if type(current_index) == tuple:
+            current_index = current_index[0]
         lesson_info.update({
             "open_time": study_content.open_time if study_content else None,
-            "study_status": self.check_study_status(study_content)
+            "study_status": self.check_study_status(study_content),
+            "total_count": total_card_count,
+            "finish_count": study_card_count,
+            "current_index": current_index,
+            "next_index": lesson_info.get("cards", [])[study_card_count].get(
+                'id') if study_card_count != 0 else current_index
         })
         return lesson_info
 
@@ -199,7 +252,33 @@ class StudyContentService:
         self.check_order_paid(course_id)
         contents = CourseScheduleContent.objects.filter(card=card_id, user=self.user_id).all()
         serializer = CourseScheduleContentDetailSerializer(contents, many=True)
-        return serializer.data
+        df = pd.DataFrame([item.__dict__ for item in contents])
+        finish_df = df[df['study_status'] > StudyStatus.IN_PROGRESS.value[0]]
+        # 筛选study_status为1的记录
+        current_df = df[df['study_status'] == StudyStatus.IN_PROGRESS.value[0]]
+        # status_2_records = current_df.reset_index(drop=True)
+
+        # 获取第一条记录
+        if current_df.empty:
+            current_index = contents[0].study_material_id
+            next_index = current_index
+        else:
+            first_record = current_df.iloc[0]
+            current_index = first_record['study_material_id']
+            next_records = df[df['study_status'] < StudyStatus.IN_PROGRESS.value[0]]
+            if next_records.empty:
+                next_index = None
+            else:
+                next_index = next_records.iloc[0]['study_material_id']
+        content_info = {}
+        content_info.update({
+            'total_count': len(contents),
+            'finish_count': len(finish_df),
+            'current_index': current_index,
+            'next_index': next_index,
+            'data': serializer.data
+        })
+        return content_info
 
     def check_study_status(self, study_content: CourseScheduleContent):
         if study_content:

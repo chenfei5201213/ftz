@@ -127,6 +127,25 @@ class TermCourseService:
         else:
             return []
 
+    def update_study_status(self, study_material_id, lesson_id, status, study_duration):
+        """
+        更新学习状态，状态不支持回退
+        """
+        course_content = CourseScheduleContent.objects.filter(user=self.user_id, lesson=lesson_id,
+                                                              study_material=study_material_id).first()
+        if course_content and course_content.study_status < status:
+            course_content.study_status = status
+            course_content.save()
+            user_study_record = UserStudyRecord(user=course_content.user, lesson_number=course_content.lesson_number,
+                                                lesson=course_content.lesson,
+                                                study_material=course_content.study_material,
+                                                study_duration=study_duration)
+            user_study_record.save()
+        else:
+            logger.info(
+                f'study_material_id: {study_material_id}, lesson_id: {lesson_id} 当前状态为：{course_content.study_status}, 目标状态：{status},不允许回退状态，默认不处理')
+        return course_content
+
 
 class ExternalUserService:
     def __init__(self, openid):

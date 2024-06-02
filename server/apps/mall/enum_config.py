@@ -36,3 +36,7 @@ class StudyStatus(Enum):
 class UserType(Enum):
     Guest = 1, "游客"
     Member = 2, "会员"
+
+
+if __name__ == '__main__':
+    print(StudyStatus.__members__)

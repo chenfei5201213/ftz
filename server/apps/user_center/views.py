@@ -14,6 +14,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenRefreshView
 
+from utils.custom_exception import FtzException
 from utils.wechat_util import WechatUtil, WechatMiniUtil
 
 from server import settings
@@ -21,7 +22,9 @@ from server import settings
 from .models import ExternalUser, ExternalOauth
 from .serializers import ExternalUserSerializer, ExternalOauthSerializer
 from .service import TermCourseService, ExternalUserService
-from ..ftz.serializers import TermCourseSerializer
+from ..ftz.serializers import TermCourseSerializer, CourseScheduleContentDetailSerializer
+from ..mall.enum_config import StudyStatus
+from ..mall.service import StudyContentService
 from ..system.authentication import ExternalUserTokenObtainPairSerializer, ExternalUserAuth
 from ..system.permission import ExternalUserPermission
 
@@ -176,9 +179,9 @@ class ExternalOauthView(ModelViewSet):
 
 
 class TermCourseContentView(APIView):
-    # permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
     authentication_classes = [ExternalUserAuth]
-    permission_classes = [ExternalUserPermission]
+    # permission_classes = [ExternalUserPermission]
 
     def post(self, request):
         user = request.data.get('user')
@@ -202,11 +205,117 @@ class StudyReportView(APIView):
     permission_classes = [ExternalUserPermission]
 
     def post(self, request):
-        user = request.user.id
-        course = request.data.get('course')
-        term_service = TermCourseService(user, course)
-        term_service.insert_student_context()
-        return Response(data='插入成功')
+        user_id = request.user.id
+        course_id = request.data.get('course_id')
+        lesson_id = request.data.get('lesson_id')
+        study_material_id = request.data.get('study_material_id')
+        study_status = request.data.get('study_status')
+        study_duration = request.data.get('study_duration', 1)
+        if study_status not in StudyStatus.__members__:
+            return Response(f"study_status: {study_status} 不在{StudyStatus.__members__}中",
+                            status=status.HTTP_400_BAD_REQUEST)
+        term_service = TermCourseService(user_id, course_id)
+
+        study_content = term_service.update_study_status(study_material_id, lesson_id,
+                                                         StudyStatus[study_status].value[0], study_duration)
+        if not study_content:
+            return Response("学习内容不存在", status.HTTP_400_BAD_REQUEST)
+        serializer = CourseScheduleContentDetailSerializer(study_content)
+        return Response(data=serializer.data)
 
 
+class MyCourseView(APIView):
+    permission_classes = [AllowAny]
+    # serializer_class = OrderSerializer
+    """
+    我的课程
+    """
 
+    def get(self, request, *args, **kwargs):
+        """
+        参数用户名，默认已支付的课程列表
+        """
+        try:
+            user_id = request.query_params.get('user_id')
+            study_service = StudyContentService(user_id)
+            data = study_service.my_course()
+            return Response(data)
+        except FtzException as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CourseLessonListView(APIView):
+    permission_classes = [AllowAny]
+    # serializer_class = OrderSerializer
+    """
+    课程对应的课时，不分页
+    """
+
+    def get(self, request, *args, **kwargs):
+        """
+        参数课程id
+        """
+        try:
+            user_id = request.query_params.get('user_id')
+            course_id = request.query_params.get('course_id')
+            study_service = StudyContentService(user_id)
+            data = study_service.course_lessons(course_id)
+            return Response(data)
+        except FtzException as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CourseLessonDetailView(APIView):
+    permission_classes = [AllowAny]
+    # serializer_class = OrderSerializer
+    """
+    单个课时详情，包含卡片信息（需要处理课时释放逻辑）
+    """
+
+    def get(self, request, *args, **kwargs):
+        """
+        参数，课时id
+        """
+        try:
+            user_id = request.query_params.get('user_id')
+            course_id = request.query_params.get('course_id')
+            lesson_id = request.query_params.get('lesson_id')
+            study_service = StudyContentService(user_id)
+            data = study_service.lesson_detail(course_id, lesson_id)
+            return Response(data)
+        except FtzException as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class StudyMaterialView(APIView):
+    permission_classes = [AllowAny]
+    # serializer_class = OrderSerializer
+    """
+    单个课时详情，包含卡片信息（需要处理前一个学习了，后一个才能查看的问题）
+    """
+
+    def get(self, request, *args, **kwargs):
+        """
+        参数，课时id
+        """
+        try:
+            user_id = request.query_params.get('user_id')
+            course_id = request.query_params.get('course_id')
+            card_id = request.query_params.get('card_id')
+            study_service = StudyContentService(user_id)
+            data = study_service.study_material_list(course_id, card_id)
+            return Response(data)
+        except FtzException as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

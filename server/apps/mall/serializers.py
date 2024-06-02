@@ -39,12 +39,10 @@ class ProductSellSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_type_description(self, obj):
-        # 返回商品类型的描述
-        return obj.get_type_display()
+        return obj.type_description
 
     def get_status_description(self, obj):
-        # 返回商品状态的描述
-        return obj.get_status_display()
+        return obj.status_description
 
     def get_term_courses(self, obj):
         # 获取与商品关联的期课信息
