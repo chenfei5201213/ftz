@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 
 from .views import ProductViewSet, OrderViewSet, PaymentRecordViewSet, OrderCreate, PaymentCreate, ProductSellViewSet, \
-    MyOrderView, SellingView
+    MyOrderView
 
 router = routers.DefaultRouter()
 router.register('product', ProductViewSet, basename='product')

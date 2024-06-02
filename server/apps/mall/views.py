@@ -123,6 +123,7 @@ class OrderCreate(APIView):
 
 class PaymentCreate(APIView):
     permission_classes = [AllowAny]
+
     # serializer_class = OrderSerializer
 
     def post(self, request, *args, **kwargs):
@@ -159,28 +160,3 @@ class MyOrderView(APIView):
         except Exception as e:
             # 捕获其他异常并返回错误响应
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class SellingView(APIView):
-    permission_classes = [AllowAny]
-    # serializer_class = OrderSerializer
-    """
-    售卖中的商品
-    """
-
-    def get(self, request, *args, **kwargs):
-        """
-        参数用户名
-        """
-        try:
-            user_id = request.query_params.get('user_id')
-            product_service = ProductService()
-            data = product_service.selling_product()
-            return Response(data)
-        except FtzException as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            # 捕获其他异常并返回错误响应
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-

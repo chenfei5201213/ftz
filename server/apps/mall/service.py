@@ -78,34 +78,6 @@ class ProductService:
             logger.exception('创建支付记录异常')
             raise e
 
-    def selling_product(self):
-
-        # # 获取当前时间
-        now = timezone.now()
-        #
-        # # 过滤出期课即将开始到未结束的商品
-        # # 使用 Q 对象来构建复杂的查询
-        # term_courses = TermCourse.objects.filter(
-        #     # enrollment_start__lte=now,
-        #     enrollment_end__gte=now
-        # )
-        # course_ids = term_courses.values_list('course_id', flat=True).distinct()
-        # queryset = queryset.filter(course_id__in=course_ids)
-
-        course_ids = Product.objects.filter(status=ProductStatus.OnSale.value[0]).values_list('course_id',
-                                                                                              flat=True).distinct()
-        term_course = TermCourse.objects.filter(enrollment_end__gte=now, course_id__in=course_ids).all()
-        serializer = TermCourseDetailSerializer(term_course, many=True)
-        term_course_list = serializer.data
-        products = Product.objects.filter(course_id__in=course_ids).all()
-        products_serializer = ProductSellSerializer(products)
-        product_course_info = {i['course_id']: i for i in products_serializer.data}
-        for term_course_info in term_course_list:
-            term_course_info.update({
-                'product': product_course_info.get(term_course_info['course'])
-            })
-        return term_course_list
-
 
 class OrderService:
     def get_order(self, order_id):
