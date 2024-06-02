@@ -290,8 +290,10 @@ class CourseLessonDetailView(APIView):
             data = study_service.lesson_detail(course_id, lesson_id)
             return Response(data)
         except FtzException as e:
+            logger.exception("异常：")
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            logger.exception("异常：")
             # 捕获其他异常并返回错误响应
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

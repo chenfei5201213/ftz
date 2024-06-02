@@ -223,6 +223,8 @@ class StudyContentService:
     def study_material_list(self, course_id, card_id):
         self.check_order_paid(course_id)
         contents = CourseScheduleContent.objects.filter(card=card_id, user=self.user_id).all()
+        if not contents:
+            return {}
         serializer = CourseScheduleContentDetailSerializer(contents, many=True)
         df = pd.DataFrame([item.__dict__ for item in contents])
         finish_df = df[df['study_status'] > StudyStatus.IN_PROGRESS.value[0]]
