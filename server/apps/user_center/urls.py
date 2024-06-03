@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 from .views import WechatLogin, WechatEchoStr, ExternalUserView, ExternalOauthView, TermCourseContentView, \
     WechatMiniLogin, UserLogin, WechatCallbackLogin, MyTokenRefreshView, StudyReportView, MyCourseView, \
-    CourseLessonListView, CourseLessonDetailView, StudyMaterialView
+    CourseLessonListView, CourseLessonDetailView, StudyMaterialView,StudyMaterialDetailView
 
 router = routers.DefaultRouter()
 router.register('user', ExternalUserView, basename='user')
@@ -21,5 +21,6 @@ urlpatterns = [
     path('my/course/lesson/', CourseLessonListView.as_view(), name='my_course_lesson'),
     path('my/course/lesson/detail/', CourseLessonDetailView.as_view(), name='my_course_lesson_detail'),
     path('my/course/lesson/material/', StudyMaterialView.as_view(), name='my_course_lesson_material'),
+    path('my/course/lesson/material_detail/', StudyMaterialDetailView.as_view(), name='my_course_lesson_material_detail'),
     # path('wx/handle/', WechatEchoStr.as_view()),
 ]

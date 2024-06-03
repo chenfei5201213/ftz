@@ -22,6 +22,7 @@ from server import settings
 from .models import ExternalUser, ExternalOauth
 from .serializers import ExternalUserSerializer, ExternalOauthSerializer
 from .service import TermCourseService, ExternalUserService
+from ..ftz.models import CourseScheduleContent
 from ..ftz.serializers import TermCourseSerializer, CourseScheduleContentDetailSerializer
 from ..mall.enum_config import StudyStatus
 from ..mall.service import StudyContentService
@@ -181,6 +182,7 @@ class ExternalOauthView(ModelViewSet):
 class TermCourseContentView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = [ExternalUserAuth]
+
     # permission_classes = [ExternalUserPermission]
 
     def post(self, request):
@@ -316,6 +318,29 @@ class StudyMaterialView(APIView):
             study_service = StudyContentService(user_id)
             data = study_service.study_material_list(course_id, card_id)
             return Response(data)
+        except FtzException as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class StudyMaterialDetailView(APIView):
+    permission_classes = [AllowAny]
+    # serializer_class = OrderSerializer
+    """
+    单个素材详情
+    """
+
+    def get(self, request, *args, **kwargs):
+        try:
+            user_id = request.query_params.get('user_id')
+            lesson_id = request.query_params.get('lesson_id')
+            study_material_id = request.query_params.get('study_material_id')
+            study_content = CourseScheduleContent.objects.filter(user=user_id, lesson=lesson_id,
+                                                                 study_material=study_material_id).first()
+            serializer = CourseScheduleContentDetailSerializer(study_content)
+            return Response(serializer.data)
         except FtzException as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:

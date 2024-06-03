@@ -241,7 +241,7 @@ class StudyContentService:
             current_index = first_record['study_material_id']
             next_records = df[df['study_status'] < StudyStatus.IN_PROGRESS.value[0]]
             if next_records.empty:
-                next_index = None
+                next_index = 0
             else:
                 next_index = next_records.iloc[0]['study_material_id']
         content_info = {}
