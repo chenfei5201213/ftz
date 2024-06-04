@@ -47,7 +47,7 @@ class CourseViewSet(ModelViewSet):
     serializer_class = CourseSerializer
     search_fields = ['title']
     ordering_fields = ['pk']
-    ordering = ['-pk']
+    ordering = ['-id']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['type']
 
@@ -72,7 +72,7 @@ class LessonViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         # 如果是根据ID查询详情，则使用详细查询序列化器
-        if self.action == 'retrieve' or self.request.query_params.get('course_id'):
+        if self.action == 'retrieve':
             return LessonDetailSerializer
         return self.serializer_class
 
