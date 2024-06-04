@@ -157,6 +157,18 @@ class StudyContentService:
                 'user_type': UserType.Guest.value[0],
                 'courses': serializer.data
             })
+        for course_info in data.get('courses'):
+            total_count = CourseScheduleContent.objects.filter(term_course__course=course_info['id'],
+                                                         user=self.user_id).count()
+            finish_count = CourseScheduleContent.objects.filter(term_course__course=course_info['id'],
+                                                                user=self.user_id,
+                                                                study_status=StudyStatus.COMPLETED.value[0]).count()
+            course_info.update({
+                'lessons': self.course_lessons(course_info['id']),
+
+                'total': total_count,
+                'finish_count': finish_count
+            })
         return data
 
     def course_lessons(self, course_id):
@@ -261,3 +273,10 @@ class StudyContentService:
         else:
             return StudyStatus.LOCKED.value[0]
         return study_content.study_status
+
+    def learning_progress(self, course_id):
+        """
+        学习进度
+        """
+        contents = CourseScheduleContent.objects.filter(term_course__course=course_id, user=self.user_id).all()
+        df = pd.DataFrame([item.__dict__ for item in contents])

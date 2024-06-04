@@ -5,11 +5,13 @@ from .views import CourseViewSet, LessonViewSet, CardViewSet, StudyMaterialViewS
     MyTokenObtainPairView
 from .views import SurveyViewSet, QuestionViewSet, UserResponseViewSet, CourseScheduleViewSet
 from .views import CourseScheduleStudentViewSet, UserStudyRecordViewSet, StudyMaterialSimpleViewSet
+from .views import CardListSimpleViewSet
 
 router = routers.DefaultRouter()
 router.register('course', CourseViewSet, basename='course')
 router.register('lesson', LessonViewSet, basename='lesson')
 router.register('card', CardViewSet, basename='card')
+router.register('card_simple', CardListSimpleViewSet, basename='card')
 router.register('material', StudyMaterialViewSet, basename='material')
 router.register('material_simple', StudyMaterialSimpleViewSet, basename='material_simple')
 router.register('tag', TagViewSet, basename='tag')

@@ -346,3 +346,26 @@ class StudyMaterialDetailView(APIView):
         except Exception as e:
             # 捕获其他异常并返回错误响应
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class LearningProgressView(APIView):
+    permission_classes = [AllowAny]
+    # serializer_class = OrderSerializer
+    """
+    单个素材详情
+    """
+
+    def get(self, request, *args, **kwargs):
+        try:
+            user_id = request.query_params.get('user_id')
+            course_id = request.query_params.get('course_id')
+            study_material_id = request.query_params.get('study_material_id')
+            study_content = CourseScheduleContent.objects.filter(user=user_id, term_course__course=course_id,
+                                                                 ).first()
+            serializer = CourseScheduleContentDetailSerializer(study_content)
+            return Response(serializer.data)
+        except FtzException as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

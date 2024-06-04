@@ -9,7 +9,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig, Survey, Question, UserResponse
 from .models import TermCourse, CourseScheduleStudent, UserStudyRecord
-from .serializers import CourseSerializer, CardListSerializer, StudyMaterialListSerializer, LessonListSerializer
+from .serializers import CourseSerializer, CardListSerializer, StudyMaterialListSerializer, LessonListSerializer, \
+    CardListSimpleSerializer
 from .serializers import TagSerializer, StudyMaterialDetailSerializer, CardDetailSerializer, LessonDetailSerializer
 from .serializers import EnumConfigSerializer, SurveySerializer, QuestionSerializer, UserResponseSerializer
 from .serializers import TermCourseSerializer, CourseScheduleStudentSerializer, UserStudyRecordSerializer
@@ -46,7 +47,7 @@ class CourseViewSet(ModelViewSet):
     serializer_class = CourseSerializer
     search_fields = ['title']
     ordering_fields = ['pk']
-    ordering = ['pk']
+    ordering = ['-pk']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['type']
 
@@ -65,7 +66,7 @@ class LessonViewSet(ModelViewSet):
     serializer_class = LessonListSerializer
     search_fields = ['title', 'version', 'course_id__title', 'group_name']
     ordering_fields = ['pk']
-    ordering = ['pk']
+    ordering = ['-pk']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['course_id', 'type']
 
@@ -86,7 +87,7 @@ class CardViewSet(ModelViewSet):
     serializer_class = CardListSerializer
     search_fields = ['title', 'group_name', 'topic']
     ordering_fields = ['pk']
-    ordering = ['pk']
+    ordering = ['-pk']
     filterset_fields = ['type', 'difficulty']
 
     def get_serializer_class(self):
@@ -94,6 +95,22 @@ class CardViewSet(ModelViewSet):
         if self.action == 'retrieve':
             return CardDetailSerializer
         return self.serializer_class
+
+
+class CardListSimpleViewSet(ModelViewSet):
+    """
+    卡片-增删改查
+    """
+    perms_map = {'get': '*', 'post': 'role_create',
+                 'put': 'role_update', 'delete': 'role_delete'}
+    queryset = Card.objects.all()
+    serializer_class = CardListSimpleSerializer
+    pagination_class = None
+    search_fields = ['title', 'group_name', 'topic']
+    ordering_fields = ['pk']
+    ordering = ['-pk']
+    filterset_fields = ['type', 'difficulty']
+
 
 
 class StudyMaterialViewSet(ModelViewSet):
@@ -106,7 +123,7 @@ class StudyMaterialViewSet(ModelViewSet):
     serializer_class = StudyMaterialListSerializer
     search_fields = ['title']
     ordering_fields = ['pk']
-    ordering = ['pk']
+    ordering = ['-pk']
     filterset_fields = ['type']
 
     def get_serializer_class(self):
@@ -126,7 +143,8 @@ class StudyMaterialSimpleViewSet(ModelViewSet):
     serializer_class = StudyMaterialSimpleListSerializer
     search_fields = ['title']
     ordering_fields = ['pk']
-    ordering = ['pk']
+    ordering = ['-pk']
+    pagination_class = None
     filterset_fields = ['type']
 
 
@@ -140,7 +158,7 @@ class TagViewSet(ModelViewSet):
     serializer_class = TagSerializer
     search_fields = ['name', 'value', 'module', 'service']
     ordering_fields = ['pk']
-    ordering = ['pk']
+    ordering = ['-pk']
 
 
 class EnumConfigViewSet(ModelViewSet):
@@ -153,7 +171,7 @@ class EnumConfigViewSet(ModelViewSet):
     serializer_class = EnumConfigSerializer
     search_fields = ['name', 'module', 'service', 'value']
     ordering_fields = ['pk']
-    ordering = ['pk']
+    ordering = ['-pk']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['module', 'service']
 
@@ -168,7 +186,7 @@ class SurveyViewSet(ModelViewSet):
     serializer_class = SurveySerializer
     search_fields = ['title', 'description']
     ordering_fields = ['pk']
-    ordering = ['pk']
+    ordering = ['-pk']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     # filterset_fields = ['module', 'service']
 
@@ -183,7 +201,7 @@ class QuestionViewSet(ModelViewSet):
     serializer_class = QuestionSerializer
     search_fields = ['question_text', 'question_type']
     ordering_fields = ['pk']
-    ordering = ['pk']
+    ordering = ['-pk']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['question_type', 'survey']
 
@@ -198,7 +216,7 @@ class UserResponseViewSet(ModelViewSet):
     serializer_class = UserResponseSerializer
     search_fields = ['user_id', 'question', 'answer']
     ordering_fields = ['pk']
-    ordering = ['pk']
+    ordering = ['-pk']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['user_id', 'survey', 'question']
 
@@ -213,7 +231,7 @@ class CourseScheduleViewSet(ModelViewSet):
     serializer_class = TermCourseSerializer
     search_fields = ['version', 'teacher', 'assistant_teacher']
     ordering_fields = ['pk']
-    ordering = ['pk']
+    ordering = ['-pk']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['course']
 
@@ -228,7 +246,7 @@ class CourseScheduleStudentViewSet(ModelViewSet):
     serializer_class = CourseScheduleStudentSerializer
     search_fields = ['user']
     ordering_fields = ['pk']
-    ordering = ['pk']
+    ordering = ['-pk']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['user']
 
@@ -243,6 +261,6 @@ class UserStudyRecordViewSet(ModelViewSet):
     serializer_class = UserStudyRecordSerializer
     search_fields = ['user']
     ordering_fields = ['pk']
-    ordering = ['pk']
+    ordering = ['-pk']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['user']

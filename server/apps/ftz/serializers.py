@@ -35,6 +35,20 @@ class LessonListSerializer(serializers.ModelSerializer):
         return obj.type_description
 
 
+class CardListSimpleSerializer(serializers.ModelSerializer):
+    """
+    卡片序列号
+    """
+    type_description = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Card
+        fields = ['id', 'title', 'type_description']
+
+    def get_type_description(self, obj):
+        return obj.type_description
+
+
 class CardListSerializer(serializers.ModelSerializer):
     """
     卡片序列号
