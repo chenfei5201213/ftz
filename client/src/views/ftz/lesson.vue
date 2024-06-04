@@ -171,7 +171,7 @@ import {getCourseList} from "@/api/course";
 import {genTree, deepClone} from "@/utils";
 import checkPermission from "@/utils/permission";
 import {getEnumConfigList} from "@/api/enum_config";
-import {getCardList} from "@/api/card";
+import {getCardSimpleList} from "@/api/card";
 
 const defaultM = {
   title: "",
@@ -239,8 +239,8 @@ export default {
   methods: {
     checkPermission,
     getCardListData() {
-      getCardList({ page: 1, page_size: 1000 }).then((response) => {
-        this.cardDataList = response.data.results
+      getCardSimpleList().then((response) => {
+        this.cardDataList = response.data;
         console.log(this.cardDataList)
       })
     },

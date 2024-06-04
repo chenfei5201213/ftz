@@ -209,7 +209,7 @@ import {genTree, deepClone} from "@/utils";
 import checkPermission from "@/utils/permission";
 import {upUrl,upHeaders} from "@/api/file";
 import {getEnumConfigList} from "@/api/enum_config";
-import {getMaterialList} from "@/api/material";
+import {getMaterialSimpleList} from "@/api/material";
 
 const defaultM = {
   title: "",
@@ -269,8 +269,8 @@ export default {
       })
     },
     getMaterialDataList() {
-      getMaterialList({page_size: 100 }).then((response) => {
-        this.materialData = response.data.results
+      getMaterialSimpleList().then((response) => {
+        this.materialData = response.data;
       })
     },
     getDifficultyList(){

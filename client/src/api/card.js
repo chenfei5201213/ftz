@@ -13,6 +13,12 @@ export function getCardList(query) {
   })
 }
 
+export function getCardSimpleList(query) {
+  return request({
+    url: '/ftz/card_simple/', method: 'get', params: query
+  })
+}
+
 export function createCard(data) {
   return request({
     url: '/ftz/card/', method: 'post', data

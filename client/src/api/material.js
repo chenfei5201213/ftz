@@ -12,6 +12,11 @@ export function getMaterialList(query) {
   })
 }
 
+export function getMaterialSimpleList(query) {
+  return request({
+    url: '/ftz/material_simple/', method: 'get', params: query
+  })
+}
 export function createMaterial(data) {
   return request({
     url: '/ftz/material/', method: 'post', data
