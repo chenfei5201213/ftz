@@ -12,6 +12,8 @@ from .models import Product, Order, PaymentRecord
 from .serializers import ProductSerializer, PaymentRecordSerializer, OrderSerializer, ProductSellSerializer
 from .service import ProductService, StudyContentService
 from ..ftz.models import TermCourse
+from ..system.authentication import ExternalUserAuth
+from ..system.permission import ExternalUserPermission
 
 
 class ProductViewSet(ModelViewSet):
@@ -104,14 +106,16 @@ class PaymentRecordViewSet(ModelViewSet):
 
 
 class OrderCreate(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
     serializer_class = OrderSerializer
     http_method_names = ['post']
 
     def post(self, request, *args, **kwargs):
         try:
+            user_id = request.user.id
             product_service = ProductService()
-            order = product_service.create_order(product_id=request.data['product'], user_id=request.data['user'])
+            order = product_service.create_order(product_id=request.data['product'], user_id=user_id)
             return Response(order, status=status.HTTP_201_CREATED)
         except FtzException as e:
             # 捕获 IntegrityError 并返回错误响应
@@ -122,7 +126,8 @@ class OrderCreate(APIView):
 
 
 class PaymentCreate(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
 
     # serializer_class = OrderSerializer
 
@@ -140,7 +145,8 @@ class PaymentCreate(APIView):
 
 
 class MyOrderView(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
     # serializer_class = OrderSerializer
     """
     我的订单
@@ -151,7 +157,7 @@ class MyOrderView(APIView):
         参数用户名
         """
         try:
-            user_id = request.query_params.get('user_id')
+            user_id = request.user.id
             study_service = StudyContentService(user_id)
             data = study_service.my_order()
             return Response(data)

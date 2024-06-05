@@ -45,6 +45,7 @@ class ProductService:
                                          status=OrderStatus.PENDING.value)
             serializer = OrderSerializer(order)
             term_service = TermCourseService(user.id, product.course.id)
+            term_service.insert_student()
             term_service.insert_student_context()
 
             return serializer.data

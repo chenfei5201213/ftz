@@ -180,20 +180,18 @@ class ExternalOauthView(ModelViewSet):
 
 
 class TermCourseContentView(APIView):
-    permission_classes = [AllowAny]
     authentication_classes = [ExternalUserAuth]
-
-    # permission_classes = [ExternalUserPermission]
+    permission_classes = [ExternalUserPermission]
 
     def post(self, request):
-        user = request.data.get('user')
+        user = request.user.id
         course = request.data.get('course')
         term_service = TermCourseService(user, course)
         term_service.insert_student_context()
         return Response(data='插入成功')
 
     def get(self, request):
-        user = request.query_params.get('user')
+        user = request.user.id
         course = request.query_params.get('course')
         term_course_id = request.query_params.get('term_course_id')
         term_service = TermCourseService(user, course)
@@ -227,8 +225,8 @@ class StudyReportView(APIView):
 
 
 class MyCourseView(APIView):
-    permission_classes = [AllowAny]
-    # serializer_class = OrderSerializer
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
     """
     我的课程
     """
@@ -238,7 +236,7 @@ class MyCourseView(APIView):
         参数用户名，默认已支付的课程列表
         """
         try:
-            user_id = request.query_params.get('user_id')
+            user_id = request.user.id
             study_service = StudyContentService(user_id)
             data = study_service.my_course()
             return Response(data)
@@ -250,8 +248,8 @@ class MyCourseView(APIView):
 
 
 class CourseLessonListView(APIView):
-    permission_classes = [AllowAny]
-    # serializer_class = OrderSerializer
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
     """
     课程对应的课时，不分页
     """
@@ -261,7 +259,7 @@ class CourseLessonListView(APIView):
         参数课程id
         """
         try:
-            user_id = request.query_params.get('user_id')
+            user_id = request.user.id
             course_id = request.query_params.get('course_id')
             study_service = StudyContentService(user_id)
             data = study_service.course_lessons(course_id)
@@ -274,8 +272,8 @@ class CourseLessonListView(APIView):
 
 
 class CourseLessonDetailView(APIView):
-    permission_classes = [AllowAny]
-    # serializer_class = OrderSerializer
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
     """
     单个课时详情，包含卡片信息（需要处理课时释放逻辑）
     """
@@ -285,7 +283,7 @@ class CourseLessonDetailView(APIView):
         参数，课时id
         """
         try:
-            user_id = request.query_params.get('user_id')
+            user_id = request.user.id
             course_id = request.query_params.get('course_id')
             lesson_id = request.query_params.get('lesson_id')
             study_service = StudyContentService(user_id)
@@ -301,8 +299,8 @@ class CourseLessonDetailView(APIView):
 
 
 class StudyMaterialView(APIView):
-    permission_classes = [AllowAny]
-    # serializer_class = OrderSerializer
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
     """
     单个课时详情，包含卡片信息（需要处理前一个学习了，后一个才能查看的问题）
     """
@@ -312,7 +310,7 @@ class StudyMaterialView(APIView):
         参数，课时id
         """
         try:
-            user_id = request.query_params.get('user_id')
+            user_id = request.user.id
             course_id = request.query_params.get('course_id')
             card_id = request.query_params.get('card_id')
             study_service = StudyContentService(user_id)
@@ -326,15 +324,15 @@ class StudyMaterialView(APIView):
 
 
 class StudyMaterialDetailView(APIView):
-    permission_classes = [AllowAny]
-    # serializer_class = OrderSerializer
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
     """
     单个素材详情
     """
 
     def get(self, request, *args, **kwargs):
         try:
-            user_id = request.query_params.get('user_id')
+            user_id = request.user.id
             lesson_id = request.query_params.get('lesson_id')
             study_material_id = request.query_params.get('study_material_id')
             study_content = CourseScheduleContent.objects.filter(user=user_id, lesson=lesson_id,
@@ -349,15 +347,15 @@ class StudyMaterialDetailView(APIView):
 
 
 class LearningProgressView(APIView):
-    permission_classes = [AllowAny]
-    # serializer_class = OrderSerializer
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
     """
     单个素材详情
     """
 
     def get(self, request, *args, **kwargs):
         try:
-            user_id = request.query_params.get('user_id')
+            user_id = request.user.id
             course_id = request.query_params.get('course_id')
             study_material_id = request.query_params.get('study_material_id')
             study_content = CourseScheduleContent.objects.filter(user=user_id, term_course__course=course_id,

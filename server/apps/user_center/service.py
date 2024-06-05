@@ -7,6 +7,7 @@ from apps.ftz.models import TermCourse, CourseScheduleStudent, CourseScheduleCon
 from datetime import datetime, timedelta
 
 from apps.ftz.serializers import CourseScheduleContentSerializer
+from apps.mall.enum_config import StudyStatus
 from apps.mall.exception import InsertTermContext
 from apps.user_center.exception import ExternalUserCreateException
 from apps.user_center.models import ExternalUser
@@ -52,7 +53,7 @@ class TermCourseService:
                 user=self.user,
                 term_course=term_course,
                 exp_time=term_course.course_end,
-                study_status=1  # todo 这里最好使用枚举值
+                study_status=StudyStatus.LOCKED.value[0]  # todo 这里最好使用枚举值
             )
 
     def insert_student_context(self):
@@ -82,7 +83,8 @@ class TermCourseService:
                                     # term_course=term_course,
                                     study_status=1,
                                     open_time=term_course.course_start + timedelta(days=lesson.lesson_number - 1),
-                                    term_course=term_course
+                                    term_course=term_course,
+                                    card=card
                                     # 设置其他必要字段，例如open_time, finish_time, study_status等
                                 )
                                 # 保存实例到数据库
