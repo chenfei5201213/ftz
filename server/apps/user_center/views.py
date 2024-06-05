@@ -79,7 +79,7 @@ class WechatMiniLogin(APIView):
 
         if not user_info:
             return Response("获取用户信息失败", status=400)
-        user_service = ExternalUserService(user_info['openid'])
+        user_service = ExternalUserService(user_info['unionid'])
         _user = user_service.get_user()
         if not _user:
             _user = user_service.save(user_info)
@@ -115,7 +115,7 @@ class WechatCallbackLogin(GenericAPIView):
         #              'privilege': []}
         if not user_info:
             return Response("获取用户信息失败", status=400)
-        user_service = ExternalUserService(user_info['openid'])
+        user_service = ExternalUserService(user_info['unionid'])
         _user = user_service.get_user()
         if not _user:
             _user = user_service.save(user_info)

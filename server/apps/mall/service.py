@@ -221,15 +221,16 @@ class StudyContentService:
         current_index = cards[study_card_count - 1]['id'] if study_card_count != 0 else cards[0]['id'],
         if type(current_index) == tuple:
             current_index = current_index[0]
-        lesson_info.update({
-            "open_time": study_content.open_time if study_content else None,
-            "study_status": self.check_study_status(study_content),
-            "total_count": total_card_count,
-            "finish_count": study_card_count,
-            "current_index": current_index,
-            "next_index": lesson_info.get("cards", [])[study_card_count].get(
-                'id') if study_card_count != 0 else current_index
-        })
+        if study_card_count:
+            lesson_info.update({
+                "open_time": study_content.open_time if study_content else None,
+                "study_status": self.check_study_status(study_content),
+                "total_count": total_card_count,
+                "finish_count": study_card_count,
+                "current_index": current_index,
+                "next_index": lesson_info.get("cards", [])[study_card_count-1].get(
+                    'id') if study_card_count != 0 else current_index
+            })
         return lesson_info
 
     def study_material_list(self, course_id, card_id):

@@ -203,7 +203,7 @@ class CourseScheduleContentSerializer(serializers.ModelSerializer):
 
 
 class CourseScheduleContentDetailSerializer(serializers.ModelSerializer):
-    study_material_info = CourseSerializer(read_only=True, source='study_material')
+    study_material_info = StudyMaterialListSerializer(read_only=True, source='study_material')
 
     class Meta:
         model = CourseScheduleContent

@@ -157,6 +157,7 @@ class ExternalUserService:
             data = {
                 'openid': self.openid,
                 'nickname': user_info.get('nickname'),
+                'unionid': user_info.get('unionid'),
                 'gender': user_info.get('sex'),
                 'country': user_info.get('country'),
                 'province': user_info.get('province'),

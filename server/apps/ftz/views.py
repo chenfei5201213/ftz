@@ -1,5 +1,6 @@
 import logging
 
+from django.db.models import Prefetch
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
@@ -70,6 +71,11 @@ class LessonViewSet(ModelViewSet):
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['course_id', 'type']
 
+    def get_queryset(self):
+        # 使用prefetch_related来获取cards的列表，并确保顺序与数据库中保存的相同
+        return Lesson.objects.prefetch_related(
+            Prefetch('cards', queryset=Card.objects.all(), to_attr='sorted_cards')
+        ).select_related('course_id')
     def get_serializer_class(self):
         # 如果是根据ID查询详情，则使用详细查询序列化器
         if self.action == 'retrieve':
