@@ -72,6 +72,9 @@ class WechatMiniLogin(APIView):
         code = request.query_params.get('code')
         logger.info(f"code: ={code}")
         code_token_redis_key = f'tk:code:{code}'
+        cache_data = cache.get(code_token_redis_key)
+        if cache_data:
+            return Response(data=cache_data)
         if not code:
             return Response("授权失败", status=400)
         wx = WechatMiniUtil()
