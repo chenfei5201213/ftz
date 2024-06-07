@@ -13,6 +13,7 @@ class ErrorCode(Enum):
     OrderDuplication = 100202  # '订单已存在'
     OrderCreateException = 100203  # '订单已存在'
     OrderNotPaidException = 10024  # '订单未支付'
+    OrderPayCreateException = 10025  # '订单未支付'
 
     TermCourseException = 100300  # 期课未知异常
 

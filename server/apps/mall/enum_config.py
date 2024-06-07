@@ -10,6 +10,7 @@ class OrderStatus(Enum):
 
 
 class PaymentStatus(Enum):
+    INIT = 'init'
     PENDING = 'pending'
     PAID = 'paid'
     FAILED = 'failed'

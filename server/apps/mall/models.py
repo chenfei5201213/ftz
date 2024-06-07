@@ -84,8 +84,7 @@ class PaymentRecord(SoftModel):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=[])
     pay_id = models.CharField(max_length=20)
-    pay_result_detail = models.TextField(max_length=512, choices=[])
-
+    pay_result_detail = models.CharField(max_length=1024, choices=[])
 
     def __init__(self, *args, **kwargs):
         super(PaymentRecord, self).__init__(*args, **kwargs)

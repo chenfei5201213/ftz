@@ -15,7 +15,7 @@ class WeChatPayService:
     def __init__(self):
         self.wxpay = self.wx_init()
 
-    def wx_inint(self):
+    def wx_init(self):
         wxpay = WeChatPay(
             wechatpay_type=WeChatPayType.NATIVE,
             mchid=MCHID,
@@ -34,9 +34,9 @@ class WeChatPayService:
 
     def create_jsapi_order(self, order: Order, user: ExternalUser):
         # 调用微信支付API创建订单
-        out_trade_no = order.uuid
+        out_trade_no = order.order_uuid
         description = order.product.name
-        amount = order.total_amount
+        amount = int(order.total_amount * 100)
         payer = {'openid': user.openid}
         code, message = self.wxpay.pay(
             description=description,
@@ -62,11 +62,11 @@ class WeChatPayService:
                 'paySign': sign
             }}
         else:
-            return {'code': -1, 'result': {'reason': result.get('code')}}
+            return {'code': -1, 'result': result}
 
-    def query_order(self, transaction_id):
+    def query_order(self, out_trade_no):
         # 查询微信支付订单状态
-        self.wxpay.query()
+        return self.wxpay.query(out_trade_no=out_trade_no)
 
     def callback(self, headers, data):
         result = self.wxpay.callback(headers, data)
@@ -84,7 +84,6 @@ class WeChatPayService:
             success_time = resp.get('success_time')
             payer = resp.get('payer')
             amount = resp.get('amount').get('total')
-            # TODO: 根据返回参数进行必要的业务处理，处理完后返回200或204
-            return {'code': 'SUCCESS', 'message': '成功'}
+            return {'code': 'SUCCESS', 'data': result}
         else:
-            return {'code': 'FAILED', 'message': '失败'}
+            return {'code': 'FAILED', 'message': '失败', 'data': result}

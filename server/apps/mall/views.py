@@ -1,3 +1,5 @@
+import json
+
 from django.db import IntegrityError
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -8,10 +10,12 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from utils.custom_exception import FtzException
+from .enum_config import PaymentStatus
 from .models import Product, Order, PaymentRecord
 from .serializers import ProductSerializer, PaymentRecordSerializer, OrderSerializer, ProductSellSerializer
 from .service import ProductService, StudyContentService
 from ..ftz.models import TermCourse
+from ..payments.services.wechat_pay import WeChatPayService
 from ..system.authentication import ExternalUserAuth
 from ..system.permission import ExternalUserPermission
 
@@ -125,7 +129,7 @@ class OrderCreate(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class PaymentCreate(APIView):
+class PayPayment(APIView):
     authentication_classes = [ExternalUserAuth]
     permission_classes = [ExternalUserPermission]
 
@@ -133,15 +137,34 @@ class PaymentCreate(APIView):
 
     def post(self, request, *args, **kwargs):
         try:
+            user = request.user
             product_service = ProductService()
-            payment_record = product_service.create_payment_record(order_id=request.data['order_id'],
-                                                                   amount=request.data['amount'])
+            order_id = request.data['order_id']
+            amount = request.data['amount']
+            payment_method = request.data['payment_method']
+            payment_record = product_service.create_payment_record(user, order_id=order_id,
+                                                                   amount=amount, payment_method=payment_method)
             return Response(payment_record)
         except FtzException as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             # 捕获其他异常并返回错误响应
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def get(self, request, *args, **kwargs):
+        order_id = request.query_params.get('order_id')
+        order = Order.objects.filter(id=order_id).first()
+        wx_pay_service = WeChatPayService()
+        out_trade_no = order.order_uuid
+        result = wx_pay_service.query_order(out_trade_no)
+        wx_code, wx_result = result
+        if wx_code == 200:
+            wx_result = json.loads(wx_result)
+            if wx_result.get('trade_state') == 'SUCCESS':
+                PaymentRecord.objects.filter(order=order_id).update(status=PaymentStatus.PAID.value)
+                order.status = PaymentStatus.PAID.value
+                order.save
+        return Response(wx_result)
 
 
 class MyOrderView(APIView):
@@ -166,3 +189,50 @@ class MyOrderView(APIView):
         except Exception as e:
             # 捕获其他异常并返回错误响应
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class OrderPayTest(APIView):
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        order_id = request.data.get('order_id')
+        order = Order.objects.filter(id=order_id).first()
+        wx_pay_service = WeChatPayService()
+        result = wx_pay_service.create_jsapi_order(order, user)
+        return Response(result)
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        order_id = request.query_params.get('order_id')
+        order = Order.objects.filter(id=order_id).first()
+        wx_pay_service = WeChatPayService()
+        out_trade_no = order.order_uuid
+        result = wx_pay_service.query_order(out_trade_no)
+        wx_code, wx_result = result
+        if wx_code == 200:
+            wx_result = json.loads(wx_result)
+            if wx_result.get('trade_state') == 'SUCCESS':
+                PaymentRecord.objects.filter(order=order_id).update(status=PaymentStatus.PAID.value)
+                order.status = PaymentStatus.PAID.value
+                order.save
+        return Response(wx_result)
+
+
+class WxPayNotify(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request, *args, **kwargs):
+        wx_pay_service = WeChatPayService()
+        _result = wx_pay_service.callback(request.headers, request.data)
+        # _result = {'code': 'SUCCESS', 'data': {'resource':{'transaction_id': 'wx07154418608943b9047bfe2a04a8a60000'}}}
+        if _result.get('code') == 'SUCCESS':
+            result = _result['data']['resource']
+            transaction_id = result.get('transaction_id')
+            pay_record = PaymentRecord.objects.filter(pay_id=transaction_id).first()
+            pay_record.status = PaymentStatus.PAID.value
+            pay_record.order.status=PaymentStatus.PAID.value
+            pay_record.save()
+            # 更新支付记录和订单状态
+            return Response({'code': 'SUCCESS', 'message': '成功'})
+        return Response({'code': 'FAILED', 'message': '失败'})

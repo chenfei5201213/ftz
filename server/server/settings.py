@@ -302,7 +302,7 @@ MINIAPP_KEY = '9d277900d826618a74dc35e323e14393'
 
 
 # 回调地址，也可以在调用接口的时候覆盖
-NOTIFY_URL = 'https://www.xxxx.com/notify'
+NOTIFY_URL = 'http://www.ngsmq.online.com/api/mall/pay/wx/notify/'
 
 # 微信支付平台证书缓存目录，减少证书下载调用次数，首次使用确保此目录为空目录.
 # 初始调试时可不设置，调试通过后再设置，示例值:'./cert'

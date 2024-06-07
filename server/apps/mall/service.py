@@ -1,4 +1,5 @@
 import logging
+import uuid
 from datetime import datetime
 import pandas as pd
 
@@ -8,13 +9,14 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from utils.custom_exception import ErrorCode
-from .exception import OrderException, ProductException, InsertTermContext
+from .exception import OrderException, ProductException, InsertTermContext, OrderPayException
 from .models import Product, Order, PaymentRecord
 from .serializers import ProductSerializer, OrderSerializer, PaymentRecordSerializer, OrderDetailSerializer, \
     ProductSellSerializer
 from ..ftz.models import Lesson, CourseScheduleContent, Course, TermCourse
 from ..ftz.serializers import LessonListSerializer, LessonDetailSerializer, CourseScheduleContentDetailSerializer, \
     CourseSerializer, TermCourseDetailSerializer
+from ..payments.services.wechat_pay import WeChatPayService
 from ..user_center.models import ExternalUser
 from .enum_config import OrderStatus, PaymentStatus, ProductStatus, PaymentMethod, UserType, StudyStatus
 from ..user_center.service import TermCourseService
@@ -41,7 +43,15 @@ class ProductService:
             total_amount = product.price * count
             # todo 添加期课学员；然后在支付成功入口生成期课内容表
             # 创建订单
-            order = Order.objects.create(user=user, product=product, total_amount=total_amount,
+            full_uuid = uuid.uuid4()
+
+            # 提取UUID的一部分作为32位字符串
+            # 这里我们取UUID的前16个字符和后16个字符组合
+            uuid_32bit = str(full_uuid)[:16] + str(full_uuid)[16:32]
+            order = Order.objects.create(user=user,
+                                         product=product,
+                                         total_amount=total_amount,
+                                         order_uuid=uuid_32bit,
                                          status=OrderStatus.PENDING.value)
             serializer = OrderSerializer(order)
             term_service = TermCourseService(user.id, product.course.id)
@@ -62,16 +72,29 @@ class ProductService:
             logger.exception(f'创建订单异常')
             raise e
 
-    def create_payment_record(self, order_id, amount, payment_method=PaymentMethod.WECHAT.value):
+    def create_payment_record(self, user: ExternalUser, order_id, amount, payment_method=PaymentMethod.WECHAT.value):
         try:
             # 获取订单信息
             order = Order.objects.get(id=order_id)
-            # 创建支付记录
-            payment_record = PaymentRecord.objects.create(order=order, payment_method=payment_method, amount=amount,
-                                                          status=PaymentStatus.PENDING.value)
+            if payment_method == PaymentMethod.WECHAT.value:
+                wx_pay_service = WeChatPayService()
+                result = wx_pay_service.create_jsapi_order(order, user)
+
+                if result.get('code') == 0:
+                    # 创建支付记录
+                    payment_record = PaymentRecord.objects.create(order=order,
+                                                                  payment_method=payment_method,
+                                                                  amount=amount,
+                                                                  status=PaymentStatus.INIT.value)
+
+                    payment_record.status = PaymentStatus.PENDING.value
+                    payment_record.pay_result_detail = result
+                    payment_record.pay_id = result['result']['package'].split('=')[1]
+                    payment_record.save()
+                else:
+                    raise OrderPayException('支付订单创建失败', ErrorCode.OrderPayCreateException.value)
             # 返回支付记录信息
             serializer = PaymentRecordSerializer(payment_record)
-            # todo 调用 公众号下单
             return serializer.data
         except Order.DoesNotExist:
             raise OrderException('订单不存在', ErrorCode.OrderNotExit.value)
@@ -160,7 +183,7 @@ class StudyContentService:
             })
         for course_info in data.get('courses'):
             total_count = CourseScheduleContent.objects.filter(term_course__course=course_info['id'],
-                                                         user=self.user_id).count()
+                                                               user=self.user_id).count()
             finish_count = CourseScheduleContent.objects.filter(term_course__course=course_info['id'],
                                                                 user=self.user_id,
                                                                 study_status=StudyStatus.COMPLETED.value[0]).count()
@@ -229,7 +252,7 @@ class StudyContentService:
                 "total_count": total_card_count,
                 "finish_count": study_card_count,
                 "current_index": current_index,
-                "next_index": lesson_info.get("cards", [])[study_card_count-1].get(
+                "next_index": lesson_info.get("cards", [])[study_card_count - 1].get(
                     'id') if study_card_count != 0 else current_index
             })
         return lesson_info
