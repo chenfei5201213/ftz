@@ -10,7 +10,9 @@ class ExternalUser(SoftModel):
 
     # 微信用户唯一标识
     openid = models.CharField(max_length=50, unique=True, null=True, blank=True,
-                              help_text="微信用户唯一标识，用于身份验证和授权")
+                              help_text="微信公众号用户唯一标识，用于身份验证和授权")
+    mini_openid = models.CharField(max_length=50, unique=True, null=True, blank=True,
+                                   help_text="微信小程序用户唯一标识，用于身份验证和授权")
     unionid = models.CharField(max_length=50, unique=True, null=True, blank=True,
                                help_text="微信开放平台提供的一个唯一标识符，用于标识微信开放平台下的用户")
     # 用户昵称

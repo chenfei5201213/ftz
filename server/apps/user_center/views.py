@@ -66,6 +66,7 @@ class WechatLogin(APIView):
 
 
 class WechatMiniLogin(APIView):
+    """小程序登录接口"""
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -82,16 +83,19 @@ class WechatMiniLogin(APIView):
 
         if not user_info:
             return Response("获取用户信息失败", status=400)
+        user_info['mini_openid'] = user_info.pop('openid')
         user_service = ExternalUserService(user_info['unionid'])
         _user = user_service.get_user()
         if not _user:
             _user = user_service.save(user_info)
-
-        # 生成JWT Token
-        token = ExternalUserTokenObtainPairSerializer.get_token(_user)
-        result = {'access': str(token.access_token), 'refresh': str(token)}
-        cache.set(code_token_redis_key, result, timeout=7200)
-        return Response({'access': str(token.access_token), 'refresh': str(token)})
+        else:
+            _user.mini_openid = user_info.get('mini_openid')
+            _user.save()
+        token_result = gen_token(_user, code, user_info['unionid'])
+        serializer = ExternalUserSerializer(_user)
+        data = {"user": serializer.data}
+        data.update(token_result)
+        return Response(data)
 
 
 class WechatCallbackLogin(GenericAPIView):
@@ -112,22 +116,33 @@ class WechatCallbackLogin(GenericAPIView):
             return Response(data=access_token_data)
         logger.info(f"access_token_data: {access_token_data}")
         user_info = WechatUtil.get_user_info(access_token_data['access_token'], access_token_data['openid'])
-        # user_info = {'openid': 'o77756JY-IHm6zh-Ez3HVsLJIKvB', 'nickname': 'é£\x8eä¸\xadéª\x84å\xad\x90', 'sex': 0,
-        #              'language': '', 'city': '', 'province': '', 'country': '',
-        #              'headimgurl': 'https://thirdwx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTLjpEibWYayXiaIQzqv4QLlkGmJf4iaU1G8A3gzEeohlJyoA8YX0Rsbx5685HlIpFeWTgV661FFXqPdA/132',
-        #              'privilege': []}
         if not user_info:
             return Response("获取用户信息失败", status=400)
         user_service = ExternalUserService(user_info['unionid'])
         _user = user_service.get_user()
         if not _user:
             _user = user_service.save(user_info)
+        else:
+            _user.openid = user_info.get('openid')
+            _user.save()
+        token_result = gen_token(_user, code, user_info["unionid"])
 
-        # 生成JWT Token
-        token = ExternalUserTokenObtainPairSerializer.get_token(_user)
-        result = {'access': str(token.access_token), 'refresh': str(token)}
-        cache.set(code_token_redis_key, result, timeout=7200)
-        return Response({'access': str(token.access_token), 'refresh': str(token)})
+        serializer = ExternalUserSerializer(_user)
+        data = {"user": serializer.data}
+        data.update(token_result)
+        return Response(data)
+
+
+def gen_token(user: ExternalUser, code, unionid):
+    tk_code_key = f'tk:code:{code}'
+    tk_unionid_key = f'tk:unionid:{unionid}'
+    token_result = cache.get(tk_unionid_key)
+    if not token_result:
+        token = ExternalUserTokenObtainPairSerializer.get_token(user)
+        token_result = {'access': str(token.access_token), 'refresh': str(token)}
+        cache.set(tk_code_key, token_result, timeout=7200)
+        cache.set(tk_unionid_key, token_result, timeout=7200)
+    return token_result
 
 
 class WechatEchoStr(APIView):

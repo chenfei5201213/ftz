@@ -150,14 +150,14 @@ class TermCourseService:
 
 
 class ExternalUserService:
-    def __init__(self, openid):
-        self.openid = openid
+    def __init__(self, unionid):
+        self.unionid = unionid
         self.user_info = {}
 
     def save(self, user_info):
         try:
             data = {
-                'openid': self.openid,
+                'openid': user_info.get('openid'),
                 'nickname': user_info.get('nickname'),
                 'unionid': user_info.get('unionid'),
                 'gender': user_info.get('sex'),
@@ -177,7 +177,7 @@ class ExternalUserService:
             raise ErrorCode.ExternalUserException(e)
 
     def get_user(self):
-        return ExternalUser.objects.filter(openid=self.openid).first()
+        return ExternalUser.objects.filter(unionid=self.unionid).first()
 
     def check_user_is_exits(self):
         if self.get_user():
