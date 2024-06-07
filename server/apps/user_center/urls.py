@@ -2,11 +2,13 @@ from django.urls import path, include
 from rest_framework import routers
 from .views import WechatLogin, WechatEchoStr, ExternalUserView, ExternalOauthView, TermCourseContentView, \
     WechatMiniLogin, UserLogin, WechatCallbackLogin, MyTokenRefreshView, StudyReportView, MyCourseView, \
-    CourseLessonListView, CourseLessonDetailView, StudyMaterialView,StudyMaterialDetailView,LearningProgressView
+    CourseLessonListView, CourseLessonDetailView, StudyMaterialView, StudyMaterialDetailView, LearningProgressView, \
+    FileViewSet
 
 router = routers.DefaultRouter()
 router.register('user', ExternalUserView, basename='user')
 router.register('auth', ExternalOauthView, basename='auth')
+router.register('file', FileViewSet, basename='file')
 urlpatterns = [
     path('', include(router.urls)),
     path('login/', UserLogin.as_view()),

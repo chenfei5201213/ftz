@@ -3,10 +3,12 @@ import logging
 
 from django.core.cache import cache
 from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, RetrieveModelMixin
+from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import AllowAny
 from django.http import HttpResponse, HttpResponseBadRequest
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.views import APIView
 from rest_framework import filters, status
 from rest_framework import generics
@@ -27,7 +29,9 @@ from ..ftz.serializers import TermCourseSerializer, CourseScheduleContentDetailS
 from ..mall.enum_config import StudyStatus
 from ..mall.service import StudyContentService
 from ..system.authentication import ExternalUserTokenObtainPairSerializer, ExternalUserAuth
+from ..system.models import File
 from ..system.permission import ExternalUserPermission
+from ..system.serializers import FileSerializer
 
 logger = logging.getLogger('__name__')
 
@@ -368,20 +372,52 @@ class LearningProgressView(APIView):
     authentication_classes = [ExternalUserAuth]
     permission_classes = [ExternalUserPermission]
     """
-    单个素材详情
+    学习进度
     """
 
     def get(self, request, *args, **kwargs):
         try:
             user_id = request.user.id
             course_id = request.query_params.get('course_id')
-            study_material_id = request.query_params.get('study_material_id')
-            study_content = CourseScheduleContent.objects.filter(user=user_id, term_course__course=course_id,
-                                                                 ).first()
-            serializer = CourseScheduleContentDetailSerializer(study_content)
-            return Response(serializer.data)
+            card_id = request.query_params.get('card_id')
+            study_service = StudyContentService(user_id)
+            data = study_service.learning_progress(course_id)
+            return Response(data)
         except FtzException as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             # 捕获其他异常并返回错误响应
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class FileViewSet(CreateModelMixin, DestroyModelMixin, RetrieveModelMixin, ListModelMixin, GenericViewSet):
+    """
+    文件上传用
+    """
+    perms_map = None
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+    parser_classes = [MultiPartParser, JSONParser]
+    queryset = File.objects.all()
+    serializer_class = FileSerializer
+    filterset_fields = ['type']
+    search_fields = ['name']
+    ordering = ['-create_time']
+
+    def perform_create(self, serializer):
+        fileobj = self.request.data.get('file')
+        name = fileobj._name
+        size = fileobj.size
+        mime = fileobj.content_type
+        type = '其它'
+        if 'image' in mime:
+            type = '图片'
+        elif 'video' in mime:
+            type = '视频'
+        elif 'audio' in mime:
+            type = '音频'
+        elif 'application' or 'text' in mime:
+            type = '文档'
+        instance = serializer.save(create_by=self.request.user, name=name, size=size, type=type, mime=mime)
+        instance.path = settings.MEDIA_URL + instance.file.name
+        instance.save()
