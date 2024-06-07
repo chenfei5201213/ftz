@@ -2,11 +2,15 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.system.authentication import ExternalUserAuth
+from apps.system.permission import ExternalUserPermission
 from suntone_ise_cn_python.ai_voice import recognize_audio
 
 
 # Create your views here.
 class AiVoiceViewSet(APIView):
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
     def get(self, request):
         query_params = request.query_params
         file_path = query_params.get('file_path')
