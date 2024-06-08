@@ -145,6 +145,21 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/ftz/mall',
+    component: Layout,
+    redirect: '/ftz/mall/product/',
+    name: 'new',
+    meta: { title: '商品列表', icon: 'example', perms: ['course_manage'] },
+    children: [
+      {
+        path: 'product',
+        name: 'product',
+        component: () => import('@/views/ftz/product.vue'),
+        meta: { title: '商品列表', icon: 'example', perms: ['workflow_index'] }
+      },
+    ]
+  },
+  {
     path: '/ftz/sc',
     component: Layout,
     redirect: '/ftz/sc/course/',
