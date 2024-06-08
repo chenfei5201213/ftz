@@ -46,7 +46,7 @@ class ExternalUser(SoftModel):
     password = models.CharField(max_length=128, null=True, blank=True, help_text="用户密码，用于登录和身份识别")
 
     def __str__(self):
-        return f"{self.nickname}"
+        return f"{self.nickname}" or f"{self.id}"
 
     def is_authenticated(self):
         return True

@@ -22,9 +22,15 @@ class ProductStatus(Enum):
     OffSale = ('2', '下架')
 
 
+class ProductType(Enum):
+    STANDARD = ('1', '正价商品')
+    FREE = ('2', '0元赠品')
+
+
 class PaymentMethod(Enum):
     WECHAT = 'wechat'
     ALIPAY = 'alipay'
+    FREE = 'free'
 
 
 class StudyStatus(Enum):

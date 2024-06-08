@@ -7,7 +7,7 @@ class ErrorCode(Enum):
     ProductException = 100100  # '商品未知异常'
     ProductNotExit = 100101  # '商品不存在'
     ProductOff = 100102  # '商品已下线'
-
+    ProductNotFree = 100103  # 非特价商品
     OrderException = 100200  # '订单未知异常'
     OrderNotExit = 100201  # '订单不存在'
     OrderDuplication = 100202  # '订单已存在'
@@ -19,7 +19,6 @@ class ErrorCode(Enum):
 
     ExternalUserException = 100400  # 用户未知异常
     ExternalUserDuplication = 100400  # 用户已存在
-
 
 
 class FtzException(Exception):

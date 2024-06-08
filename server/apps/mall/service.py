@@ -1,25 +1,18 @@
 import logging
 import uuid
-from datetime import datetime
-import pandas as pd
 
 from django.db import IntegrityError
-from django.db.models import Count, Prefetch
-from django.utils import timezone
-from rest_framework import serializers
 
 from utils.custom_exception import ErrorCode
 from .exception import OrderException, ProductException, InsertTermContext, OrderPayException
 from .models import Product, Order, PaymentRecord
-from .serializers import ProductSerializer, OrderSerializer, PaymentRecordSerializer, OrderDetailSerializer, \
-    ProductSellSerializer
-from ..ftz.models import Lesson, CourseScheduleContent, Course, TermCourse
-from ..ftz.serializers import LessonListSerializer, LessonDetailSerializer, CourseScheduleContentDetailSerializer, \
-    CourseSerializer, TermCourseDetailSerializer
+from .serializers import ProductSerializer, OrderSerializer, PaymentRecordSerializer
+from ..ftz.service import TermCourseService
+
 from ..payments.services.wechat_pay import WeChatPayService
 from ..user_center.models import ExternalUser
 from .enum_config import OrderStatus, PaymentStatus, ProductStatus, PaymentMethod, UserType, StudyStatus
-from ..user_center.service import TermCourseService
+
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +34,6 @@ class ProductService:
                 raise ProductException("商品不存在或者已下架", ErrorCode.ProductOff.value)
             user = ExternalUser.objects.get(id=user_id)
             total_amount = product.price * count
-            # todo 添加期课学员；然后在支付成功入口生成期课内容表
             # 创建订单
             full_uuid = uuid.uuid4()
 
@@ -93,6 +85,13 @@ class ProductService:
                     payment_record.save()
                 else:
                     raise OrderPayException('支付订单创建失败', ErrorCode.OrderPayCreateException.value)
+            elif payment_method == PaymentMethod.FREE.value:
+                payment_record = PaymentRecord.objects.create(order=order,
+                                                              payment_method=payment_method,
+                                                              amount=0,
+                                                              status=PaymentStatus.PAID.value)
+                order.status = OrderStatus.PAID.value
+                order.save()
             # 返回支付记录信息
             serializer = PaymentRecordSerializer(payment_record)
             return serializer.data

@@ -23,13 +23,14 @@ from server import settings
 
 from .models import ExternalUser, ExternalOauth
 from .serializers import ExternalUserSerializer, ExternalOauthSerializer
-from .service import TermCourseService, ExternalUserService
+from .service import ExternalUserService
 from ..ftz.models import CourseScheduleContent
 from ..ftz.serializers import TermCourseSerializer, CourseScheduleContentDetailSerializer
+from ..ftz.service import TermCourseService
 from ..mall.enum_config import StudyStatus
 from .service import StudyContentService
 from ..system.authentication import ExternalUserTokenObtainPairSerializer, ExternalUserAuth
-from ..system.models import File
+from ..system.models import File, User
 from ..system.permission import ExternalUserPermission
 from ..system.serializers import FileSerializer
 
@@ -338,7 +339,7 @@ class StudyMaterialDetailView(APIView):
                                                                  study_material=study_material_id).first()
             study_content_info = CourseScheduleContentDetailSerializer(study_content).data
             study_service = StudyContentService(user_id)
-            card = study_service.card_study_progress(study_content.card)
+            card = study_service.card_study_progress(study_content.card, study_content.lesson)
             study_content_info['card'] = card
             return Response(study_content_info)
         except FtzException as e:
@@ -400,6 +401,29 @@ class FileViewSet(CreateModelMixin, DestroyModelMixin, RetrieveModelMixin, ListM
             type = '音频'
         elif 'application' or 'text' in mime:
             type = '文档'
-        instance = serializer.save(create_by=self.request.user, name=name, size=size, type=type, mime=mime)
+
+        user = User.objects.first()
+        instance = serializer.save(create_by=user, name=name, size=size, type=type, mime=mime)
         instance.path = settings.MEDIA_URL + instance.file.name
         instance.save()
+
+
+class FreeCourse(APIView):
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+
+    def post(self, request, *args, **kwargs):
+        """免费课程领取"""
+        try:
+            user = request.user
+            free_product_id = request.data.get('free_product_id')
+            study_service = StudyContentService(user.id)
+            data = study_service.receive_free_product(free_product_id)
+            return Response(data)
+        except FtzException as e:
+            logger.exception(f'内部错误：')
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            logger.exception(f'领取课程异常')
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

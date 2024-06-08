@@ -1,9 +1,5 @@
 import logging
-from collections import defaultdict
-
-import pandas as pd
 from django.db import IntegrityError
-from django.db.models import Prefetch
 
 from apps.ftz.models import TermCourse, CourseScheduleStudent, CourseScheduleContent, UserStudyRecord, StudyMaterial, \
     Course, Lesson, Card
@@ -12,148 +8,15 @@ from datetime import datetime, timedelta
 from apps.ftz.serializers import CourseScheduleContentSerializer, CourseScheduleContentDetailSerializer, \
     LessonDetailSerializer, LessonListSerializer, CourseSerializer, LessonDetailSimpleListSerializer, \
     CardDetailSimpleSerializer
-from apps.mall.enum_config import StudyStatus, UserType, OrderStatus
-from apps.mall.exception import InsertTermContext
-from apps.mall.models import Order
+from apps.mall.enum_config import StudyStatus, UserType, OrderStatus, ProductType, PaymentMethod
+from apps.mall.exception import InsertTermContext, OrderException
+from apps.mall.models import Order, Product
 from apps.mall.serializers import OrderDetailSerializer
-from apps.user_center.exception import ExternalUserCreateException
+from apps.mall.service import ProductService
 from apps.user_center.models import ExternalUser
-from apps.user_center.serializers import ExternalUserSerializer
 from utils.custom_exception import ErrorCode
 
 logger = logging.getLogger(__name__)
-
-
-class TermCourseService:
-    def __init__(self, user_id, course_id):
-        self.user_id = user_id
-        self.course_id = course_id
-        self.init()
-
-    def init(self):
-        self.user = ExternalUser.objects.get(id=self.user_id)
-        self.course = Course.objects.get(id=self.course_id)
-        pass
-
-    def get_only_term(self):
-        """
-        获取最近一个正在售卖的期课
-        """
-        now = datetime.now()
-        try:
-            term_course = TermCourse.objects.filter(
-                course=self.course,
-                enrollment_start__lte=now,
-                enrollment_end__gte=now,
-            ).first()
-            return term_course
-        except TermCourse.DoesNotExist:
-            return None
-
-    def insert_student(self):
-        """
-        插入期课学员
-        """
-        term_course = self.get_only_term()
-        if term_course:
-            CourseScheduleStudent.objects.create(
-                user=self.user,
-                term_course=term_course,
-                exp_time=term_course.course_end,
-                study_status=StudyStatus.LOCKED.value[0]  # todo 这里最好使用枚举值
-            )
-
-    def insert_student_context(self):
-        """
-        插入期课学习内容
-        """
-        try:
-            term_course = self.get_only_term()
-            if term_course:
-                # 假设您已经有一个方法来获取与term_course相关的课时列表
-                lessons = self.get_lessons_for_term_course(term_course)
-                for lesson in lessons:
-                    # 获取与课时关联的卡片
-                    cards = lesson.cards.all()
-                    # 为每个卡片选择或创建一个学习素材
-                    for card in cards:
-                        # 假设每个卡片都有一个关联的学习素材
-                        study_materials = card.study_materials.all()
-                        for study_material in study_materials:
-                            if study_material:
-                                # 创建CourseScheduleContent实例
-                                content = CourseScheduleContent(
-                                    user=self.user,
-                                    lesson_number=lesson.lesson_number,
-                                    lesson=lesson,
-                                    study_material=study_material,
-                                    # term_course=term_course,
-                                    study_status=1,
-                                    open_time=term_course.course_start + timedelta(days=lesson.lesson_number - 1),
-                                    term_course=term_course,
-                                    card=card
-                                    # 设置其他必要字段，例如open_time, finish_time, study_status等
-                                )
-                                # 保存实例到数据库
-                                content.save()
-        except Exception as e:
-            logger.exception(f"插入期课内容异常")
-            raise InsertTermContext("插入期课内容异常", ErrorCode.TermCourseException.value)
-
-    def get_lessons_for_term_course(self, term_course):
-        """
-        获取指定期课的所有课时，并按照lesson_number升序排列
-        """
-        # 根据term_course来查询课时，并按照lesson_number升序排列
-        lessons = Lesson.objects.filter(course_id=term_course.course).order_by('lesson_number')
-        return lessons
-
-    def get_study_material(self, lesson_number):
-        """
-        获取学习素材，根据课时序号排序
-        """
-        term_course = self.get_only_term()
-        if term_course:
-            study_materials = StudyMaterial.objects.filter(
-                courseschedulecontent__term_course=term_course,
-                courseschedulecontent__lesson_number=lesson_number
-            ).order_by('courseschedulecontent__lesson_number')
-            return study_materials
-        return []
-
-    def get_term_course_content(self, term_course_id=None):
-        if term_course_id:
-            term_course = TermCourse.objects.filter(id=term_course_id).first()
-        else:
-            term_course = self.get_only_term()
-        if term_course:
-            term_course_content = CourseScheduleContent.objects.filter(user=self.user,
-                                                                       term_course=term_course).all()
-
-            serializer = CourseScheduleContentSerializer(term_course_content, many=True)
-
-            return serializer.data
-        else:
-            return []
-
-    def update_study_status(self, study_material_id, lesson_id, status, study_duration):
-        """
-        更新学习状态，状态不支持回退
-        """
-        course_content = CourseScheduleContent.objects.filter(user=self.user_id, lesson=lesson_id,
-                                                              study_material=study_material_id).first()
-        if course_content and course_content.study_status < status:
-            course_content.study_status = status
-            course_content.save()
-            user_study_record = UserStudyRecord(user=course_content.user, lesson_number=course_content.lesson_number,
-                                                lesson=course_content.lesson,
-                                                study_material=course_content.study_material,
-                                                study_duration=study_duration)
-            user_study_record.save()
-        else:
-            logger.info(
-                f'study_material_id: {study_material_id}, lesson_id: {lesson_id} 当前状态为：{course_content.study_status}, 目标状态：{status},不允许回退状态，默认不处理')
-        return course_content
 
 
 class ExternalUserService:
@@ -165,6 +28,7 @@ class ExternalUserService:
         try:
             data = {
                 'openid': user_info.get('openid'),
+                'mini_openid': user_info.get('mini_openid'),
                 'nickname': user_info.get('nickname'),
                 'unionid': user_info.get('unionid'),
                 'gender': user_info.get('sex'),
@@ -176,6 +40,8 @@ class ExternalUserService:
             self.user_info = user_info
             external_user = ExternalUser(**data)
             external_user.save()
+            study_service = StudyContentService(external_user.id)
+            study_service.receive_free_product(is_auto=True)
             self.user = external_user
             return external_user
         except IntegrityError:
@@ -303,11 +169,11 @@ class StudyContentService:
 
                 if contents_dict.get(study_material)['study_status'] > StudyStatus.IN_PROGRESS.value[0]:
                     study_progress['finish_count'] += 1
-            study_progress['current_index'] = card['study_materials'][study_progress['finish_count']]
+            study_progress['current_index'] = card['study_materials'][max(study_progress['finish_count'] - 1, 0)]
 
             if study_progress['total_count'] != study_progress['finish_count']:
                 study_progress['next_index'] = \
-                card['study_materials'][min(study_progress['finish_count'] + 1, study_progress['total_count'] - 1)]
+                    card['study_materials'][min(study_progress['finish_count'], study_progress['total_count'] - 1)]
             card['study_progress'] = study_progress
             if study_progress['total_count'] == study_progress['finish_count']:
                 card['study_status'] = StudyStatus.COMPLETED.value[0]
@@ -316,11 +182,12 @@ class StudyContentService:
                 card['study_status'] = StudyStatus.IN_PROGRESS.value[0]
             else:
                 card['study_status'] = StudyStatus.UNLOCKED.value[0]
-        lesson_study_progress['current_index'] = lesson['cards'][lesson_study_progress['finish_count']]['id']
+        lesson_study_progress['current_index'] = lesson['cards'][max(lesson_study_progress['finish_count'] - 1, 0)][
+            'id']
 
         if lesson_study_progress['total_count'] != lesson_study_progress['finish_count']:
             lesson_study_progress['next_index'] = \
-            lesson['cards'][min(lesson_study_progress['finish_count'] + 1, study_progress['total_count'] - 1)]['id']
+                lesson['cards'][min(lesson_study_progress['finish_count'], study_progress['total_count'] - 1)]['id']
         card['study_progress'] = study_progress
         if lesson_study_progress['total_count'] == lesson_study_progress['finish_count']:
             lesson['study_status'] = StudyStatus.COMPLETED.value[0]
@@ -331,9 +198,10 @@ class StudyContentService:
 
         return lesson
 
-    def card_study_progress(self, card_obj: Card):
+    def card_study_progress(self, card_obj: Card, lesson: Lesson):
         card = CardDetailSimpleSerializer(card_obj).data
-        study_content = CourseScheduleContent.objects.filter(card=card_obj.id, user=self.user_id).all()
+        study_content = CourseScheduleContent.objects.filter(card=card_obj.id, user=self.user_id,
+                                                             lesson=lesson.id).all()
         contents = CourseScheduleContentSerializer(study_content, many=True).data
         contents_dict = {i['study_material']: i for i in contents}
         study_progress = {
@@ -347,11 +215,11 @@ class StudyContentService:
 
             if contents_dict.get(study_material['id'])['study_status'] > StudyStatus.IN_PROGRESS.value[0]:
                 study_progress['finish_count'] += 1
-        study_progress['current_index'] = card['study_materials'][study_progress['finish_count']]
+        study_progress['current_index'] = card['study_materials'][max(study_progress['finish_count'] - 1, 0)]
 
         if study_progress['total_count'] != study_progress['finish_count']:
             study_progress['next_index'] = \
-                card['study_materials'][min(study_progress['finish_count'] + 1, study_progress['total_count'] - 1)]
+                card['study_materials'][min(study_progress['finish_count'], study_progress['total_count'] - 1)]
         card['study_progress'] = study_progress
         if study_progress['total_count'] == study_progress['finish_count']:
             card['study_status'] = StudyStatus.COMPLETED.value[0]
@@ -399,10 +267,13 @@ class StudyContentService:
 
                     if contents_dict.get(study_material['id'])['study_status'] > StudyStatus.IN_PROGRESS.value[0]:
                         study_progress['finish_count'] += 1
-                study_progress['current_index'] = card['study_materials'][study_progress['finish_count']]['id']
+                study_progress['current_index'] = card['study_materials'][max(study_progress['finish_count'] - 1, 0)][
+                    'id']
 
                 if study_progress['total_count'] != study_progress['finish_count']:
-                    study_progress['next_index'] = card['study_materials'][min(study_progress['finish_count'] + 1, study_progress['total_count']-1)]['id']
+                    study_progress['next_index'] = \
+                        card['study_materials'][min(study_progress['finish_count'], study_progress['total_count'] - 1)][
+                            'id']
                 card['study_progress'] = study_progress
                 if study_progress['total_count'] == study_progress['finish_count']:
                     card['study_status'] = StudyStatus.COMPLETED.value[0]
@@ -411,10 +282,12 @@ class StudyContentService:
                     card['study_status'] = StudyStatus.IN_PROGRESS.value[0]
                 else:
                     card['study_status'] = StudyStatus.UNLOCKED.value[0]
-            lesson_study_progress['current_index'] = lesson['cards'][lesson_study_progress['finish_count']]['id']
+            lesson_study_progress['current_index'] = lesson['cards'][max(lesson_study_progress['finish_count'] - 1, 0)][
+                'id']
 
             if lesson_study_progress['total_count'] != lesson_study_progress['finish_count']:
-                lesson_study_progress['next_index'] = lesson['cards'][min(lesson_study_progress['finish_count'] + 1, study_progress['total_count']-1)]['id']
+                lesson_study_progress['next_index'] = \
+                    lesson['cards'][min(lesson_study_progress['finish_count'], study_progress['total_count'] - 1)]['id']
             card['study_progress'] = study_progress
             if lesson_study_progress['total_count'] == lesson_study_progress['finish_count']:
                 lesson['study_status'] = StudyStatus.COMPLETED.value[0]
@@ -424,5 +297,22 @@ class StudyContentService:
                 lesson['study_status'] = StudyStatus.UNLOCKED.value[0]
 
         return {i['id']: i for i in lessons}
-        # df = pd.DataFrame([item.__dict__ for item in contents])
 
+    def receive_free_product(self, free_product_id=None, is_auto=False):
+        try:
+            if free_product_id:
+                product = Product.objects.filter(id=free_product_id).first()
+                if product.type != ProductType.FREE.value[0]:
+                    raise OrderException("这个课程需要购买哦", ErrorCode.ProductNotFree.value)
+            else:
+                product = Product.objects.filter(type=ProductType.FREE.value[0]).first()
+            product_service = ProductService()
+            order = product_service.create_order(product.id, self.user_id)
+            user = ExternalUser.objects.get(id=self.user_id)
+            product_service.create_payment_record(user, order_id=order['id'], amount=order['total_amount'],
+                                                  payment_method=PaymentMethod.FREE.value)
+            return order
+        except Exception as e:
+            logger.exception(f"领取免费课程异常")
+            if not is_auto:
+                raise e
