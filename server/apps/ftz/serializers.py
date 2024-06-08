@@ -35,6 +35,8 @@ class LessonListSerializer(serializers.ModelSerializer):
         return obj.type_description
 
 
+
+
 class CardListSimpleSerializer(serializers.ModelSerializer):
     """
     卡片序列号
@@ -138,6 +140,15 @@ class CardDetailSerializer(serializers.ModelSerializer):
         model = Card
         fields = '__all__'
 
+class CardDetailSimpleSerializer(serializers.ModelSerializer):
+    """
+    卡片序列号
+    """
+    study_materials = StudyMaterialSimpleListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Card
+        fields = '__all__'
 
 class LessonDetailSerializer(serializers.ModelSerializer):
     """
@@ -223,4 +234,14 @@ class UserStudyRecordSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserStudyRecord
+        fields = '__all__'
+
+
+class LessonDetailSimpleListSerializer(serializers.ModelSerializer):
+    """
+    课时序列化
+    """
+    cards = CardDetailSimpleSerializer(many=True, read_only=True)
+    class Meta:
+        model = Lesson
         fields = '__all__'

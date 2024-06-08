@@ -1,14 +1,20 @@
 import logging
+from collections import defaultdict
 
+import pandas as pd
 from django.db import IntegrityError
+from django.db.models import Prefetch
 
 from apps.ftz.models import TermCourse, CourseScheduleStudent, CourseScheduleContent, UserStudyRecord, StudyMaterial, \
-    Course, Lesson
+    Course, Lesson, Card
 from datetime import datetime, timedelta
 
-from apps.ftz.serializers import CourseScheduleContentSerializer
-from apps.mall.enum_config import StudyStatus
+from apps.ftz.serializers import CourseScheduleContentSerializer, CourseScheduleContentDetailSerializer, \
+    LessonDetailSerializer, LessonListSerializer, CourseSerializer, LessonDetailSimpleListSerializer
+from apps.mall.enum_config import StudyStatus, UserType, OrderStatus
 from apps.mall.exception import InsertTermContext
+from apps.mall.models import Order
+from apps.mall.serializers import OrderDetailSerializer
 from apps.user_center.exception import ExternalUserCreateException
 from apps.user_center.models import ExternalUser
 from apps.user_center.serializers import ExternalUserSerializer
@@ -184,3 +190,207 @@ class ExternalUserService:
             return True
         else:
             return False
+
+
+class StudyContentService:
+
+    def __init__(self, user_id):
+        self.user_id = user_id
+
+    def check_order_paid(self, course_id):
+        """这里先不做校验"""
+        # product = Product.objects.filter(course=course_id).first()
+        # paid_order = Order.objects.filter(product=product, status=OrderStatus.PAID.value).first()
+        # if not paid_order:
+        #     raise ErrorCode.OrderNotPaidException("订单未支付，请先完成订单支付再学习")
+
+    def my_order(self,
+                 # status=OrderStatus.PAID.value
+                 ):
+        """
+        订单状态
+        """
+        orders = Order.objects.filter(user=self.user_id).all()
+        serializer = OrderDetailSerializer(orders, many=True)
+        return serializer.data
+
+    def my_course(self, status=OrderStatus.PAID.value):
+        """
+        我的课程
+        """
+        data = {}
+        course_ids = Order.objects.filter(user=self.user_id, status=status).values('product__course_id').all()
+        courses = Course.objects.filter(id__in=course_ids).all()
+        if courses:
+            serializer = CourseSerializer(courses, many=True)
+            data.update({
+                'user_type': UserType.Member.value[0],
+                'courses': serializer.data
+            })
+        else:
+            course_ids = Order.objects.filter(user=self.user_id, status=OrderStatus.FREE.value).values(
+                'product__course_id').all()
+            courses = Course.objects.filter(id__in=course_ids).all()
+            serializer = CourseSerializer(courses, many=True)
+            data.update({
+                'user_type': UserType.Guest.value[0],
+                'courses': serializer.data
+            })
+        for course_info in data.get('courses'):
+            total_count = CourseScheduleContent.objects.filter(term_course__course=course_info['id'],
+                                                               user=self.user_id).count()
+            finish_count = CourseScheduleContent.objects.filter(term_course__course=course_info['id'],
+                                                                user=self.user_id,
+                                                                study_status=StudyStatus.COMPLETED.value[0]).count()
+            course_info.update({
+                'lessons': self.course_lessons(course_info['id']),
+
+                'total': total_count,
+                'finish_count': finish_count
+            })
+        return data
+
+    def course_lessons(self, course_id):
+        """
+        仅展示支付的订单，某个课程的课时
+        """
+        self.check_order_paid(course_id)
+        lessons = Lesson.objects.filter(course_id=course_id).order_by('lesson_number').all()
+        serializer = LessonListSerializer(lessons, many=True)
+        lessons_info = serializer.data
+        lessons_groups = {}
+        for lesson_info in lessons_info:
+            study_content = CourseScheduleContent.objects.filter(lesson=lesson_info['id']).first()
+
+            lesson_info.update({
+                "open_time": study_content.open_time if study_content else None,
+                "study_status": self.check_study_status(study_content)
+            })
+            if not lessons_groups.get(lesson_info['group_name']):
+                lessons_groups[lesson_info['group_name']] = [lesson_info]
+            else:
+                lessons_groups[lesson_info['group_name']].append(lesson_info)
+        d = [{'group_name': k, 'lessons': v} for k, v in lessons_groups.items()]
+        return d
+
+    def lesson_detail(self, course_id, lesson_id):
+        """
+        展示某一个课时所有的内容，到卡片维度
+        """
+        self.check_order_paid(course_id)
+        lesson_obj = Lesson.objects.filter(id=lesson_id).first()
+        serializer = LessonDetailSerializer(lesson_obj)
+        lesson = serializer.data
+        study_content = CourseScheduleContent.objects.filter(lesson=lesson_id, user=self.user_id).all()
+        contents = CourseScheduleContentSerializer(study_content, many=True).data
+        contents_dict = {i['study_material']: i for i in contents}
+        lesson_study_progress = {
+            "total_count": len(lesson['cards']),
+            "finish_count": 0,
+            "current_index": 0,
+            "next_index": 0,
+        }
+        lesson['study_progress'] = lesson_study_progress
+        for card in lesson['cards']:
+            study_progress = {
+                "total_count": len(card['study_materials']),
+                "finish_count": 0,
+                "current_index": 0,
+                "next_index": 0,
+            }
+            for study_material in card['study_materials']:
+
+                if contents_dict.get(study_material)['study_status'] > StudyStatus.IN_PROGRESS.value[0]:
+                    study_progress['finish_count'] += 1
+            study_progress['current_index'] = card['study_materials'][study_progress['finish_count']]
+
+            if study_progress['total_count'] != study_progress['finish_count']:
+                study_progress['next_index'] = \
+                card['study_materials'][min(study_progress['finish_count'] + 1, study_progress['total_count'] - 1)]
+            card['study_progress'] = study_progress
+            if study_progress['total_count'] == study_progress['finish_count']:
+                card['study_status'] = StudyStatus.COMPLETED.value[0]
+                lesson_study_progress['finish_count'] += 1
+            elif study_progress['finish_count'] > 0:
+                card['study_status'] = StudyStatus.IN_PROGRESS.value[0]
+            else:
+                card['study_status'] = StudyStatus.UNLOCKED.value[0]
+        lesson_study_progress['current_index'] = lesson['cards'][lesson_study_progress['finish_count']]['id']
+
+        if lesson_study_progress['total_count'] != lesson_study_progress['finish_count']:
+            lesson_study_progress['next_index'] = \
+            lesson['cards'][min(lesson_study_progress['finish_count'] + 1, study_progress['total_count'] - 1)]['id']
+        card['study_progress'] = study_progress
+        if lesson_study_progress['total_count'] == lesson_study_progress['finish_count']:
+            lesson['study_status'] = StudyStatus.COMPLETED.value[0]
+        elif lesson_study_progress['finish_count'] > 0:
+            lesson['study_status'] = StudyStatus.IN_PROGRESS.value[0]
+        else:
+            lesson['study_status'] = StudyStatus.UNLOCKED.value[0]
+
+        return lesson
+
+    def check_study_status(self, study_content: CourseScheduleContent):
+        if study_content:
+            if study_content.open_time == StudyStatus.LOCKED.value[0] and datetime.now() >= study_content.open_time:
+                return StudyStatus.UNLOCKED.value[0]
+        else:
+            return StudyStatus.LOCKED.value[0]
+        return study_content.study_status
+
+    def learning_progress(self, course_id):
+        """
+        学习进度
+        """
+        lessons_obj = Lesson.objects.filter(course_id=course_id).all()
+        lessons = LessonDetailSimpleListSerializer(lessons_obj, many=True).data
+
+        contents_obj = CourseScheduleContent.objects.filter(term_course__course=course_id, user=self.user_id).all()
+        contents = CourseScheduleContentSerializer(contents_obj, many=True).data
+        contents_dict = {i['study_material']: i for i in contents}
+        for lesson in lessons:
+            lesson_study_progress = {
+                "total_count": len(lesson['cards']),
+                "finish_count": 0,
+                "current_index": 0,
+                "next_index": 0,
+            }
+            lesson['study_progress'] = lesson_study_progress
+            for card in lesson['cards']:
+                study_progress = {
+                    "total_count": len(card['study_materials']),
+                    "finish_count": 0,
+                    "current_index": 0,
+                    "next_index": 0,
+                }
+                for study_material in card['study_materials']:
+
+                    if contents_dict.get(study_material['id'])['study_status'] > StudyStatus.IN_PROGRESS.value[0]:
+                        study_progress['finish_count'] += 1
+                study_progress['current_index'] = card['study_materials'][study_progress['finish_count']]['id']
+
+                if study_progress['total_count'] != study_progress['finish_count']:
+                    study_progress['next_index'] = card['study_materials'][min(study_progress['finish_count'] + 1, study_progress['total_count']-1)]['id']
+                card['study_progress'] = study_progress
+                if study_progress['total_count'] == study_progress['finish_count']:
+                    card['study_status'] = StudyStatus.COMPLETED.value[0]
+                    lesson_study_progress['finish_count'] += 1
+                elif study_progress['finish_count'] > 0:
+                    card['study_status'] = StudyStatus.IN_PROGRESS.value[0]
+                else:
+                    card['study_status'] = StudyStatus.UNLOCKED.value[0]
+            lesson_study_progress['current_index'] = lesson['cards'][lesson_study_progress['finish_count']]['id']
+
+            if lesson_study_progress['total_count'] != lesson_study_progress['finish_count']:
+                lesson_study_progress['next_index'] = lesson['cards'][min(lesson_study_progress['finish_count'] + 1, study_progress['total_count']-1)]['id']
+            card['study_progress'] = study_progress
+            if lesson_study_progress['total_count'] == lesson_study_progress['finish_count']:
+                lesson['study_status'] = StudyStatus.COMPLETED.value[0]
+            elif lesson_study_progress['finish_count'] > 0:
+                lesson['study_status'] = StudyStatus.IN_PROGRESS.value[0]
+            else:
+                lesson['study_status'] = StudyStatus.UNLOCKED.value[0]
+
+        return {i['id']: i for i in lessons}
+        # df = pd.DataFrame([item.__dict__ for item in contents])
+

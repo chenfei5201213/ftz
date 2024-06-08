@@ -13,11 +13,13 @@ from utils.custom_exception import FtzException
 from .enum_config import PaymentStatus
 from .models import Product, Order, PaymentRecord
 from .serializers import ProductSerializer, PaymentRecordSerializer, OrderSerializer, ProductSellSerializer
-from .service import ProductService, StudyContentService
+from .service import ProductService
+
 from ..ftz.models import TermCourse
 from ..payments.services.wechat_pay import WeChatPayService
 from ..system.authentication import ExternalUserAuth
 from ..system.permission import ExternalUserPermission
+from ..user_center.service import StudyContentService
 
 
 class ProductViewSet(ModelViewSet):

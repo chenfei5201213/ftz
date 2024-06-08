@@ -21,6 +21,7 @@ from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import ValidationError, ParseError
 from utils.queryset import get_child_queryset2
+from .authentication import ExternalUserAuth
 
 from .filters import UserFilter
 from .mixins import CreateUpdateModelAMixin, OptimizationMixin

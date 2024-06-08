@@ -27,7 +27,7 @@ from .service import TermCourseService, ExternalUserService
 from ..ftz.models import CourseScheduleContent
 from ..ftz.serializers import TermCourseSerializer, CourseScheduleContentDetailSerializer
 from ..mall.enum_config import StudyStatus
-from ..mall.service import StudyContentService
+from .service import StudyContentService
 from ..system.authentication import ExternalUserTokenObtainPairSerializer, ExternalUserAuth
 from ..system.models import File
 from ..system.permission import ExternalUserPermission
@@ -129,6 +129,7 @@ class WechatCallbackLogin(GenericAPIView):
         else:
             _user.openid = user_info.get('openid')
             _user.save()
+        logger.info(f"code: {code}, user_info:{user_info}")
         token_result = gen_token(_user, code, user_info["unionid"])
 
         serializer = ExternalUserSerializer(_user)
@@ -140,6 +141,7 @@ class WechatCallbackLogin(GenericAPIView):
 def gen_token(user: ExternalUser, code, unionid):
     tk_code_key = f'tk:code:{code}'
     tk_unionid_key = f'tk:unionid:{unionid}'
+    logger.info(f"unionid:{unionid}, code:{code}")
     token_result = cache.get(tk_unionid_key)
     if not token_result:
         token = ExternalUserTokenObtainPairSerializer.get_token(user)
@@ -320,31 +322,6 @@ class CourseLessonDetailView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class StudyMaterialView(APIView):
-    authentication_classes = [ExternalUserAuth]
-    permission_classes = [ExternalUserPermission]
-    """
-    单个课时详情，包含卡片信息（需要处理前一个学习了，后一个才能查看的问题）
-    """
-
-    def get(self, request, *args, **kwargs):
-        """
-        参数，课时id
-        """
-        try:
-            user_id = request.user.id
-            course_id = request.query_params.get('course_id')
-            card_id = request.query_params.get('card_id')
-            study_service = StudyContentService(user_id)
-            data = study_service.study_material_list(course_id, card_id)
-            return Response(data)
-        except FtzException as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            # 捕获其他异常并返回错误响应
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 class StudyMaterialDetailView(APIView):
     authentication_classes = [ExternalUserAuth]
     permission_classes = [ExternalUserPermission]
@@ -387,6 +364,7 @@ class LearningProgressView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             # 捕获其他异常并返回错误响应
+            logger.exception(f'学习进度未知异常')
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

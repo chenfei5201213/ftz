@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 from .views import WechatLogin, WechatEchoStr, ExternalUserView, ExternalOauthView, TermCourseContentView, \
     WechatMiniLogin, UserLogin, WechatCallbackLogin, MyTokenRefreshView, StudyReportView, MyCourseView, \
-    CourseLessonListView, CourseLessonDetailView, StudyMaterialView, StudyMaterialDetailView, LearningProgressView, \
+    CourseLessonListView, CourseLessonDetailView, StudyMaterialDetailView, LearningProgressView, \
     FileViewSet
 
 router = routers.DefaultRouter()
@@ -22,7 +22,7 @@ urlpatterns = [
     path('my/course/', MyCourseView.as_view(), name='my_course'),
     path('my/course/lesson/', CourseLessonListView.as_view(), name='my_course_lesson'),
     path('my/course/lesson/detail/', CourseLessonDetailView.as_view(), name='my_course_lesson_detail'),
-    path('my/course/lesson/material/', StudyMaterialView.as_view(), name='my_course_lesson_material'),
+    # path('my/course/lesson/material/', StudyMaterialView.as_view(), name='my_course_lesson_material'),
     path('my/course/lesson/material_detail/', StudyMaterialDetailView.as_view(), name='my_course_lesson_material_detail'),
     path('my/course/learning_progress/', LearningProgressView.as_view(), name='my_course_learning_progress'),
     # path('wx/handle/', WechatEchoStr.as_view()),

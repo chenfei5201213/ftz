@@ -1,4 +1,6 @@
 # 微信网页授权URL
+import logging
+
 import requests
 from urllib.parse import urlencode
 
@@ -20,6 +22,8 @@ WX_USER_INFO_URL = "https://api.weixin.qq.com/sns/userinfo"
 # 设置授权回调URL
 # REDIRECT_URI = "http://www.ngsmq.online/api/us/wx/login/"
 REDIRECT_URI = "http://www.ngsmq.online/web/index.html"
+
+logger = logging.getLogger(__name__)
 
 
 class WechatUtil:
@@ -99,6 +103,7 @@ class WechatMiniUtil:
         }
         response = requests.get(url, params=params)
         data = response.json()
+        logger.info(f'code: {data}')
         return data
 
     def get_user_info(self, access_token, openid):
