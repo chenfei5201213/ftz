@@ -336,12 +336,16 @@ class StudyMaterialDetailView(APIView):
             study_material_id = request.query_params.get('study_material_id')
             study_content = CourseScheduleContent.objects.filter(user=user_id, lesson=lesson_id,
                                                                  study_material=study_material_id).first()
-            serializer = CourseScheduleContentDetailSerializer(study_content)
-            return Response(serializer.data)
+            study_content_info = CourseScheduleContentDetailSerializer(study_content).data
+            study_service = StudyContentService(user_id)
+            card = study_service.card_study_progress(study_content.card)
+            study_content_info['card'] = card
+            return Response(study_content_info)
         except FtzException as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             # 捕获其他异常并返回错误响应
+            logger.exception(f'查询课时详情异常：')
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

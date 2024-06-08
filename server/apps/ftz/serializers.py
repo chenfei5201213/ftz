@@ -110,7 +110,7 @@ class StudyMaterialSimpleListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudyMaterial
-        fields = ['id', 'title', 'type_description']
+        fields = ['id', 'title', 'type_description', 'type']
 
     def get_type_description(self, obj):
         return obj.type_description

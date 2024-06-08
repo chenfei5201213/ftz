@@ -10,7 +10,8 @@ from apps.ftz.models import TermCourse, CourseScheduleStudent, CourseScheduleCon
 from datetime import datetime, timedelta
 
 from apps.ftz.serializers import CourseScheduleContentSerializer, CourseScheduleContentDetailSerializer, \
-    LessonDetailSerializer, LessonListSerializer, CourseSerializer, LessonDetailSimpleListSerializer
+    LessonDetailSerializer, LessonListSerializer, CourseSerializer, LessonDetailSimpleListSerializer, \
+    CardDetailSimpleSerializer
 from apps.mall.enum_config import StudyStatus, UserType, OrderStatus
 from apps.mall.exception import InsertTermContext
 from apps.mall.models import Order
@@ -329,6 +330,37 @@ class StudyContentService:
             lesson['study_status'] = StudyStatus.UNLOCKED.value[0]
 
         return lesson
+
+    def card_study_progress(self, card_obj: Card):
+        card = CardDetailSimpleSerializer(card_obj).data
+        study_content = CourseScheduleContent.objects.filter(card=card_obj.id, user=self.user_id).all()
+        contents = CourseScheduleContentSerializer(study_content, many=True).data
+        contents_dict = {i['study_material']: i for i in contents}
+        study_progress = {
+            "total_count": len(card['study_materials']),
+            "finish_count": 0,
+            "current_index": 0,
+            "next_index": 0,
+        }
+        card['study_progress'] = study_progress
+        for study_material in card['study_materials']:
+
+            if contents_dict.get(study_material['id'])['study_status'] > StudyStatus.IN_PROGRESS.value[0]:
+                study_progress['finish_count'] += 1
+        study_progress['current_index'] = card['study_materials'][study_progress['finish_count']]
+
+        if study_progress['total_count'] != study_progress['finish_count']:
+            study_progress['next_index'] = \
+                card['study_materials'][min(study_progress['finish_count'] + 1, study_progress['total_count'] - 1)]
+        card['study_progress'] = study_progress
+        if study_progress['total_count'] == study_progress['finish_count']:
+            card['study_status'] = StudyStatus.COMPLETED.value[0]
+        elif study_progress['finish_count'] > 0:
+            card['study_status'] = StudyStatus.IN_PROGRESS.value[0]
+        else:
+            card['study_status'] = StudyStatus.UNLOCKED.value[0]
+        card.pop('study_materials')
+        return card
 
     def check_study_status(self, study_content: CourseScheduleContent):
         if study_content:
