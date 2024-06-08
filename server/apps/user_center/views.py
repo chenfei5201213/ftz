@@ -339,7 +339,7 @@ class StudyMaterialDetailView(APIView):
                                                                  study_material=study_material_id).first()
             study_content_info = CourseScheduleContentDetailSerializer(study_content).data
             study_service = StudyContentService(user_id)
-            card = study_service.card_study_progress(study_content.card, study_content.lesson)
+            card = study_service.card_study_progress(study_content.card, study_content.lesson, int(study_material_id))
             study_content_info['card'] = card
             return Response(study_content_info)
         except FtzException as e:
