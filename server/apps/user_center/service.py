@@ -167,7 +167,6 @@ class StudyContentService:
                 "next_index": 0,
             }
             for study_material in card['study_materials']:
-
                 if contents_dict.get(study_material)['study_status'] > StudyStatus.IN_PROGRESS.value[0]:
                     study_progress['finish_count'] += 1
             study_progress['current_index'] = card['study_materials'][max(study_progress['finish_count'] - 1, 0)]
@@ -212,9 +211,11 @@ class StudyContentService:
             "next_index": 0,
         }
         study_material_ids = []
+        study_materials_dict = {}
         card['study_progress'] = study_progress
         for study_material in card['study_materials']:
             study_material_ids.append(study_material['id'])
+            study_materials_dict[study_material['id']] = study_material
             if contents_dict.get(study_material['id'])['study_status'] > StudyStatus.IN_PROGRESS.value[0]:
                 study_progress['finish_count'] += 1
         card['study_progress'] = study_progress
@@ -225,10 +226,10 @@ class StudyContentService:
         else:
             card['study_status'] = StudyStatus.UNLOCKED.value[0]
         card.pop('study_materials')
-        study_progress['current_index'] = study_material_id
+        study_progress['current_index'] = study_materials_dict.get(study_material_id)
         study_material_id_index = study_material_ids.index(study_material_id)
         next_index = study_material_ids[min(study_material_id_index+1, len(study_material_ids)-1)]
-        study_progress['next_index'] = next_index
+        study_progress['next_index'] = study_materials_dict.get(next_index)
         return card
 
     def check_study_status(self, study_content: CourseScheduleContent):
