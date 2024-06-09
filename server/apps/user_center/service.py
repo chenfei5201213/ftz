@@ -88,7 +88,7 @@ class StudyContentService:
         """
         data = {}
         course_ids = Order.objects.filter(user=self.user_id, status=status).values('product__course_id').all()
-        courses = Course.objects.filter(id__in=course_ids).all()
+        courses = Course.objects.filter(id__in=course_ids).order_by('-id').all()
         if courses:
             serializer = CourseSerializer(courses, many=True)
             data.update({
