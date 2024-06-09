@@ -23,8 +23,8 @@
           style="width: 300px"
           class="filter-item"
         />
-<!--        <el-input v-model="listQuery.field110" style="width: 120px" placeholder="输入卡片ID"></el-input>-->
-<!--        <el-input v-model="listQuery.field110" style="width: 150px" placeholder="卡片完整名称"></el-input>-->
+        <!--        <el-input v-model="listQuery.field110" style="width: 120px" placeholder="输入卡片ID"></el-input>-->
+        <!--        <el-input v-model="listQuery.field110" style="width: 150px" placeholder="卡片完整名称"></el-input>-->
         <el-button
           class="filter-item"
           type="primary"
@@ -93,12 +93,12 @@
       </el-table-column>
     </el-table>
     <el-pagination
-          v-show="tableDataList.count>0"
-          :total="tableDataList.count"
-          :page-size.sync="listQuery.page_size"
-          :current-page.sync="listQuery.page"
-          @current-change="getList"
-        ></el-pagination>
+      v-show="tableDataList.count>0"
+      :total="tableDataList.count"
+      :page-size.sync="listQuery.page_size"
+      :current-page.sync="listQuery.page"
+      @current-change="getList"
+    ></el-pagination>
     <el-dialog
       :visible.sync="dialogVisible"
       :title="dialogType === 'edit' ? '编辑卡片' : '新增卡片'"
@@ -130,10 +130,10 @@
           <el-input v-model="tableData.group_name" placeholder="分组"/>
         </el-form-item>
         <el-form-item label="状态">
-           <el-radio-group v-model="tableData.status">
+          <el-radio-group v-model="tableData.status">
             <el-radio label=0>下线</el-radio>
             <el-radio label=1>上线</el-radio>
-           </el-radio-group>
+          </el-radio-group>
         </el-form-item>
         <!-- todo 这里要支持图片上传，然后将相对路径赋值-> 多选 -->
         <el-form-item label="核心图" prop="card_core_image">
@@ -146,15 +146,15 @@
             :before-upload="beforeAvatarUpload"
             :headers="upHeaders"
           >
-            <img v-if="tableData.card_core_image" :src="tableData.card_core_image" class="avatar" />
-            <i v-else class="el-icon-plus avatar-uploader-icon" />
+            <img v-if="tableData.card_core_image" :src="tableData.card_core_image" class="avatar"/>
+            <i v-else class="el-icon-plus avatar-uploader-icon"/>
           </el-upload>
         </el-form-item>
         <el-form-item label="话题" prop="topic">
           <el-input v-model="tableData.topic" placeholder="话题"/>
         </el-form-item>
         <el-form-item label="难度" prop="difficulty">
-           <el-select
+          <el-select
             v-model="tableData.difficulty"
             placeholder="请选择"
             style="width: 90%"
@@ -169,20 +169,22 @@
         </el-form-item>
         <!-- todo 这里需要支持获取素材列表，搜索-> 多选 -->
         <el-form-item label="关联素材" prop="study_materials">
-          <el-select
-            v-model="tableData.study_materials"
-            :multiple="true"
-            :filterable="true"
-            placeholder="请选择"
-            style="width: 90%"
-          >
-            <el-option
-              v-for="item in materialData"
-              :key="item.id"
-              :label="item.title"
-              :value="item.id"
-            />
-          </el-select>
+          <el-scrollbar>
+            <el-select
+              v-model="tableData.study_materials"
+              :multiple="true"
+              :filterable="true"
+              placeholder="请选择"
+              style="width: 90%"
+            >
+              <el-option
+                v-for="item in materialData"
+                :key="item.id"
+                :label="item.title"
+                :value="item.id"
+              />
+            </el-select>
+          </el-scrollbar>
         </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input v-model="tableData.description" placeholder="课程描述" :autosize="{ minRows: 2, maxRows: 4 }"
@@ -207,7 +209,7 @@ import {
 } from "@/api/card";
 import {genTree, deepClone} from "@/utils";
 import checkPermission from "@/utils/permission";
-import {upUrl,upHeaders} from "@/api/file";
+import {upUrl, upHeaders} from "@/api/file";
 import {getEnumConfigList} from "@/api/enum_config";
 import {getMaterialSimpleList} from "@/api/material";
 
@@ -262,7 +264,7 @@ export default {
   },
   methods: {
     checkPermission,
-    getCardTypeList(){
+    getCardTypeList() {
       let query = {module: this.module_name, service: 'type'};
       getEnumConfigList(query).then((response) => {
         this.typeOptions = response.data.results;
@@ -273,7 +275,7 @@ export default {
         this.materialData = response.data;
       })
     },
-    getDifficultyList(){
+    getDifficultyList() {
       let query = {module: this.module_name, service: 'difficulty'};
       getEnumConfigList(query).then((response) => {
         this.difficultyOptions = response.data.results;
@@ -325,7 +327,7 @@ export default {
         cancelButtonText: "取消",
         type: "error"
       })
-        .then(async() => {
+        .then(async () => {
           await deleteCard(scope.row.id);
           this.getList()
           this.$message({
@@ -372,6 +374,7 @@ export default {
 .avatar-uploader .el-upload:hover {
   border-color: #409eff;
 }
+
 .avatar-uploader-icon {
   font-size: 28px;
   color: #8c939d;
@@ -380,6 +383,10 @@ export default {
   line-height: 100px;
   text-align: center;
 }
+.el-select-dropdown {
+  overflow-y: auto; /* 添加这个样式 */
+}
+
 .avatar {
   width: 100px;
   height: 100px;

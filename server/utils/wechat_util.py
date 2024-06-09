@@ -140,12 +140,14 @@ class WechatMiniUtil:
 
     def get_phone_number(self, access_token, code, openid):
         params = {
-            "access_token": access_token,
+            "access_token": access_token
+        }
+        body = {
             "code": code,
             "openid": openid
         }
         url = 'https://api.weixin.qq.com/wxa/business/getuserphonenumber'
-        response = requests.post(url, json=params, params=params)
+        response = requests.post(url, json=body, params=params)
         return response.json()
 
 
@@ -155,4 +157,7 @@ if __name__ == '__main__':
     # print(wx.refresh_token('81_H5Z0wxr8i3yauI3jC2QrsNjxkRF1yJ0dUVYEqMoQwCVXYx3EF-VhmO1rTzIvfxSb_89hveTlOZw8I9z1lVJcohUQzVEutVH0T4dkF4j2oB0'))
     xcx = WechatMiniUtil()
     # r = xcx.login()
-    xcx.access_token('0b1jUIGa1svyxH0MRyHa1pzfCA3jUIGh')
+    ac = '81_rFx_WTg1Nd6weUu5RkQOvp34PPbrgxBTLVMB0rxKrKO03pxEZ38EOib1Acdf6lYtIZUOsYe669fhfr7fHrPDMDQ0R77zRIA0rleIIKe20LpjmRBbL7Nt5Z_MtN4XGTjAGADMZ'
+    userid='o0Dq76zXxM6v0dFJJRTcF302NyTs'
+    code = '0e1dz5100MYFgS1Go9100dOXdC4dz51J'
+    xcx.get_phone_number(ac, code, userid)

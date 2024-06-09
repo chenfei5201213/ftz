@@ -71,7 +71,7 @@ class ProductService:
             if payment_method == PaymentMethod.WECHAT.value:
                 wx_pay_service = WeChatPayService()
                 result = wx_pay_service.create_jsapi_order(order, user)
-
+                logger.info(f"order: {order_id}, 创建微信订单结果: {result}")
                 if result.get('code') == 0:
                     # 创建支付记录
                     payment_record = PaymentRecord.objects.create(order=order,

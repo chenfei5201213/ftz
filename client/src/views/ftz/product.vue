@@ -39,7 +39,7 @@
       border
       v-el-height-adaptive-table="{ bottomOffset: 50 }"
     >
-      <el-table-column label="商品ID" width="60">
+      <el-table-column label="商品ID" width="80">
         <template slot-scope="scope">{{ scope.row.id }}</template>
       </el-table-column>
       <el-table-column label="课程ID">
@@ -53,6 +53,9 @@
       </el-table-column>
       <el-table-column label="商品状态">
         <template slot-scope="scope">{{ scope.row.status }}</template>
+      </el-table-column>
+      <el-table-column label="商品描述">
+        <template slot-scope="scope">{{ scope.row.description }}</template>
       </el-table-column>
       <el-table-column label="创建时间">
         <template slot-scope="scope">
@@ -122,9 +125,12 @@
         <el-form-item label="商品价格(元)" prop="price">
           <el-input v-model="tableData.price" placeholder="商品价格，支持小数点后两位"/>
         </el-form-item>
+        <el-form-item label="商品描述" prop="description">
+          <el-input v-model="tableData.description" placeholder="描述"/>
+        </el-form-item>
 
 
-        <el-form-item label="卡片类型" prop="type">
+        <el-form-item label="商品类型" prop="type">
           <el-select
             v-model="tableData.type"
             placeholder="请选择"
@@ -132,6 +138,20 @@
           >
             <el-option
               v-for="item in typeOptions"
+              :key="item.value"
+              :label="item.name"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="商品状态" prop="type">
+          <el-select
+            v-model="tableData.status"
+            placeholder="请选择"
+            style="width: 90%"
+          >
+            <el-option
+              v-for="item in statusOptions"
               :key="item.value"
               :label="item.name"
               :value="item.value"
@@ -178,6 +198,7 @@ export default {
       },
       search: "",
       tableDataList: {},
+      statusOptions: {},
       listLoading: true,
       dialogVisible: false,
       dialogType: "new",
@@ -197,6 +218,7 @@ export default {
   computed: {},
   created() {
     this.getProductTypeList();
+    this.getProductStatusList();
     this.getCourseList().then(() => {
       this.getList();
     });
@@ -208,6 +230,12 @@ export default {
       let query = {module: this.enumConfigQuery.module, service: 'type'};
       getEnumConfigList(query).then((response) => {
         this.typeOptions = response.data.results;
+      })
+    },
+    getProductStatusList() {
+      let query = {module: this.enumConfigQuery.module, service: 'status'};
+      getEnumConfigList(query).then((response) => {
+        this.statusOptions = response.data.results;
       })
     },
     getCourseList() {
