@@ -166,11 +166,17 @@ class CardDetailSimpleSerializer(serializers.ModelSerializer):
     """
     卡片序列号
     """
-    study_materials = StudyMaterialSimpleListSerializer(many=True, read_only=True)
+    # study_materials = StudyMaterialSimpleListSerializer(many=True, read_only=True)
 
     class Meta:
         model = Card
         fields = '__all__'
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        sorted_study_materials = instance.study_materials.through.objects.filter(card=instance).order_by('id')
+        ret['study_materials'] = [StudyMaterialSimpleListSerializer(i.studymaterial).data for i in sorted_study_materials]
+        return ret
 
 
 class LessonDetailSerializer(serializers.ModelSerializer):
