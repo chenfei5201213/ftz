@@ -106,20 +106,6 @@ class Card(SoftModel):
     """
     卡片表
     """
-    card_type_choices = (
-        ('编程课', '编程课'),
-        ('编程卡', '编程卡'),
-    )
-    card_status_choices = (
-        (0, '下线'),
-        (1, '上线')
-    )
-
-    card_difficulty_choices = (
-        ('easy', '简单'),
-        ('medium', '中等'),
-        ('difficult', '困难'),
-    )
     title = models.CharField('课时标题', max_length=128, blank=False)
     description = models.TextField('描述', blank=True)
     type = models.CharField('课程类型', max_length=128, choices=[])
@@ -129,7 +115,8 @@ class Card(SoftModel):
     topic = models.CharField('话题', max_length=128, blank=True)
     difficulty = models.CharField('难度', max_length=32, choices=[], blank=False, default='easy')
     study_materials = models.ManyToManyField(StudyMaterial, blank=True, verbose_name='素材',
-                                             related_name='study_materials')
+                                             related_name='study_materials', through='CardStudyMaterial')
+    # study_material_ids = models.JSONField(blank=True, null=True)
 
     def __init__(self, *args, **kwargs):
         super(Card, self).__init__(*args, **kwargs)
@@ -160,6 +147,16 @@ class Card(SoftModel):
             return enum_config.name
         except EnumConfig.DoesNotExist:
             return None
+
+
+class CardStudyMaterial(models.Model):
+    card = models.ForeignKey(Card, on_delete=models.CASCADE)
+    studymaterial = models.ForeignKey(StudyMaterial, on_delete=models.CASCADE)
+    id = models.AutoField(primary_key=True)  # 自增 ID 字段
+
+    class Meta:
+        db_table = 'ftz_card_study_materials'
+        ordering = ['id']  # 按照自增 ID 排序
 
 
 class Lesson(SoftModel):
@@ -315,7 +312,7 @@ class CourseScheduleContent(SoftModel):
     term_course = models.ForeignKey(TermCourse, on_delete=models.SET_NULL, blank=True, null=True,
                                     verbose_name="期课")  # 期课id
     card = models.ForeignKey(Card, on_delete=models.SET_NULL, blank=True, null=True,
-                                    verbose_name="卡片")  # 卡片id
+                             verbose_name="卡片")  # 卡片id
 
 
 class UserStudyRecord(SoftModel):

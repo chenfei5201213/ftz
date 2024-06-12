@@ -5,10 +5,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
-from rest_framework import filters
+from rest_framework import filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig, Survey, Question, UserResponse
+from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig, Survey, Question, UserResponse, \
+    CardStudyMaterial
 from .models import TermCourse, CourseScheduleStudent, UserStudyRecord
 from .serializers import CourseSerializer, CardListSerializer, StudyMaterialListSerializer, LessonListSerializer, \
     CardListSimpleSerializer
@@ -76,6 +77,7 @@ class LessonViewSet(ModelViewSet):
         return Lesson.objects.prefetch_related(
             Prefetch('cards', queryset=Card.objects.all(), to_attr='sorted_cards')
         ).select_related('course_id')
+
     def get_serializer_class(self):
         # 如果是根据ID查询详情，则使用详细查询序列化器
         if self.action == 'retrieve':
@@ -102,6 +104,12 @@ class CardViewSet(ModelViewSet):
             return CardDetailSerializer
         return self.serializer_class
 
+    # def get_queryset(self):
+    #     queryset = Card.objects.all().prefetch_related(
+    #         Prefetch('cardstudymaterial_set', queryset=CardStudyMaterial.objects.only('studymaterial_id'))
+    #     )
+    #     return queryset
+
 
 class CardListSimpleViewSet(ModelViewSet):
     """
@@ -116,7 +124,6 @@ class CardListSimpleViewSet(ModelViewSet):
     ordering_fields = ['pk']
     ordering = ['-pk']
     filterset_fields = ['type', 'difficulty']
-
 
 
 class StudyMaterialViewSet(ModelViewSet):
