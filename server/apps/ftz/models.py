@@ -115,7 +115,8 @@ class Card(SoftModel):
     topic = models.CharField('话题', max_length=128, blank=True)
     difficulty = models.CharField('难度', max_length=32, choices=[], blank=False, default='easy')
     study_materials = models.ManyToManyField(StudyMaterial, blank=True, verbose_name='素材',
-                                             related_name='study_materials', through='CardStudyMaterial')
+                                             related_name='study_materials')
+    # , through='CardStudyMaterial'
     # study_material_ids = models.JSONField(blank=True, null=True)
 
     def __init__(self, *args, **kwargs):
@@ -149,14 +150,14 @@ class Card(SoftModel):
             return None
 
 
-class CardStudyMaterial(models.Model):
-    card = models.ForeignKey(Card, on_delete=models.CASCADE)
-    studymaterial = models.ForeignKey(StudyMaterial, on_delete=models.CASCADE)
-    id = models.AutoField(primary_key=True)  # 自增 ID 字段
-
-    class Meta:
-        db_table = 'ftz_card_study_materials'
-        ordering = ['id']  # 按照自增 ID 排序
+# class CardStudyMaterial(models.Model):
+#     card = models.ForeignKey(Card, on_delete=models.CASCADE)
+#     studymaterial = models.ForeignKey(StudyMaterial, on_delete=models.CASCADE)
+#     id = models.AutoField(primary_key=True)  # 自增 ID 字段
+#
+#     class Meta:
+#         db_table = 'ftz_card_study_materials'
+#         ordering = ['id']  # 按照自增 ID 排序
 
 
 class Lesson(SoftModel):

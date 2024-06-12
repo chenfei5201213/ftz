@@ -8,8 +8,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework import filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig, Survey, Question, UserResponse, \
-    CardStudyMaterial
+from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig, Survey, Question, UserResponse
 from .models import TermCourse, CourseScheduleStudent, UserStudyRecord
 from .serializers import CourseSerializer, CardListSerializer, StudyMaterialListSerializer, LessonListSerializer, \
     CardListSimpleSerializer

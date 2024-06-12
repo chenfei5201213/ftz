@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import Course, StudyMaterial, Lesson, Card, Tag, EnumConfig, Survey, Question, UserResponse, \
-    CourseScheduleContent, CardStudyMaterial
+    CourseScheduleContent
 from .models import TermCourse, CourseScheduleStudent, UserStudyRecord
 
 
@@ -34,6 +34,12 @@ class LessonListSerializer(serializers.ModelSerializer):
         # 调用Course模型中的type_description属性
         return obj.type_description
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        sorted_cards = instance.cards.through.objects.filter(lesson=instance).order_by('id')
+        ret['cards'] = [i.card_id for i in sorted_cards]
+        return ret
+
 
 class CardListSimpleSerializer(serializers.ModelSerializer):
     """
@@ -56,27 +62,22 @@ class CardListSerializer(serializers.ModelSerializer):
     type_description = serializers.SerializerMethodField()
     difficulty_description = serializers.SerializerMethodField()
     status_description = serializers.SerializerMethodField()
-    study_materials = serializers.SerializerMethodField()
+    # study_materials = serializers.SerializerMethodField()
 
     class Meta:
         model = Card
         fields = '__all__'
 
-    # def create(self, validated_data):
-    #     # 在创建时自动添加一个字段
-    #     validated_data['some_field'] = '自动添加的值'
-    #     # 调用父类的 create 方法来创建模型实例
-    #     return super(CardListSerializer, self).create(validated_data)
-    #
-    # def update(self, instance, validated_data):
-    #     # 在更新时自动修改一个字段
-    #     instance.study_material_ids = validated_data.get('study_material_ids', [1,2,3])
-    #     # 调用父类的 update 方法来更新模型实例
-    #     return super(CardListSerializer, self).update(instance, validated_data)
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        sorted_study_materials = instance.study_materials.through.objects.filter(card=instance).order_by('id')
+        ret['study_materials'] = [i.studymaterial_id for i in sorted_study_materials]
+        return ret
 
-    def get_study_materials(self, obj):
-        _card_study_materials = CardStudyMaterial.objects.filter(card=obj.id).values_list('studymaterial__id', flat=True).all()
-        return _card_study_materials
+    # def get_study_materials(self, obj):
+    #     _card_study_materials = CardStudyMaterial.objects.filter(card=obj.id).values_list('studymaterial__id',
+    #                                                                                       flat=True).all()
+    #     return _card_study_materials
 
     # def get_study_materials(self, obj):
     #     # 由于这里只是一个卡片对象，Prefetch不会直接在这里生效
