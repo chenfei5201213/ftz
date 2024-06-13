@@ -179,6 +179,7 @@ class StudyContentService:
             # 处理单个卡片学习完成后，一直停留在最后一个素材问题，最后一个学完后，再进入从第一个学习
             if study_progress.get('finish_count') == study_progress.get('total_count'):
                 study_progress['current_index'] = card['study_materials'][0]
+                study_progress['next_index'] = card['study_materials'][0]
             card['study_progress'] = study_progress
 
             if study_progress['total_count'] == study_progress['finish_count']:
@@ -189,8 +190,7 @@ class StudyContentService:
             else:
                 card['study_status'] = StudyStatus.UNLOCKED.value[0]
 
-        lesson_study_progress['current_index'] = lesson['cards'][max(lesson_study_progress['finish_count'] - 1, 0)][
-            'id']
+        lesson_study_progress['current_index'] = lesson['cards'][max(lesson_study_progress['finish_count'] - 1, 0)]['id']
 
         if lesson_study_progress['total_count'] != lesson_study_progress['finish_count']:
             lesson_study_progress['next_index'] = \
