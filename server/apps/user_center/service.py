@@ -244,7 +244,7 @@ class StudyContentService:
             if study_content.study_status == StudyStatus.LOCKED.value[0] and datetime.now(
                     pytz.utc) >= study_content.open_time:
                 return StudyStatus.UNLOCKED.value[0]
-        return study_content.study_status
+            return study_content.study_status
 
     def learning_progress(self, course_id):
         """

@@ -266,9 +266,11 @@ class MyCourseView(APIView):
             data = study_service.my_course()
             return Response(data)
         except FtzException as e:
+            logger.exception("异常：")
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             # 捕获其他异常并返回错误响应
+            logger.exception("异常：")
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
