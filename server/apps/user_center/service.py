@@ -3,8 +3,8 @@ from django.db import IntegrityError
 
 from apps.ftz.models import TermCourse, CourseScheduleStudent, CourseScheduleContent, UserStudyRecord, StudyMaterial, \
     Course, Lesson, Card
-from datetime import datetime, timedelta
-from collections import OrderedDict
+from datetime import datetime
+import pytz
 
 from apps.ftz.serializers import CourseScheduleContentSerializer, CourseScheduleContentDetailSerializer, \
     LessonDetailSerializer, LessonListSerializer, CourseSerializer, LessonDetailSimpleListSerializer, \
@@ -128,7 +128,8 @@ class StudyContentService:
         lessons_info = serializer.data
         lessons_groups = {}
         for lesson_info in lessons_info:
-            study_content = CourseScheduleContent.objects.filter(lesson=lesson_info['id']).first()
+            study_content = CourseScheduleContent.objects.filter(user=self.user_id, lesson=lesson_info['id']).order_by(
+                '-id').first()
 
             lesson_info.update({
                 "open_time": study_content.open_time if study_content else None,
@@ -174,7 +175,12 @@ class StudyContentService:
             if study_progress['total_count'] != study_progress['finish_count']:
                 study_progress['next_index'] = \
                     card['study_materials'][min(study_progress['finish_count'], study_progress['total_count'] - 1)]
+
+            # 处理单个卡片学习完成后，一直停留在最后一个素材问题，最后一个学完后，再进入从第一个学习
+            if study_progress.get('finish_count') == study_progress.get('total_count'):
+                study_progress['current_index'] = card['study_materials'][0]
             card['study_progress'] = study_progress
+
             if study_progress['total_count'] == study_progress['finish_count']:
                 card['study_status'] = StudyStatus.COMPLETED.value[0]
                 lesson_study_progress['finish_count'] += 1
@@ -182,6 +188,7 @@ class StudyContentService:
                 card['study_status'] = StudyStatus.IN_PROGRESS.value[0]
             else:
                 card['study_status'] = StudyStatus.UNLOCKED.value[0]
+
         lesson_study_progress['current_index'] = lesson['cards'][max(lesson_study_progress['finish_count'] - 1, 0)][
             'id']
 
@@ -228,16 +235,15 @@ class StudyContentService:
         card.pop('study_materials')
         study_progress['current_index'] = study_materials_dict.get(study_material_id)
         study_material_id_index = study_material_ids.index(study_material_id)
-        next_index = study_material_ids[min(study_material_id_index+1, len(study_material_ids)-1)]
+        next_index = study_material_ids[min(study_material_id_index + 1, len(study_material_ids) - 1)]
         study_progress['next_index'] = study_materials_dict.get(next_index)
         return card
 
     def check_study_status(self, study_content: CourseScheduleContent):
         if study_content:
-            if study_content.open_time == StudyStatus.LOCKED.value[0] and datetime.now() >= study_content.open_time:
+            if study_content.study_status == StudyStatus.LOCKED.value[0] and datetime.now(
+                    pytz.utc) >= study_content.open_time:
                 return StudyStatus.UNLOCKED.value[0]
-        else:
-            return StudyStatus.LOCKED.value[0]
         return study_content.study_status
 
     def learning_progress(self, course_id):
