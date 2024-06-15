@@ -19,6 +19,7 @@ from ..ftz.models import TermCourse
 from ..payments.services.wechat_pay import WeChatPayService
 from ..system.authentication import ExternalUserAuth
 from ..system.permission import ExternalUserPermission
+from ..system.tasks import send_bug_course_success_message
 from ..user_center.service import StudyContentService
 
 
@@ -224,6 +225,7 @@ class OrderPayTest(APIView):
 
 class WxPayNotify(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request, *args, **kwargs):
         wx_pay_service = WeChatPayService()
         _result = wx_pay_service.callback(request.headers, request.data)
@@ -233,8 +235,9 @@ class WxPayNotify(APIView):
             transaction_id = result.get('transaction_id')
             pay_record = PaymentRecord.objects.filter(pay_id=transaction_id).first()
             pay_record.status = PaymentStatus.PAID.value
-            pay_record.order.status=PaymentStatus.PAID.value
+            pay_record.order.status = PaymentStatus.PAID.value
             pay_record.save()
+            send_bug_course_success_message.dely('', '')
             # 更新支付记录和订单状态
             return Response({'code': 'SUCCESS', 'message': '成功'})
         return Response({'code': 'FAILED', 'message': '失败'})

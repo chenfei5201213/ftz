@@ -5,7 +5,7 @@ from concurrent.futures._base import LOGGER
 
 from wechatpayv3 import WeChatPay, WeChatPayType
 
-from apps.mall.models import Order
+from apps.mall.models import Order, PaymentRecord
 from apps.user_center.models import ExternalUser
 from server.settings import MCHID, PRIVATE_KEY, CERT_SERIAL_NO, APIV3_KEY, APPID, NOTIFY_URL, CERT_DIR, PARTNER_MODE, \
     PROXY, TIMEOUT
@@ -72,9 +72,6 @@ class WeChatPayService:
         result = self.wxpay.callback(headers, data)
         if result and result.get('event_type') == 'TRANSACTION.SUCCESS':
             resp = result.get('resource')
-            appid = resp.get('appid')
-            mchid = resp.get('mchid')
-            out_trade_no = resp.get('out_trade_no')
             transaction_id = resp.get('transaction_id')
             trade_type = resp.get('trade_type')
             trade_state = resp.get('trade_state')

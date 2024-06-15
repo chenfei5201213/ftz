@@ -6,18 +6,16 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, RetrieveModelMixin
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import AllowAny
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.views import APIView
 from rest_framework import filters, status
-from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from utils.custom_exception import FtzException
-from utils.wechat_util import WechatUtil, WechatMiniUtil
+from utils.wechat.wechat_util import WechatUtil, WechatMiniUtil
 
 from server import settings
 
@@ -25,7 +23,7 @@ from .models import ExternalUser, ExternalOauth
 from .serializers import ExternalUserSerializer, ExternalOauthSerializer
 from .service import ExternalUserService
 from ..ftz.models import CourseScheduleContent
-from ..ftz.serializers import TermCourseSerializer, CourseScheduleContentDetailSerializer
+from ..ftz.serializers import CourseScheduleContentDetailSerializer
 from ..ftz.service import TermCourseService
 from ..mall.enum_config import StudyStatus
 from .service import StudyContentService
@@ -49,7 +47,7 @@ class UserLogin(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        redirect_url = WechatUtil.wechat_login()
+        redirect_url = WechatUtil().wechat_login()
         return Response(data={'redirect_url': redirect_url})
 
 
@@ -61,11 +59,11 @@ class WechatLogin(APIView):
         logger.info(f"code: ={code}")
         if not code:
             return Response("授权失败", status=400)
-        access_token_data = WechatUtil.access_token(code)
+        access_token_data = WechatUtil().access_token(code)
         if access_token_data:
             return Response(data=access_token_data)
         logger.info(f"access_token_data: {access_token_data}")
-        user_info = WechatUtil.get_user_info(access_token_data['access_token'], access_token_data['openid'])
+        user_info = WechatUtil().get_user_info(access_token_data['access_token'], access_token_data['openid'])
         logger.info(f"user_info: {user_info}")
         return Response(data=user_info)
 
@@ -116,11 +114,11 @@ class WechatCallbackLogin(GenericAPIView):
             return Response(data=cache_data)
         if not code:
             return Response("授权失败", status=400)
-        access_token_data = WechatUtil.access_token(code)
+        access_token_data = WechatUtil().access_token(code)
         if access_token_data.get("errcode"):
             return Response(data=access_token_data)
         logger.info(f"access_token_data: {access_token_data}")
-        user_info = WechatUtil.get_user_info(access_token_data['access_token'], access_token_data['openid'])
+        user_info = WechatUtil().get_user_info(access_token_data['access_token'], access_token_data['openid'])
         if not user_info:
             return Response("获取用户信息失败", status=400)
         user_service = ExternalUserService(user_info['unionid'])

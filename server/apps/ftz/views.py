@@ -1,6 +1,8 @@
 import logging
 
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
+from django.utils import timezone
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
@@ -18,6 +20,7 @@ from .serializers import EnumConfigSerializer, SurveySerializer, QuestionSeriali
 from .serializers import TermCourseSerializer, CourseScheduleStudentSerializer, UserStudyRecordSerializer
 from .serializers import StudyMaterialSimpleListSerializer
 from ..system.authentication import ExternalUserTokenObtainPairSerializer
+from ..system.tasks import send_bug_course_success_message
 from ..user_center.models import ExternalUser
 
 logger = logging.getLogger(__name__)
@@ -292,3 +295,19 @@ class UserStudyContentViewSet(ModelViewSet):
     ordering = ['-pk']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['user']
+
+
+class Test01View(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        # 获取当前日期
+        today = timezone.localdate()
+
+        # 创建一个 Q 对象，用于查询 open_time 是今天的记录
+        today_query = Q(open_time__date=today)
+
+        # 执行查询
+        records = CourseScheduleContent.objects.filter(today_query)
+        send_bug_course_success_message.delay('o77756JY-IHm6zh-Ez3HVsLJIKvA', {"title": "测试课程"})
+        return Response(data={})

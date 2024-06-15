@@ -285,7 +285,7 @@ LOGGING = {
 MCHID = '1677478605'
 PRIVATE_KEY = ''
 # 商户证书私钥
-with open('./server/apiclient_key.pem') as f:
+with open(os.path.join(BASE_DIR, 'server/apiclient_key.pem')) as f:
     PRIVATE_KEY = f.read()
 
 # 商户证书序列号
