@@ -62,6 +62,7 @@ class CardListSerializer(serializers.ModelSerializer):
     type_description = serializers.SerializerMethodField()
     difficulty_description = serializers.SerializerMethodField()
     status_description = serializers.SerializerMethodField()
+
     # study_materials = serializers.SerializerMethodField()
 
     class Meta:
@@ -166,6 +167,7 @@ class CardDetailSimpleSerializer(serializers.ModelSerializer):
     """
     卡片序列号
     """
+
     # study_materials = StudyMaterialSimpleListSerializer(many=True, read_only=True)
 
     class Meta:
@@ -175,7 +177,8 @@ class CardDetailSimpleSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         sorted_study_materials = instance.study_materials.through.objects.filter(card=instance).order_by('id')
-        ret['study_materials'] = [StudyMaterialSimpleListSerializer(i.studymaterial).data for i in sorted_study_materials]
+        ret['study_materials'] = [StudyMaterialSimpleListSerializer(i.studymaterial).data for i in
+                                  sorted_study_materials]
         return ret
 
 
@@ -263,6 +266,12 @@ class UserStudyRecordSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserStudyRecord
+        fields = '__all__'
+
+
+class CourseScheduleContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourseScheduleContent
         fields = '__all__'
 
 

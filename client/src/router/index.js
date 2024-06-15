@@ -181,7 +181,7 @@ export const asyncRoutes = [
       {
         path: 'study_record',
         name: 'study_record',
-        component: () => import('@/views/ftz/sc_study_record.vue'),
+        component: () => import('@/views/ftz/sc_study_content.vue'),
         meta: { title: '学习记录', icon: 'example', perms: ['workflow_index'] }
       }
     ]

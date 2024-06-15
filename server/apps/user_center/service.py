@@ -19,7 +19,6 @@ from utils.custom_exception import ErrorCode
 
 logger = logging.getLogger(__name__)
 
-
 class ExternalUserService:
     def __init__(self, unionid):
         self.unionid = unionid
@@ -130,7 +129,6 @@ class StudyContentService:
         for lesson_info in lessons_info:
             study_content = CourseScheduleContent.objects.filter(user=self.user_id, lesson=lesson_info['id']).order_by(
                 '-id').first()
-
             lesson_info.update({
                 "open_time": study_content.open_time if study_content else None,
                 "study_status": self.check_study_status(study_content)
@@ -190,7 +188,8 @@ class StudyContentService:
             else:
                 card['study_status'] = StudyStatus.UNLOCKED.value[0]
 
-        lesson_study_progress['current_index'] = lesson['cards'][max(lesson_study_progress['finish_count'] - 1, 0)]['id']
+        lesson_study_progress['current_index'] = lesson['cards'][max(lesson_study_progress['finish_count'] - 1, 0)][
+            'id']
 
         if lesson_study_progress['total_count'] != lesson_study_progress['finish_count']:
             lesson_study_progress['next_index'] = \

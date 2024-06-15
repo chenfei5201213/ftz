@@ -5,7 +5,7 @@ from .views import CourseViewSet, LessonViewSet, CardViewSet, StudyMaterialViewS
     MyTokenObtainPairView
 from .views import SurveyViewSet, QuestionViewSet, UserResponseViewSet, CourseScheduleViewSet
 from .views import CourseScheduleStudentViewSet, UserStudyRecordViewSet, StudyMaterialSimpleViewSet
-from .views import CardListSimpleViewSet
+from .views import CardListSimpleViewSet, UserStudyContentViewSet
 
 router = routers.DefaultRouter()
 router.register('course', CourseViewSet, basename='course')
@@ -22,6 +22,7 @@ router.register('survey/responses', UserResponseViewSet, basename='responses')
 router.register('sc/course', CourseScheduleViewSet, basename='course')
 router.register('sc/user', CourseScheduleStudentViewSet, basename='user')
 router.register('sc/study_record', UserStudyRecordViewSet, basename='study_record')
+router.register('sc/study_content', UserStudyContentViewSet, basename='study_content')
 urlpatterns = [
     path('', include(router.urls)),
     path('token/', MyTokenObtainPairView.as_view()),

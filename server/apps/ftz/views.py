@@ -8,10 +8,11 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework import filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig, Survey, Question, UserResponse
+from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig, Survey, Question, UserResponse, \
+    CourseScheduleContent
 from .models import TermCourse, CourseScheduleStudent, UserStudyRecord
 from .serializers import CourseSerializer, CardListSerializer, StudyMaterialListSerializer, LessonListSerializer, \
-    CardListSimpleSerializer
+    CardListSimpleSerializer, CourseScheduleContentSerializer
 from .serializers import TagSerializer, StudyMaterialDetailSerializer, CardDetailSerializer, LessonDetailSerializer
 from .serializers import EnumConfigSerializer, SurveySerializer, QuestionSerializer, UserResponseSerializer
 from .serializers import TermCourseSerializer, CourseScheduleStudentSerializer, UserStudyRecordSerializer
@@ -272,6 +273,21 @@ class UserStudyRecordViewSet(ModelViewSet):
     queryset = UserStudyRecord.objects.all()
     serializer_class = UserStudyRecordSerializer
     search_fields = ['user']
+    ordering_fields = ['pk']
+    ordering = ['-pk']
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['user']
+
+
+class UserStudyContentViewSet(ModelViewSet):
+    """
+    学习内容-增删改查
+    """
+    perms_map = {'get': '*', 'post': 'role_create',
+                 'put': 'role_update', 'delete': 'role_delete'}
+    queryset = CourseScheduleContent.objects.all()
+    serializer_class = CourseScheduleContentSerializer
+    search_fields = ['user__id', 'id']
     ordering_fields = ['pk']
     ordering = ['-pk']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]

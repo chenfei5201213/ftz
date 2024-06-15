@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime, timedelta
 
+from django.utils import timezone
+
 from apps.ftz.models import Course, TermCourse, CourseScheduleStudent, CourseScheduleContent, Lesson, StudyMaterial, \
     UserStudyRecord
 from apps.ftz.serializers import CourseScheduleContentSerializer
@@ -130,6 +132,7 @@ class TermCourseService:
                                                               study_material=study_material_id).first()
         if course_content and course_content.study_status < status:
             course_content.study_status = status
+            course_content.finish_time = timezone.now()
             course_content.save()
             user_study_record = UserStudyRecord(user=course_content.user, lesson_number=course_content.lesson_number,
                                                 lesson=course_content.lesson,

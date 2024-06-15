@@ -43,7 +43,7 @@
         <template slot-scope="scope">{{ scope.row.user }}</template>
       </el-table-column>
       <el-table-column label="课时ID">
-        <template slot-scope="scope">{{ scope.row.lesson_info.id }}</template>
+        <template slot-scope="scope">{{ scope.row.lesson }}</template>
       </el-table-column>
       <el-table-column label="开课时间">
         <template slot-scope="scope">{{ scope.row.open_time }}</template>
@@ -74,12 +74,12 @@ import {
   getCourseList,
 } from "@/api/course";
 import {
-  getScStudyRecordList,
-  getScStudyRecordById,
-  createScStudyRecord,
-  updateScStudyRecord,
-  deleteScStudyRecord
-} from "@/api/sc_study_record";
+  getScStudyContentList,
+  getScStudyContentById,
+  createScStudyContent,
+  updateScStudyContent,
+  deleteScStudyContent
+} from "@/api/sc_study_contents";
 
 import {genTree, deepClone} from "@/utils";
 import checkPermission from "@/utils/permission";
@@ -146,7 +146,7 @@ export default {
     getList() {
       this.listLoading = true;
       // this.listQuery.course = this.course;
-      getScStudyRecordList(this.listQuery).then((response) => {
+      getScStudyContentList(this.listQuery).then((response) => {
         this.tableDataList = response.data;
         this.listLoading = false;
       });
@@ -188,7 +188,7 @@ export default {
         type: "error",
       })
         .then(async () => {
-          await deleteScStudyRecord(scope.row.id);
+          await deleteScStudyContent(scope.row.id);
           this.getList();
           this.$message({
             type: "success",
@@ -207,7 +207,7 @@ export default {
         if (valid) {
           const isEdit = this.dialogType === "edit";
           if (isEdit) {
-            updateScStudyRecord(this.tableData.id, this.tableData).then(() => {
+            updateScStudyContent(this.tableData.id, this.tableData).then(() => {
               this.getList();
               this.dialogVisible = false;
               this.$message({
@@ -216,7 +216,7 @@ export default {
               });
             });
           } else {
-            createScStudyRecord(this.tableData).then((res) => {
+            createScStudyContent(this.tableData).then((res) => {
               this.getList();
               this.dialogVisible = false;
               this.$message({

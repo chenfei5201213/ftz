@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 class WechatUtil:
+    """公众号"""
 
     @staticmethod
     def wechat_login():
