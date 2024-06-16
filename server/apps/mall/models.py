@@ -12,7 +12,8 @@ class Product(SoftModel):
     name = models.CharField(max_length=255)
     type = models.CharField('商品类型', max_length=20, choices=[])
     description = models.TextField('描述', blank=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField('现价', max_digits=10, decimal_places=2)
+    original_price = models.DecimalField('原价', max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=[])
 
     def __init__(self, *args, **kwargs):

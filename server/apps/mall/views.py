@@ -17,7 +17,7 @@ from .service import ProductService
 
 from ..ftz.models import TermCourse
 from ..payments.services.wechat_pay import WeChatPayService
-from ..system.authentication import ExternalUserAuth
+from ..system.authentication import ExternalUserAuth, CustomBackend
 from ..system.permission import ExternalUserPermission
 from ..system.tasks import send_bug_course_success_message
 from ..user_center.service import StudyContentService
@@ -42,7 +42,9 @@ class ProductSellViewSet(ModelViewSet):
     """
     商品售卖-增删改查
     """
-    permission_classes = [AllowAny]
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+    # permission_classes = [AllowAny]
     perms_map = {'get': '*', 'post': 'role_create',
                  'put': 'role_update', 'delete': 'role_delete'}
     queryset = Product.objects.all()

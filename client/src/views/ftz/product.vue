@@ -48,11 +48,14 @@
       <el-table-column label="商品类型">
         <template slot-scope="scope">{{ scope.row.type_description }}</template>
       </el-table-column>
-      <el-table-column label="商品价格">
+      <el-table-column label="商品原价">
+        <template slot-scope="scope">{{ scope.row.original_price }}</template>
+      </el-table-column>
+      <el-table-column label="商品售价">
         <template slot-scope="scope">{{ scope.row.price }}</template>
       </el-table-column>
       <el-table-column label="商品状态">
-        <template slot-scope="scope">{{ scope.row.status }}</template>
+        <template slot-scope="scope">{{ scope.row.status_description }}</template>
       </el-table-column>
       <el-table-column label="商品描述">
         <template slot-scope="scope">{{ scope.row.description }}</template>
@@ -120,9 +123,11 @@
         <el-form-item label="商品标题" prop="term_number">
           <el-input v-model="tableData.name" placeholder="商品标题"/>
         </el-form-item>
+        <el-form-item label="商品原价(元)" prop="original_price">
+          <el-input v-model="tableData.original_price" placeholder="商品价格，支持小数点后两位"/>
+        </el-form-item>
 
-
-        <el-form-item label="商品价格(元)" prop="price">
+        <el-form-item label="商品售价(元)" prop="price">
           <el-input v-model="tableData.price" placeholder="商品价格，支持小数点后两位"/>
         </el-form-item>
         <el-form-item label="商品描述" prop="description">
