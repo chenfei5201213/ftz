@@ -5,6 +5,7 @@ import time
 
 from django.utils import timezone
 
+from server.settings import REDIRECT_URI
 from utils.wechat.template_message_config import COURSE_REGISTRATION_SUCCESS_NOTIFICATION, CLASS_REMINDER_MESSAGE
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'server.settings'
@@ -16,7 +17,7 @@ from django.core.cache import cache
 from utils.custom_exception import WxException, ErrorCode
 from utils.retry_requests import retry_request
 
-from utils.wechat import APPID, WX_AUTH_URL, REDIRECT_URI, SECRET, WX_CODE_ACCESS_TOKEN_URL, \
+from utils.wechat import APPID, WX_AUTH_URL, SECRET, WX_CODE_ACCESS_TOKEN_URL, \
     WX_CODE_ACCESS_REFRESH_TOKEN_URL, \
     WX_USER_INFO_URL, WX_ACCESS_TOKEN_URL, WX_TEMPLATE_MESSAGE_SEND_URL
 

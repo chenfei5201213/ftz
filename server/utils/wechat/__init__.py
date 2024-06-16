@@ -19,7 +19,7 @@ WX_USER_INFO_URL = "https://api.weixin.qq.com/sns/userinfo"
 
 # 设置授权回调URL
 # REDIRECT_URI = "http://www.ngsmq.online/api/us/wx/login/"
-REDIRECT_URI = "http://www.ngsmq.online/web/index.html"
+# REDIRECT_URI = "http://www.ngsmq.online/web/index.html"
 
 
 # 基础消息
