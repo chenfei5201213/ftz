@@ -12,10 +12,16 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 from datetime import datetime, timedelta
 import os
+
+from environ import Env
+
 from . import conf
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ENVIRONMENT = os.getenv('DJANGO_ENV')
+env = Env()
+env.read_env(f'./.env.{ENVIRONMENT}')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
@@ -86,7 +92,16 @@ CSRF_TRUSTED_ORIGINS = ['https://ngsmq.online', 'https://wwww.ngsmq.online', 'ht
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-DATABASES = conf.DATABASES
+DATABASES = {
+    'default': {
+        'ENGINE': f'django.db.backends.{env("DB_TYPE")}',
+        'NAME': env("DB_NAME"),
+        'USER': env("DB_USER"),
+        'PASSWORD': env("DB_PASSWORD"),
+        'HOST': env("DB_HOST"),
+        'PORT': env("DB_PORT"),
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -123,12 +138,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'dist/static')
-if DEBUG:
-    STATIC_ROOT = None
-    STATICFILES_DIRS = (
-        os.path.join(BASE_DIR, 'dist/static'),
-    )
+# STATIC_ROOT = os.path.join(BASE_DIR, 'dist/static')
+STATIC_ROOT = None
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'dist/static'),
+)
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -183,12 +197,12 @@ AUTHENTICATION_BACKENDS = (
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://106.55.197.173:6379/1",
+        "LOCATION": f"redis://{env('REDIS_HOST')}:{env('REDIS_PORT')}/1",
     }
 }
 
 # celery配置,celery正常运行必须安装redis
-CELERY_BROKER_URL = "redis://106.55.197.173:6379/0"  # 任务存储
+CELERY_BROKER_URL = "redis://{env('REDIS_HOST')}:{env('REDIS_PORT')}/0"  # 任务存储
 CELERYD_MAX_TASKS_PER_CHILD = 100  # 每个worker最多执行300个任务就会被销毁，可防止内存泄露
 CELERY_TIMEZONE = 'Asia/Shanghai'  # 设置时区
 CELERY_ENABLE_UTC = True  # 启动时区设置
@@ -303,7 +317,8 @@ MINIAPP_KEY = '9d277900d826618a74dc35e323e14393'
 
 
 # 回调地址，也可以在调用接口的时候覆盖
-NOTIFY_URL = 'https://www.ngsmq.online.com/api/mall/pay/wx/notify/'
+NOTIFY_URL = f'https://{env("DOMAIN_NAME")}/api/mall/pay/wx/notify/'
+
 
 # 微信支付平台证书缓存目录，减少证书下载调用次数，首次使用确保此目录为空目录.
 # 初始调试时可不设置，调试通过后再设置，示例值:'./cert'

@@ -45,9 +45,11 @@ JWT认证,可使用simple_history实现审计功能,支持swagger
 
 可导入初始数据 `python manage.py loaddata db.json` 或直接使用sqlite数据库(超管账户密码均为admin,每隔一段时间数据库会重置)
 
-创建超级管理员 `python manage.py createsuperuser`
+创建超级管理员 `DJANGO_ENV=prod python manage.py createsuperuser`
 
-运行服务 `python manage.py runserver 8000` 
+运行服务 `DJANGO_ENV=prod python manage.py runserver 8000` 
+
+线上运行服务 `DJANGO_ENV=prod sh start.sh`
 
 ### vue前端
 定位到client文件夹
@@ -99,6 +101,7 @@ server {
                 limit_rate 800k;
         }
         location / {
+                proxy_pass http://http://106.55.197.173:32769;
                 alias /home/lighthouse/xx/dist/;
                 index index.html;
         }
@@ -107,6 +110,7 @@ server {
                 if ($http_cookie ~* "CSRFTOKEN=(.+?)(?=;|$)") {
                         set $CSRFTOKEN "$1";
                 }
+                proxy_pass http://http://106.55.197.173:8000;
                 proxy_set_header X-CSRFToken $CSRFTOKEN;
                 proxy_pass http://localhost:2251;
                 proxy_pass_header  Authorization;
@@ -116,7 +120,7 @@ server {
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
         location /ws/ {
-                proxy_pass http://localhost:2252;
+                proxy_pass http://http://106.55.197.173:8000;
                 proxy_http_version 1.1;
                 proxy_set_header Upgrade $http_upgrade;
                 proxy_set_header Connection "upgrade";
