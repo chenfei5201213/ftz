@@ -61,8 +61,8 @@ pytz==2024.1
 PyYAML==6.0.1
 redis==5.0.4
 requests==2.32.2
-retrying @ file:///Users/ktietz/demo/mc3/conda-bld/retrying_1629465456590/work
-six @ file:///tmp/build/80754af9/six_1644875935023/work
+retrying
+six
 sqlparse==0.5.0
 stack-data==0.6.3
 tabulate==0.8.9
