@@ -15,11 +15,9 @@ import os
 
 from environ import Env
 
-from . import conf
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ENVIRONMENT = os.getenv('DJANGO_ENV')
+ENVIRONMENT = os.getenv('DJANGO_ENV', 'dev')
 env = Env()
 env.read_env(f'./.env.{ENVIRONMENT}')
 
@@ -30,7 +28,7 @@ env.read_env(f'./.env.{ENVIRONMENT}')
 SECRET_KEY = 'ez9z3a4m*$%srn9ve_t71yd!v+&xn9@0k(e(+l6#g1h=e5i4da'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = conf.DEBUG
+DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = ['*']
 
