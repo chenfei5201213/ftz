@@ -57,7 +57,15 @@ class ProductService:
         except Product.DoesNotExist:
             raise ProductException("商品不存在", ErrorCode.ProductNotExit.value)
         except IntegrityError:
-            raise OrderException('订单已存在，请无重复创建', ErrorCode.OrderDuplication.value)
+            order = Order.objects.filter(user=user_id, product=product_id).first()
+            data = {
+                'order_info': OrderSerializer(order).data if order else {}
+            }
+            payment_record = PaymentRecord.objects.filter(order=order.id).order_by('-id').first()
+            data.update({
+                'payment_record_info': PaymentRecordSerializer(payment_record).data if payment_record else {}
+            })
+            raise OrderException('订单已存在，请无重复创建', ErrorCode.OrderDuplication.value, data=data)
         except InsertTermContext:
             return serializer.data
         except Exception as e:

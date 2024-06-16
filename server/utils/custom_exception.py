@@ -24,9 +24,10 @@ class ErrorCode(Enum):
 
 
 class FtzException(Exception):
-    def __init__(self, message, error_code=ErrorCode.DefaultError.value):
+    def __init__(self, message, error_code=ErrorCode.DefaultError.value, data={}):
         self.message = message
         self.error_code = error_code
+        self.data = data
         super().__init__(self.message)
 
     def __str__(self):

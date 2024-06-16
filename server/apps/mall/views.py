@@ -128,7 +128,11 @@ class OrderCreate(APIView):
             return Response(order, status=status.HTTP_201_CREATED)
         except FtzException as e:
             # 捕获 IntegrityError 并返回错误响应
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            data = {
+                'error': e.message
+            }
+            data.update(**e.data)
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             # 捕获其他异常并返回错误响应
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
