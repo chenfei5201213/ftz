@@ -224,7 +224,7 @@ export default {
         {value:'1',name:'50音卡片展示页A',datas:[{label:'单词图片',col:'file1',type:'file'},{label: '图片',col:'file2',type:'file'},{label:'汉字',col:'content1',type:'content'},{label:'片假名',col:'content2',type:'content'}]},
         {value:'2',name:'50音卡片展示页B',datas:[{label:'配置图片',col:'file1',type:'file'},{label:'罗马音',col:'char1',type:'char'},{label:'词源',col:'char2',type:'char'},{label:'慢速发音',col:'video1',type:'video'},{label:'快速发音',col:'video2',type:'video'},{label:'发音技巧',col:'content1',type:'content'},{label:'单词',col:'content2',type:'content'}]},
         {value:'3',name:'单词卡A面',datas:[{label:'配置图片',col:'file1',type:'file'},{label:'图片',col:'file2',type:'file'},{label:'句子',col:'content1',type:'content'}]},
-        {value:'4',name:'单词卡B面',datas:[{label:'单词',col:'char1',type:'char'},{label:'词性',col:'char2',type:'char'},{label:'含义',col:'char3',type:'char'},{label:'慢速发音',col:'video1',type:'video'},{label:'快速发音',col:'video2',type:'video'},{label:'常见搭配',col:'content1',type:'content'},{label:'例句',col:'content2',type:'content'}]},
+        {value:'4',name:'单词卡B面',datas:[{label:'单词图片',col:'file1',type:'file'},{label:'词性',col:'char1',type:'char'},{label:'含义',col:'char2',type:'char'},{label:'慢速发音',col:'video1',type:'video'},{label:'快速发音',col:'video2',type:'video'},{label:'常见搭配',col:'content1',type:'content'},{label:'例句',col:'content2',type:'content'}]},
         {value:'5',name:'语法卡A面',datas:[{label:'文法图片',col:'file1',type:'file'},{label:'示意图片',col:'file2',type:'file'}]},
         {value:'6',name:'语法卡B面',datas:[{label:'配置图片',col:'file1',type:'file'},{label:'慢速发音',col:'video1',type:'video'},{label:'快速发音',col:'video2',type:'video'},{label:'含义',col:'content1',type:'content'},{label:'例句',col:'content2',type:'content'}]},
         {value:'7',name:'板块过渡页',datas:[{label:'选择板块',col:'num',type:'select'},{label:'板块介绍文字',col:'char1',type:'char'}]},
@@ -259,7 +259,6 @@ export default {
   methods: {
     checkPermission,
     changeType(e) {
-      console.log(e)
       this.fileData = this.typeOptions[e].datas
       var datas = this.typeOptions[e].datas
       for (var i = 0; i < datas.length; i++) {
@@ -321,7 +320,7 @@ export default {
     copyEdit(scope) {
       this.clearData()
       this.tableData = Object.assign({}, scope.row) // copy obj
-      this.tableData.id = '';
+      this.tableData.id = ''
       this.fileData = this.typeOptions[this.tableData.type].datas
       this.readyData = JSON.parse(this.tableData.context)
       this.dialogType = 'new'
@@ -362,16 +361,8 @@ export default {
       if (this.tableData.type >= 0 ) {
         for (let key in this.fileData) {
           var k = this.fileData[key].col
-          var label = this.fileData[key].label
-          if (!this.readyData[k] && this.readyData[k] != 0) {
-            var str = label + "不能为空"
-            this.$message.error(str)
-            return
-          } else {
-            this.addData[k] = this.readyData[k]
-          }
+          this.addData[k] = this.readyData[k]
         }
-        //this.tableData.type = this.type
         this.tableData.context = JSON.stringify(this.addData)
       } else {
         this.$message.error('请选择素材类型')
@@ -407,6 +398,7 @@ export default {
     clearData() {
       this.type = ''
       this.fileData = {}
+      this.addData = {}
       this.readyData = {
           file1: '',
           file2: '',
