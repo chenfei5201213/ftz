@@ -48,6 +48,8 @@ class ProductSellSerializer(serializers.ModelSerializer):
         # 获取与商品关联的期课信息
         # term_courses = obj.course.termcourse_set.all()
         term_courses = TermCourse.objects.filter(course=obj.course, enrollment_end__gte=timezone.now()).first()
+        if not term_courses:
+            return {}
         serializer = TermCourseSerializer(term_courses)
         return serializer.data
 

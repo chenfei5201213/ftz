@@ -47,11 +47,11 @@ class ProductSellViewSet(ModelViewSet):
     # permission_classes = [AllowAny]
     perms_map = {'get': '*', 'post': 'role_create',
                  'put': 'role_update', 'delete': 'role_delete'}
-    queryset = Product.objects.all()
+    queryset = Product.objects.filter().all()
     serializer_class = ProductSellSerializer
     search_fields = ['name']
-    ordering_fields = ['-pk']
-    ordering = ['pk']
+    ordering_fields = ['pk']
+    ordering = ['-id']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['course', 'status', 'type']
 
@@ -68,7 +68,7 @@ class ProductSellViewSet(ModelViewSet):
             queryset = queryset.filter(type=type_param)
         if status_param:
             queryset = queryset.filter(status=status_param)
-
+        queryset = queryset.order_by('-id')
         # # 获取当前时间
         # now = timezone.now()
         #
