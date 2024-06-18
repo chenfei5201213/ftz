@@ -133,14 +133,14 @@
                 <VueEditor v-model="readyData[item.col]"></VueEditor>
               </block>
               <block v-if="item.type == 'video'">
-                <el-upload class="avatar-uploader" :action="upUrl" :show-file-list="false" v-if="item.col == 'video1'"
+                <el-upload class="avatar-uploader" :action="upUrl" :show-file-list="true" v-if="item.col == 'video1'"
                   :on-success="handleAvatarSuccessVideo"
                   :before-upload="beforeAvatarUploadVideo"
                   :headers="upHeaders">
                   <i v-if="readyData.video1" class="el-icon-video-play avatar-uploader-icon" />
                   <i v-else class="el-icon-plus avatar-uploader-icon" />
                 </el-upload>
-                <el-upload class="avatar-uploader" :action="upUrl" :show-file-list="false" v-if="item.col == 'video2'"
+                <el-upload class="avatar-uploader" :action="upUrl" :show-file-list="true" v-if="item.col == 'video2'"
                   :on-success="handleAvatarSuccessVideo2"
                   :before-upload="beforeAvatarUploadVideo"
                   :headers="upHeaders">
