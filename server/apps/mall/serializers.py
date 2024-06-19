@@ -1,3 +1,5 @@
+import json
+
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -89,6 +91,7 @@ class PaymentRecordSerializer(serializers.ModelSerializer):
     """
     payment_method_description = serializers.SerializerMethodField()
     status_description = serializers.SerializerMethodField()
+    pay_result_detail = serializers.SerializerMethodField()
 
     class Meta:
         model = PaymentRecord
@@ -99,3 +102,6 @@ class PaymentRecordSerializer(serializers.ModelSerializer):
 
     def get_status_description(self, obj):
         return obj.status_description
+
+    def get_pay_result_detail(self, obj):
+        return json.loads(obj.pay_result_detail or '{}')

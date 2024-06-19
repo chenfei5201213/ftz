@@ -1,7 +1,9 @@
+import json
 import logging
 import uuid
 
 from django.db import IntegrityError
+from django.utils import timezone
 
 from utils.custom_exception import ErrorCode
 from .exception import OrderException, ProductException, InsertTermContext, OrderPayException
@@ -88,7 +90,7 @@ class ProductService:
                                                                   status=PaymentStatus.INIT.value)
 
                     payment_record.status = PaymentStatus.PENDING.value
-                    payment_record.pay_result_detail = result
+                    payment_record.pay_result_detail = json.dumps(result)
                     payment_record.pay_id = result['result']['package'].split('=')[1]
                     payment_record.save()
                 else:
@@ -97,12 +99,14 @@ class ProductService:
                 payment_record = PaymentRecord.objects.create(order=order,
                                                               payment_method=payment_method,
                                                               amount=0,
-                                                              status=PaymentStatus.PAID.value)
+                                                              status=PaymentStatus.PAID.value,
+                                                              pay_time=timezone.now())
                 order.status = OrderStatus.PAID.value
                 order.save()
             # 返回支付记录信息
-            serializer = PaymentRecordSerializer(payment_record)
-            return serializer.data
+            data = PaymentRecordSerializer(payment_record).data
+            # data['pay_result_detail'] = json.loads(data.get('pay_result_detail', '{}'))
+            return data
         except Order.DoesNotExist:
             raise OrderException('订单不存在', ErrorCode.OrderNotExit.value)
         except Exception as e:

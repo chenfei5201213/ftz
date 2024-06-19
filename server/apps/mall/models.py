@@ -48,7 +48,7 @@ class Order(SoftModel):
     order_date = models.DateTimeField(auto_now_add=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=[])
-    order_uuid = models.CharField(max_length=20)
+    order_uuid = models.CharField(max_length=128)
 
     def __init__(self, *args, **kwargs):
         super(Order, self).__init__(*args, **kwargs)
