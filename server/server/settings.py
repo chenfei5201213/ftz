@@ -86,7 +86,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'server.wsgi.application'
-CSRF_TRUSTED_ORIGINS = ['https://ngsmq.online', 'https://wwww.ngsmq.online', 'http://wwww.ngsmq.online', 'http://127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ['https://ngsmq.online',
+                        'https://wwww.ngsmq.online',
+                        'http://wwww.ngsmq.online',
+                        'https://wwww.fantuanzi.com.cn',
+                        'http://wwww.fantuanzi.com.cn',
+                        'http://127.0.0.1']
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
@@ -141,8 +146,8 @@ STATIC_ROOT = None
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'dist/static'),
 )
-
-MEDIA_URL = '/media/'
+DOMAIN_NAME = env('DOMAIN_NAME')
+MEDIA_URL = f"http://{DOMAIN_NAME}/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # 默认主键
@@ -159,6 +164,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
         'apps.system.permission.RbacPermission'
     ],
+    # 'DEFAULT_PAGINATION_CLASS': [CustomPageNumberPagination],
     'DEFAULT_RENDERER_CLASSES': [
         'utils.response.FitJSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer'
@@ -311,8 +317,6 @@ APIV3_KEY = 'Fantuanzigogogo66666888882025068'
 APPID = 'wxf1b19d71f836bb72'  # 服务号
 # APPID = 'wx8dc38edd7b81d08e'  # 小程序
 MINIAPP_KEY = '9d277900d826618a74dc35e323e14393'
-
-
 
 # 回调地址，也可以在调用接口的时候覆盖
 NOTIFY_URL = f'https://{env("DOMAIN_NAME")}/api/mall/pay/wx/notify/'
