@@ -36,6 +36,8 @@ class PageOrNot:
 
 
 def gen_nex_url(old_url):
+    if not old_url:
+        return
     # 解析 URL
     parsed_url = urlparse(old_url)
 
