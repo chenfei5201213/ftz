@@ -148,6 +148,7 @@ STATICFILES_DIRS = (
 )
 DOMAIN_NAME = env('DOMAIN_NAME')
 MEDIA_URL = f"http://{DOMAIN_NAME}/media/"
+MEDIA_PATH = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # 默认主键
