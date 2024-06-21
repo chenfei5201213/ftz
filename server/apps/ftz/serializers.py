@@ -25,10 +25,42 @@ class LessonListSerializer(serializers.ModelSerializer):
     课时序列化
     """
     type_description = serializers.SerializerMethodField()
+    cards = serializers.PrimaryKeyRelatedField(queryset=Card.objects.all(), many=True)
 
     class Meta:
         model = Lesson
         fields = '__all__'
+
+    def create(self, validated_data):
+        # 提取并移除cards字段，以便稍后手动添加
+        cards_data = validated_data.pop('cards', None)
+        instance = super().create(validated_data)
+
+        if cards_data:
+            # 添加卡片到lesson的多对多关系，并保持请求中传递的顺序
+            for index, card in enumerate(cards_data):
+                instance.cards.add(card, through_defaults={'order': index})
+
+        return instance
+
+    def update(self, instance, validated_data):
+        # 更新实例的字段
+        instance.title = validated_data.get('title', instance.title)
+        instance.description = validated_data.get('description', instance.description)
+        # 其他字段的更新...
+
+        # 提取并移除cards字段，以便稍后手动添加
+        cards_data = validated_data.pop('cards', None)
+        instance.save()
+
+        if cards_data:
+            # 清除当前关系
+            instance.cards.clear()
+            # 添加卡片到lesson的多对多关系，并保持请求中传递的顺序
+            for index, card in enumerate(cards_data):
+                instance.cards.add(card, through_defaults={'order': index})
+
+        return instance
 
     def get_type_description(self, obj):
         # 调用Course模型中的type_description属性
@@ -62,12 +94,35 @@ class CardListSerializer(serializers.ModelSerializer):
     type_description = serializers.SerializerMethodField()
     difficulty_description = serializers.SerializerMethodField()
     status_description = serializers.SerializerMethodField()
+    study_materials = serializers.PrimaryKeyRelatedField(queryset=StudyMaterial.objects.all(), many=True)
+
 
     # study_materials = serializers.SerializerMethodField()
 
     class Meta:
         model = Card
         fields = '__all__'
+
+    def create(self, validated_data):
+        study_materials_data = validated_data.pop('study_materials', None)
+        instance = super().create(validated_data)
+
+        if study_materials_data:
+            for index, study_material in enumerate(study_materials_data):
+                instance.study_materials.add(study_material, through_defaults={'order': index})
+
+        return instance
+
+    def update(self, instance, validated_data):
+        study_materials_data = validated_data.pop('study_materials', None)
+        instance = super().update(instance, validated_data)
+
+        if study_materials_data:
+            instance.study_materials.clear()
+            for index, study_material in enumerate(study_materials_data):
+                instance.study_materials.add(study_material, through_defaults={'order': index})
+
+        return instance
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
