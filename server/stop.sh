@@ -1,0 +1,1 @@
+ps aux | grep 'gun' | grep -v 'grep' | awk '{print $2}' | xargs kill

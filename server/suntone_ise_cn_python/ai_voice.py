@@ -13,9 +13,10 @@ import websocket
 
 from suntone_ise_cn_python.sample import ne_utils, aipass_client
 from suntone_ise_cn_python.data import *
-from utils.custom_exception import ErrorCode
 
 logger = logging.getLogger(__name__)
+print("jsonpath module location:", jsonpath.__file__)
+print("jsonpath.jsonpath exists:", hasattr(jsonpath, 'jsonpath'))
 
 
 # 收到websocket连接建立的处理
@@ -24,6 +25,8 @@ def on_open(ws):
         # 清除文件
         # ne_utils.del_file('server/suntone_ise_cn_python/resource/output')
         # 判断是否是多模请求
+        # json_data = json.loads(request_data)
+        print(request_data)
         exist_audio = jsonpath.jsonpath(request_data, "$.payload.*.audio")
         exist_video = jsonpath.jsonpath(request_data, "$.payload.*.video")
         multi_mode = True if exist_audio and exist_video else False
@@ -49,6 +52,8 @@ def on_open(ws):
 def on_message(ws, message, key='', result={}):
     # aipass_client.deal_message(ws, message)
     message = eval(message)
+    logger.info(f"on_message1: {message}")
+    print(f"on_message2: {message}")
     if message["header"]["status"] == 2:
         text = message["payload"]["result"]["text"]
         text_de = base64.b64decode(text)
@@ -56,7 +61,7 @@ def on_message(ws, message, key='', result={}):
         ws.close()
     else:
         result[key] = message
-        logger.info(f"on_message: {message}")
+
 
 
 # 收到websocket错误的处理
@@ -88,7 +93,7 @@ def recognize_audio(file_path, ref_text):
 if __name__ == '__main__':
     # 程序启动的时候设置APPID
     request_data['header']['app_id'] = APPId
-    # request_data['parameter']['st']['refText'] = "test"
+    request_data['parameter']['st']['refText'] = "test"
     auth_request_url = ne_utils.build_auth_request_url(request_url, "GET", APIKey, APISecret)
     websocket.enableTrace(False)
     u_key = str(uuid.uuid4())
