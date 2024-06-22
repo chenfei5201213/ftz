@@ -1,8 +1,8 @@
-APPId = "bce01e7e"
-APIKey = "d2fc3267a72a35b3a526899eae0a03b8"
-APISecret = "MTMzYjIwZjQwZWQ5NmUwZmExYzgwOGQ5"
+APPId = "bf5794b5"
+APIKey = "d450c29f9db543f91f945dc000d61573"
+APISecret = "Y2RhZjk5MmU1YWU0NDE2NWViNzMyNThm"
 # audio_path = "./resource/input/audio/您好，欢迎来到科大讯飞.mp3"
-audio_path = "/server/suntone_ise_cn_python/resource/input/audio/e86852dae05ebb9af46cc82d9bbaf647ae68e78c792eba8febff4876.mp3"
+audio_path = "../../server/media/Lf9kjiMwojSBfde91345f9a758e5dd5c39aac68666fc.durationTime3338.aac"
 
 # 请求数据
 request_data = {

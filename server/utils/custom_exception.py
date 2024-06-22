@@ -21,6 +21,7 @@ class ErrorCode(Enum):
     ExternalUserDuplication = 100400  # 用户已存在
 
     WxGzhInterFaceException = 100500  # 微信公众号接口异常
+    XfYunException = 100600  # 讯飞云异常
 
 
 class FtzException(Exception):

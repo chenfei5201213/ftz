@@ -13,12 +13,15 @@ from suntone_ise_cn_python.sample.exception import FileNotFoundException
 class AiVoiceViewSet(APIView):
     authentication_classes = [ExternalUserAuth]
     permission_classes = [ExternalUserPermission]
+
     def get(self, request):
         query_params = request.query_params
         file_path = query_params.get('file_path')
         ref_text = query_params.get('ref_text')
         try:
             result = recognize_audio(file_path, ref_text)
+            if result.get('header', {}).get('code'):
+                return Response({'error': result}, status=status.HTTP_400_BAD_REQUEST)
         except FileNotFoundException as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(data=result)

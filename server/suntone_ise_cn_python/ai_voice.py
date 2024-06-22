@@ -11,8 +11,9 @@ import logging
 import jsonpath
 import websocket
 
-from .sample import ne_utils, aipass_client
-from .data import *
+from suntone_ise_cn_python.sample import ne_utils, aipass_client
+from suntone_ise_cn_python.data import *
+from utils.custom_exception import ErrorCode
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,9 @@ def on_message(ws, message, key='', result={}):
         text_de = base64.b64decode(text)
         result[key] = json.loads(text_de)
         ws.close()
+    else:
+        result[key] = message
+        logger.info(f"on_message: {message}")
 
 
 # 收到websocket错误的处理
@@ -84,6 +88,7 @@ def recognize_audio(file_path, ref_text):
 if __name__ == '__main__':
     # 程序启动的时候设置APPID
     request_data['header']['app_id'] = APPId
+    # request_data['parameter']['st']['refText'] = "test"
     auth_request_url = ne_utils.build_auth_request_url(request_url, "GET", APIKey, APISecret)
     websocket.enableTrace(False)
     u_key = str(uuid.uuid4())
