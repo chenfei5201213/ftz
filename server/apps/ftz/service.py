@@ -141,6 +141,6 @@ class TermCourseService:
             user_study_record.save()
         else:
             logger.info(
-                f'study_material_id: {study_material_id}, lesson_id: {lesson_id} 当前状态为：{course_content.study_status}, 目标状态：{status},不允许回退状态，默认不处理')
+                f'study_material_id: {study_material_id}, lesson_id: {lesson_id} 当前状态为：{course_content}, 目标状态：{status},不允许回退状态，默认不处理')
         return course_content
 
