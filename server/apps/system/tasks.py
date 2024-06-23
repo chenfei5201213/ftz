@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from apps.ftz.models import CourseScheduleContent
+from apps.system.models import RequestLog
 from utils.wechat.wechat_util import WchatTemplateMessage
 
 logger = logging.getLogger(__name__)
@@ -55,3 +56,17 @@ def class_reminder():
         except Exception as e:
             logger.exception(f'上课提醒异常')
 
+
+@shared_task
+def save_request_log(method, path, remote_addr, query_params, body_params, duration):
+    try:
+        RequestLog.objects.create(
+            method=method,
+            path=path,
+            remote_addr=remote_addr,
+            query_params=query_params,
+            body_params=body_params,
+            duration=duration
+        )
+    except Exception as e:
+        logger.exception(f"写入日志异常")

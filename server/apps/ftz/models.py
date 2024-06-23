@@ -1,4 +1,5 @@
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 from apps.user_center.models import ExternalUser
 from utils.model import SoftModel
@@ -20,6 +21,7 @@ class EnumConfig(SoftModel):
     name = models.CharField('名称', max_length=128, blank=False)
     value = models.CharField('值', max_length=128, blank=False)
     description = models.TextField('描述', blank=True)
+    history = HistoricalRecords()
 
 
 # class Group(SoftModel):
@@ -48,6 +50,7 @@ class Course(SoftModel):
     description = models.TextField('描述', blank=True)
     type = models.CharField('课程类型', max_length=128, choices=[])
     lesson_count = models.IntegerField('课程数量', default=0)
+    history = HistoricalRecords()
 
     def __init__(self, *args, **kwargs):
         super(Course, self).__init__(*args, **kwargs)
@@ -88,6 +91,7 @@ class StudyMaterial(SoftModel):
     # words = models.ManyToManyField(Word, blank=True, verbose_name='单词', related_name='words')
     # grammars = models.ManyToManyField(Grammar, blank=True, verbose_name='语法', related_name='grammars')
     tags = models.ManyToManyField(Tag, blank=True, verbose_name='标签', related_name='tags')
+    history = HistoricalRecords()
 
     def __init__(self, *args, **kwargs):
         super(StudyMaterial, self).__init__(*args, **kwargs)
@@ -116,6 +120,8 @@ class Card(SoftModel):
     difficulty = models.CharField('难度', max_length=32, choices=[], blank=False, default='easy')
     study_materials = models.ManyToManyField(StudyMaterial, blank=True, verbose_name='素材',
                                              related_name='study_materials')
+    history = HistoricalRecords()
+
     # , through='CardStudyMaterial'
     # study_material_ids = models.JSONField(blank=True, null=True)
 
@@ -178,6 +184,7 @@ class Lesson(SoftModel):
     cards = models.ManyToManyField(Card, blank=True, verbose_name='卡片', related_name='cards')
     course_id = models.ForeignKey(Course, on_delete=models.SET_NULL, verbose_name='课程', blank=True, null=True,
                                   related_name='course')
+    history = HistoricalRecords()
 
     def __init__(self, *args, **kwargs):
         super(Lesson, self).__init__(*args, **kwargs)
@@ -262,6 +269,7 @@ class TermCourse(SoftModel):
     teacher_qr_code = models.CharField(max_length=100, blank=True)  # 老师二维码
     assistant_teacher = models.CharField(max_length=100, blank=True)  # 助教老师
     assistant_teacher_qr_code = models.CharField(max_length=100, blank=True)  # 助教老师二维码
+    history = HistoricalRecords()
 
     # 联合唯一约束
     class Meta:

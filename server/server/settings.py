@@ -66,6 +66,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
     'middleware.performance_middleware.PerformanceMiddleware',
+    'middleware.request_time_middleware.RequestTimeMiddleware',
 ]
 
 ROOT_URLCONF = 'server.urls'
@@ -208,7 +209,7 @@ CACHES = {
 }
 
 # celery配置,celery正常运行必须安装redis
-CELERY_BROKER_URL = "redis://{env('REDIS_HOST')}:{env('REDIS_PORT')}/0"  # 任务存储
+CELERY_BROKER_URL = f"redis://{env('REDIS_HOST')}:{env('REDIS_PORT')}/0"  # 任务存储
 CELERYD_MAX_TASKS_PER_CHILD = 100  # 每个worker最多执行300个任务就会被销毁，可防止内存泄露
 CELERY_TIMEZONE = 'Asia/Shanghai'  # 设置时区
 CELERY_ENABLE_UTC = True  # 启动时区设置
@@ -222,6 +223,7 @@ SWAGGER_SETTINGS = {
 
 # 日志配置
 # 创建日志的路径
+REQUEST_LOG_SAMPLE_RATE = env('REQUEST_LOG_SAMPLE_RATE')
 LOG_PATH = os.path.join(BASE_DIR, 'log')
 # 如果地址不存在，则自动创建log文件夹
 if not os.path.exists(LOG_PATH):

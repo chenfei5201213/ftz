@@ -8,7 +8,6 @@ from utils.model import SoftModel, BaseModel
 from simple_history.models import HistoricalRecords
 
 
-
 class Position(BaseModel):
     """
     职位/岗位
@@ -39,7 +38,7 @@ class Permission(SoftModel):
     is_frame = models.BooleanField('外部链接', default=False)
     sort = models.IntegerField('排序标记', default=1)
     parent = models.ForeignKey('self', null=True, blank=True,
-                            on_delete=models.SET_NULL, verbose_name='父')
+                               on_delete=models.SET_NULL, verbose_name='父')
     method = models.CharField('方法/代号', max_length=50, null=True, blank=True)
 
     def __str__(self):
@@ -63,7 +62,7 @@ class Organization(SoftModel):
     type = models.CharField('类型', max_length=20,
                             choices=organization_type_choices, default='部门')
     parent = models.ForeignKey('self', null=True, blank=True,
-                            on_delete=models.SET_NULL, verbose_name='父')
+                               on_delete=models.SET_NULL, verbose_name='父')
 
     class Meta:
         verbose_name = '组织架构'
@@ -125,6 +124,7 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+
 class DictType(SoftModel):
     """
     数据字典类型
@@ -132,7 +132,7 @@ class DictType(SoftModel):
     name = models.CharField('名称', max_length=30)
     code = models.CharField('代号', unique=True, max_length=30)
     parent = models.ForeignKey('self', null=True, blank=True,
-                            on_delete=models.SET_NULL, verbose_name='父')
+                               on_delete=models.SET_NULL, verbose_name='父')
 
     class Meta:
         verbose_name = '字典类型'
@@ -153,7 +153,7 @@ class Dict(SoftModel):
         DictType, on_delete=models.CASCADE, verbose_name='类型')
     sort = models.IntegerField('排序', default=1)
     parent = models.ForeignKey('self', null=True, blank=True,
-                            on_delete=models.SET_NULL, verbose_name='父')
+                               on_delete=models.SET_NULL, verbose_name='父')
     is_used = models.BooleanField('是否有效', default=True)
     history = HistoricalRecords()
 
@@ -165,28 +165,35 @@ class Dict(SoftModel):
     def __str__(self):
         return self.name
 
+
 class CommonAModel(SoftModel):
     """
     业务用基本表A,包含create_by, update_by字段
     """
     create_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='创建人', related_name= '%(class)s_create_by')
+        User, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='创建人',
+        related_name='%(class)s_create_by')
     update_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='最后编辑人', related_name= '%(class)s_update_by')
+        User, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='最后编辑人',
+        related_name='%(class)s_update_by')
 
     class Meta:
         abstract = True
+
 
 class CommonBModel(SoftModel):
     """
     业务用基本表B,包含create_by, update_by, belong_dept字段
     """
     create_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='创建人', related_name = '%(class)s_create_by')
+        User, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='创建人',
+        related_name='%(class)s_create_by')
     update_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='最后编辑人', related_name = '%(class)s_update_by')
+        User, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='最后编辑人',
+        related_name='%(class)s_update_by')
     belong_dept = models.ForeignKey(
-        Organization, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='所属部门', related_name= '%(class)s_belong_dept')
+        Organization, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='所属部门',
+        related_name='%(class)s_belong_dept')
 
     class Meta:
         abstract = True
@@ -216,3 +223,16 @@ class File(CommonAModel):
 
     def __str__(self):
         return self.name
+
+
+class RequestLog(models.Model):
+    method = models.CharField(max_length=10)  # HTTP method (GET, POST, etc.)
+    path = models.CharField(max_length=255)  # Request path
+    remote_addr = models.GenericIPAddressField(null=True)  # Client IP address
+    query_params = models.TextField(blank=True, null=True)  # Query parameters
+    body_params = models.TextField(blank=True, null=True)  # POST body parameters
+    duration = models.FloatField()  # Request duration in seconds
+    create_time = models.DateTimeField(auto_now_add=True)  # Timestamp of when the request was logged
+
+    def __str__(self):
+        return f"{self.method} {self.path} - {self.duration:.2f} seconds"

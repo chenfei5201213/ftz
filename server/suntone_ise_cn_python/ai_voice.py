@@ -15,8 +15,6 @@ from suntone_ise_cn_python.sample import ne_utils, aipass_client
 from suntone_ise_cn_python.data import *
 
 logger = logging.getLogger(__name__)
-print("jsonpath module location:", jsonpath.__file__)
-print("jsonpath.jsonpath exists:", hasattr(jsonpath, 'jsonpath'))
 
 
 # 收到websocket连接建立的处理
