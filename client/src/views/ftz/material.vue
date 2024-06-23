@@ -227,7 +227,7 @@ export default {
         {value:'4',name:'单词卡B面',datas:[{label:'单词图片',col:'file1',type:'file'},{label:'词性',col:'char1',type:'char'},{label:'含义',col:'char2',type:'char'},{label:'慢速发音',col:'video1',type:'video'},{label:'快速发音',col:'video2',type:'video'},{label:'常见搭配',col:'content1',type:'content'},{label:'例句',col:'content2',type:'content'}]},
         {value:'5',name:'语法卡A面',datas:[{label:'文法图片',col:'file1',type:'file'},{label:'示意图片',col:'file2',type:'file'}]},
         {value:'6',name:'语法卡B面',datas:[{label:'配置图片',col:'file1',type:'file'},{label:'慢速发音',col:'video1',type:'video'},{label:'快速发音',col:'video2',type:'video'},{label:'含义',col:'content1',type:'content'},{label:'例句',col:'content2',type:'content'}]},
-        {value:'7',name:'板块过渡页',datas:[{label:'选择板块',col:'num',type:'select'},{label:'板块介绍文字',col:'char1',type:'char'}]},
+        {value:'7',name:'板块过渡页',datas:[{label:'选择板块',col:'num',type:'select'},{label:'板块介绍文字',col:'content1',type:'content'}]},
         {value:'8',name:'图文选择题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'图片',col:'file1',type:'file'},{label:'选项文字',col:'char2',type:'char'},{label:'选项文字',col:'char3',type:'char'},{label:'答案文字',col:'char4',type:'char'}]},
         {value:'9',name:'文图选择题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'文字',col:'char2',type:'char'},{label:'选项图片',col:'file1',type:'file'},{label:'选项文字',col:'char3',type:'char'},{label:'选项图片',col:'file2',type:'file'},{label:'选项文字',col:'char4',type:'char'},{label:'答案文字',col:'char5',type:'char'}]},
         {value:'10',name:'文字选择题',datas:[{label:'问题描述',col:'char1',type:'char'},{label:'文字',col:'char2',type:'char'},{label:'选项文字',col:'char3',type:'char'},{label:'选项文字',col:'char4',type:'char'},{label:'答案文字',col:'char5',type:'char'}]},
