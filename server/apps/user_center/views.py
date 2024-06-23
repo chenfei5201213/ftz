@@ -22,8 +22,8 @@ from server import settings
 from .models import ExternalUser, ExternalOauth
 from .serializers import ExternalUserSerializer, ExternalOauthSerializer
 from .service import ExternalUserService
-from ..ftz.models import CourseScheduleContent
-from ..ftz.serializers import CourseScheduleContentDetailSerializer
+from ..ftz.models import CourseScheduleContent, StudyMaterial
+from ..ftz.serializers import CourseScheduleContentDetailSerializer, StudyMaterialDetailSerializer
 from ..ftz.service import TermCourseService
 from ..mall.enum_config import StudyStatus
 from .service import StudyContentService
@@ -323,11 +323,31 @@ class CourseLessonDetailView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class StudyMaterialDetailView(APIView):
+class StudyMaterialDetailQView(APIView):
     authentication_classes = [ExternalUserAuth]
     permission_classes = [ExternalUserPermission]
     """
     单个素材详情
+    """
+
+    def get(self, request, *args, **kwargs):
+        try:
+            study_material_id = request.query_params.get('study_material_id')
+            study_material = StudyMaterial.objects.filter(id=study_material_id).first()
+            return Response(StudyMaterialDetailSerializer(study_material).data)
+        except FtzException as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            logger.exception(f'查询课时详情异常：')
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class StudyMaterialDetailView(APIView):
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+    """
+    单个素材详情，含进度
     """
 
     def get(self, request, *args, **kwargs):
