@@ -308,7 +308,7 @@ class StudyContentService:
     def receive_free_product(self, free_product_id=None, is_auto=False):
         try:
             if free_product_id:
-                product = Product.objects.filter(id=free_product_id).first()
+                product = Product.objects.filter(id=free_product_id).order_by('-id').first()
                 if product.type != ProductType.FREE.value[0]:
                     raise OrderException("这个课程需要购买哦", ErrorCode.ProductNotFree.value)
             else:
