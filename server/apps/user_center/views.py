@@ -80,12 +80,14 @@ class WechatMiniLogin(APIView):
         if cache_data:
             return Response(data=cache_data)
         if not code:
-            return Response("授权失败", status=400)
+            return Response("授权失败", status=status.HTTP_400_BAD_REQUEST)
         wx = WechatMiniUtil()
         user_info = wx.login(code)
 
         if not user_info:
-            return Response("获取用户信息失败", status=400)
+            return Response("获取用户信息失败", status=status.HTTP_400_BAD_REQUEST)
+        if user_info.get('errcode'):
+            return Response(data=user_info, status=status.HTTP_400_BAD_REQUEST)
         user_info['mini_openid'] = user_info.pop('openid')
         user_service = ExternalUserService(user_info['unionid'])
         _user = user_service.get_user()
@@ -95,10 +97,10 @@ class WechatMiniLogin(APIView):
             _user.mini_openid = user_info.get('mini_openid')
             _user.save()
         token_result = gen_token(_user, code, user_info['unionid'])
-        serializer = ExternalUserSerializer(_user)
-        data = {"user": serializer.data}
-        data.update(token_result)
-        return Response(data)
+        # serializer = ExternalUserSerializer(_user)
+        # data = {"user": serializer.data}
+        # data.update(token_result)
+        return Response(token_result)
 
 
 class WechatCallbackLogin(GenericAPIView):
@@ -113,14 +115,14 @@ class WechatCallbackLogin(GenericAPIView):
         if cache_data:
             return Response(data=cache_data)
         if not code:
-            return Response("授权失败", status=400)
+            return Response("授权失败", status=status.HTTP_400_BAD_REQUEST)
         access_token_data = WechatUtil().access_token(code)
         if access_token_data.get("errcode"):
-            return Response(data=access_token_data)
+            return Response(data=access_token_data, status=status.HTTP_400_BAD_REQUEST)
         logger.info(f"access_token_data: {access_token_data}")
         user_info = WechatUtil().get_user_info(access_token_data['access_token'], access_token_data['openid'])
         if not user_info:
-            return Response("获取用户信息失败", status=400)
+            return Response("获取用户信息失败", status=status.HTTP_400_BAD_REQUEST)
         user_service = ExternalUserService(user_info['unionid'])
         _user = user_service.get_user()
         if not _user:
@@ -131,10 +133,10 @@ class WechatCallbackLogin(GenericAPIView):
         logger.info(f"code: {code}, user_info:{user_info}")
         token_result = gen_token(_user, code, user_info["unionid"])
 
-        serializer = ExternalUserSerializer(_user)
-        data = {"user": serializer.data}
-        data.update(token_result)
-        return Response(data)
+        # serializer = ExternalUserSerializer(_user)
+        # data = {"user": serializer.data}
+        # data.update(token_result)
+        return Response(token_result)
 
 
 def gen_token(user: ExternalUser, code, unionid):
@@ -144,9 +146,11 @@ def gen_token(user: ExternalUser, code, unionid):
     token_result = cache.get(tk_unionid_key)
     if not token_result:
         token = ExternalUserTokenObtainPairSerializer.get_token(user)
-        token_result = {'access': str(token.access_token), 'refresh': str(token)}
+        token_result = {'access': str(token.access_token), 'refresh': str(token), 'user': ExternalUserSerializer(user).data}
         cache.set(tk_code_key, token_result, timeout=7200)
         cache.set(tk_unionid_key, token_result, timeout=7200)
+    else:
+        cache.set(tk_code_key, token_result, timeout=7200)
     return token_result
 
 
