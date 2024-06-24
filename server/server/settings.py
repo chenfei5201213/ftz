@@ -149,7 +149,7 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'dist/static'),
 )
 DOMAIN_NAME = env('DOMAIN_NAME')
-MEDIA_URL = f"http://{DOMAIN_NAME}/media/"
+MEDIA_URL = f"https://{DOMAIN_NAME}/media/"
 MEDIA_PATH = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
