@@ -1,5 +1,6 @@
 import logging
 
+from django.core.cache import cache
 from django.db.models import Prefetch, Q
 from django.utils import timezone
 from rest_framework.permissions import AllowAny
@@ -19,9 +20,11 @@ from .serializers import TagSerializer, StudyMaterialDetailSerializer, CardDetai
 from .serializers import EnumConfigSerializer, SurveySerializer, QuestionSerializer, UserResponseSerializer
 from .serializers import TermCourseSerializer, CourseScheduleStudentSerializer, UserStudyRecordSerializer
 from .serializers import StudyMaterialSimpleListSerializer
+from .user_course_service import UserCourseService
 from ..system.authentication import ExternalUserTokenObtainPairSerializer
 from ..system.tasks import send_bug_course_success_message
 from ..user_center.models import ExternalUser
+from ..user_center.serializers import ExternalUserSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -311,3 +314,55 @@ class Test01View(APIView):
         records = CourseScheduleContent.objects.filter(today_query)
         send_bug_course_success_message.delay('o77756JY-IHm6zh-Ez3HVsLJIKvA', {"title": "测试课程"})
         return Response(data={})
+
+
+class RestUserCourse(APIView):
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        _ex_user_id = request.data.get('user_id')
+        term_id = request.data.get('term_id')
+        data = UserCourseService(_ex_user_id).reset_course_info(term_id)
+        return Response(data)
+
+
+class QueryUserCourseInfo(APIView):
+    def get(self, request, *args, **kwargs):
+        user_id = request.query_params.get('user_id')
+        if not user_id:
+            return Response({'msg': "请传入有效的用户id"}, status=status.HTTP_400_BAD_REQUEST)
+        all_info = UserCourseService(user_id).query_all_info()
+        return Response(data=all_info)
+
+
+class AdminUserView(APIView):
+    def get(self, request, *args, **kwargs):
+        admin_user = request.user
+        logger.info(f"admin_user:{admin_user}")
+        user_id = request.query_params.get('user_id')
+        if user_id:
+            user = ExternalUser.objects.filter(id=user_id).first()
+            user_info = ExternalUserSerializer(user).data if user else {}
+        else:
+            users = ExternalUser.objects.order_by('-id')[:100]
+            user_info = ExternalUserSerializer(users, many=True).data if users else {}
+        return Response(data=user_info)
+
+
+class AdminUserTokenView(APIView):
+    def get(self, request, *args, **kwargs):
+        admin_user = request.user
+        logger.info(f"admin_user:{admin_user}")
+        user_id = request.query_params.get('user_id')
+        if not user_id:
+            Response(data={'msg': 'user_id必传参数'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = ExternalUser.objects.filter(id=user_id).first()
+        tk_unionid_key = f'tk:unionid:{user.unionid}'
+        token_result = cache.get(tk_unionid_key)
+        if not token_result:
+            token = ExternalUserTokenObtainPairSerializer.get_token(user)
+            token_result = {'access': str(token.access_token), 'refresh': str(token),
+                            'user': ExternalUserSerializer(user).data}
+            cache.set(tk_unionid_key, token_result, timeout=7200)
+        return Response(data=token_result)

@@ -166,6 +166,9 @@ class StudyContentService:
                 "next_index": 0,
             }
             for study_material in card['study_materials']:
+                if not contents_dict.get(study_material):
+                    logger.error(f"study_material: {study_material} 不存在")
+                    continue
                 if contents_dict.get(study_material)['study_status'] > StudyStatus.IN_PROGRESS.value[0]:
                     study_progress['finish_count'] += 1
             study_progress['current_index'] = card['study_materials'][max(study_progress['finish_count'] - 1, 0)]

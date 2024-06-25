@@ -5,7 +5,8 @@ from .views import CourseViewSet, LessonViewSet, CardViewSet, StudyMaterialViewS
     MyTokenObtainPairView
 from .views import SurveyViewSet, QuestionViewSet, UserResponseViewSet, CourseScheduleViewSet
 from .views import CourseScheduleStudentViewSet, UserStudyRecordViewSet, StudyMaterialSimpleViewSet
-from .views import CardListSimpleViewSet, UserStudyContentViewSet, Test01View
+from .views import CardListSimpleViewSet, UserStudyContentViewSet, Test01View, QueryUserCourseInfo, RestUserCourse
+from .views import AdminUserView, AdminUserTokenView
 
 router = routers.DefaultRouter()
 router.register('course', CourseViewSet, basename='course')
@@ -23,8 +24,13 @@ router.register('sc/course', CourseScheduleViewSet, basename='course')
 router.register('sc/user', CourseScheduleStudentViewSet, basename='user')
 router.register('sc/study_record', UserStudyRecordViewSet, basename='study_record')
 router.register('sc/study_content', UserStudyContentViewSet, basename='study_content')
+
 urlpatterns = [
     path('', include(router.urls)),
     path('token/', MyTokenObtainPairView.as_view()),
     path('test/01/', Test01View.as_view()),
+    path('user/course_info/', QueryUserCourseInfo.as_view()),
+    path('user/reset_course/', RestUserCourse.as_view()),
+    path('admin/user/', AdminUserView.as_view()),
+    path('admin/token/', AdminUserTokenView.as_view()),
 ]

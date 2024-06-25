@@ -12,6 +12,8 @@ from apps.user_center.models import ExternalUser
 from utils.custom_exception import ErrorCode
 
 logger = logging.getLogger(__name__)
+
+
 class TermCourseService:
     def __init__(self, user_id, course_id):
         self.user_id = user_id
@@ -130,6 +132,24 @@ class TermCourseService:
         """
         course_content = CourseScheduleContent.objects.filter(user=self.user_id, lesson=lesson_id,
                                                               study_material=study_material_id).first()
+        if not course_content:
+            # 学习的素材不存在，从同课时的素材里取第一个，重新插入相同内容，更新id
+            _course_content = CourseScheduleContent.objects.filter(user=self.user_id, lesson=lesson_id).first()
+            if not _course_content:
+                logger.error(
+                    f'同课时下没有素材，study_material_id:{study_material_id}, lesson_id={lesson_id}, user={self.user_id}')
+                return
+            course_content = CourseScheduleContent.objects.create(
+                user=_course_content.user,
+                lesson_number=_course_content.lesson_number,
+                lesson=_course_content.lesson,
+                term_course=_course_content.term_course,
+                study_material_id=study_material_id,
+                card=_course_content.card,
+                open_time=_course_content.open_time,
+                study_status=StudyStatus.UNLOCKED.value[0]
+            )
+            course_content.save()
         if course_content and course_content.study_status < status:
             course_content.study_status = status
             course_content.finish_time = timezone.now()
@@ -143,4 +163,3 @@ class TermCourseService:
             logger.info(
                 f'study_material_id: {study_material_id}, lesson_id: {lesson_id} 当前状态为：{course_content}, 目标状态：{status},不允许回退状态，默认不处理')
         return course_content
-
