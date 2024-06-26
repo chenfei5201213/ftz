@@ -66,8 +66,8 @@ class StudyContentService:
 
     def check_order_paid(self, course_id):
         """这里先不做校验"""
-        product = Product.objects.filter(course=course_id).first()
-        paid_order = Order.objects.filter(product=product, status=OrderStatus.PAID.value, user=self.user_id).first()
+        # product = Product.objects.filter(course=course_id).first()
+        paid_order = Order.objects.filter(product__course_id=course_id, status=OrderStatus.PAID.value, user_id=self.user_id).first()
         if not paid_order:
             raise FtzException("订单未支付，请先完成订单支付再学习", ErrorCode.OrderNotPaidException.value)
 
