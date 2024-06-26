@@ -361,6 +361,8 @@ class StudyMaterialDetailView(APIView):
             study_material_id = request.query_params.get('study_material_id')
             study_content = CourseScheduleContent.objects.filter(user=user_id, lesson=lesson_id,
                                                                  study_material=study_material_id).first()
+            if not study_content:
+                return Response(data={'error': '当前资源未购买，请联系客服'}, status=status.HTTP_400_BAD_REQUEST)
             study_content_info = CourseScheduleContentDetailSerializer(study_content).data
             study_service = StudyContentService(user_id)
             card = study_service.card_study_progress(study_content.card, study_content.lesson, int(study_material_id))

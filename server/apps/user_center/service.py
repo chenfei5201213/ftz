@@ -15,7 +15,7 @@ from apps.mall.models import Order, Product
 from apps.mall.serializers import OrderDetailSerializer
 from apps.mall.service import ProductService
 from apps.user_center.models import ExternalUser
-from utils.custom_exception import ErrorCode
+from utils.custom_exception import ErrorCode, FtzException
 
 logger = logging.getLogger(__name__)
 
@@ -66,10 +66,10 @@ class StudyContentService:
 
     def check_order_paid(self, course_id):
         """这里先不做校验"""
-        # product = Product.objects.filter(course=course_id).first()
-        # paid_order = Order.objects.filter(product=product, status=OrderStatus.PAID.value).first()
-        # if not paid_order:
-        #     raise ErrorCode.OrderNotPaidException("订单未支付，请先完成订单支付再学习")
+        product = Product.objects.filter(course=course_id).first()
+        paid_order = Order.objects.filter(product=product, status=OrderStatus.PAID.value, user=self.user_id).first()
+        if not paid_order:
+            raise FtzException("订单未支付，请先完成订单支付再学习", ErrorCode.OrderNotPaidException.value)
 
     def my_order(self,
                  # status=OrderStatus.PAID.value
