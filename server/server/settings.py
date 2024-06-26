@@ -326,7 +326,8 @@ MINIAPP_KEY = '9d277900d826618a74dc35e323e14393'
 NOTIFY_URL = f'https://{env("DOMAIN_NAME")}/api/mall/pay/wx/notify/'
 # 设置授权回调URL
 # REDIRECT_URI = "http://www.ngsmq.online/api/us/wx/login/"
-REDIRECT_URI = f'https://{env("DOMAIN_NAME")}/web/index.html'
+REDIRECT_URI = "https://www.fantuanzi.com.cn/web/index.html" # todo 临时写死
+# REDIRECT_URI = f'https://{env("DOMAIN_NAME")}/web/index.html'
 
 # 微信支付平台证书缓存目录，减少证书下载调用次数，首次使用确保此目录为空目录.
 # 初始调试时可不设置，调试通过后再设置，示例值:'./cert'
