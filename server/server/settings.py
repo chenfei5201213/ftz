@@ -67,6 +67,7 @@ MIDDLEWARE = [
     'simple_history.middleware.HistoryRequestMiddleware',
     'middleware.performance_middleware.PerformanceMiddleware',
     'middleware.request_time_middleware.RequestTimeMiddleware',
+    'middleware.template_not_found.TemplateNotFoundExceptionMiddleware'
 ]
 
 ROOT_URLCONF = 'server.urls'

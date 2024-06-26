@@ -62,7 +62,7 @@ urlpatterns = [
     path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     
     # 前端页面入口
-    path('',TemplateView.as_view(template_name="index.html"))
+    path('', TemplateView.as_view(template_name="index.html"))
 ] + \
 static(settings.MEDIA_PATH, document_root=settings.MEDIA_ROOT) + \
 static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
