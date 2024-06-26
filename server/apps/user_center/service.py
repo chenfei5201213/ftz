@@ -315,7 +315,7 @@ class StudyContentService:
                 if product.type != ProductType.FREE.value[0]:
                     raise OrderException("这个课程需要购买哦", ErrorCode.ProductNotFree.value)
             else:
-                product = Product.objects.filter(type=ProductType.FREE.value[0]).first()
+                product = Product.objects.filter(type=ProductType.FREE.value[0]).order_by('-id').first()
             product_service = ProductService()
             order = product_service.create_order(product.id, self.user_id)
             user = ExternalUser.objects.get(id=self.user_id)
