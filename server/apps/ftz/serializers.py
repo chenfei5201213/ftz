@@ -241,11 +241,18 @@ class LessonDetailSerializer(serializers.ModelSerializer):
     """
     课时序列化
     """
-    cards = CardListSerializer(many=True, read_only=True)
+    cards = serializers.PrimaryKeyRelatedField(queryset=Card.objects.all(), many=True)
 
     class Meta:
         model = Lesson
         fields = '__all__'
+
+    def to_representation(self, instance):
+        data = super(LessonDetailSerializer, self).to_representation(instance)
+        sorted_cards = instance.cards.through.objects.filter(lesson=instance).order_by('id')  # 按照 Card 表中的 id 排序
+        card_data = [CardListSerializer(i.card).data for i in sorted_cards]
+        data['cards'] = card_data
+        return data
 
 
 class SurveySerializer(serializers.ModelSerializer):
