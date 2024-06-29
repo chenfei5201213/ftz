@@ -244,6 +244,7 @@ class WxPayNotify(APIView):
         logger.info(f'request.headers: {request.headers}, request.data:{request.data}')
         wx_pay_service = WeChatPayService()
         _result = wx_pay_service.callback(request.headers, request.data)
+        logger.info(f'_result:{_result}')
         # _result = {'code': 'SUCCESS', 'data': {'resource':{'transaction_id': 'wx07154418608943b9047bfe2a04a8a60000'}}}
         if _result.get('code') == 'SUCCESS':
             result = _result['data']['resource']
