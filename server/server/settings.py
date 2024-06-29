@@ -56,6 +56,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'middleware.traceid_middleware.TraceIDMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -222,9 +223,17 @@ SWAGGER_SETTINGS = {
     'LOGOUT_URL': '/django/admin/logout/'
 }
 
+REQUEST_LOG_SAMPLE_RATE = env('REQUEST_LOG_SAMPLE_RATE')
+
+# APM
+AGENT_COLLECTOR_BACKEND_SERVICES = env('AGENT_COLLECTOR_BACKEND_SERVICES')
+AGENT_NAME = env('AGENT_NAME')
+AGENT_AUTHENTICATION = env('AGENT_AUTHENTICATION')
+AGENT_LOGGING_LEVEL = env('AGENT_LOGGING_LEVEL')
+
 # 日志配置
 # 创建日志的路径
-REQUEST_LOG_SAMPLE_RATE = env('REQUEST_LOG_SAMPLE_RATE')
+
 LOG_PATH = os.path.join(BASE_DIR, 'log')
 # 如果地址不存在，则自动创建log文件夹
 if not os.path.exists(LOG_PATH):
@@ -327,7 +336,7 @@ MINIAPP_KEY = '9d277900d826618a74dc35e323e14393'
 NOTIFY_URL = f'https://{env("DOMAIN_NAME")}/api/mall/pay/wx/notify/'
 # 设置授权回调URL
 # REDIRECT_URI = "http://www.ngsmq.online/api/us/wx/login/"
-REDIRECT_URI = "https://www.fantuanzi.com.cn/web/index.html" # todo 临时写死
+REDIRECT_URI = "https://www.fantuanzi.com.cn/web/index.html"  # todo 临时写死
 # REDIRECT_URI = f'https://{env("DOMAIN_NAME")}/web/index.html'
 
 # 微信支付平台证书缓存目录，减少证书下载调用次数，首次使用确保此目录为空目录.

@@ -11,5 +11,6 @@ if [[ "$DJANGO_ENV" == 'prod' ]]; then
     python manage.py migrate
     celery -A server worker -l info&
     celery -A server beat -l info&
-    python manage.py runserver 0.0.0.0:8000
+#    python manage.py runserver 0.0.0.0:8000
+    gunicorn server.wsgi:application -w 1 -k gthread -b 0.0.0.0:8000
 fi

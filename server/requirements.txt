@@ -75,3 +75,4 @@ vine==5.1.0
 wcwidth==0.2.13
 websocket-client==1.3.2
 wechatpayv3==1.2.52
+apache-skywalking==1.0.1

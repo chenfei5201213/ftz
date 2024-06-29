@@ -156,7 +156,6 @@ class DictViewSet(ModelViewSet):
     """
     数据字典-增删改查
     """
-    logger.info("test")
     perms_map = {'get': '*', 'post': 'dict_create',
                  'put': 'dict_update', 'delete': 'dict_delete'}
     # queryset = Dict.objects.get_queryset(all=True) # 获取全部的,包括软删除的
