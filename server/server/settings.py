@@ -56,7 +56,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'middleware.traceid_middleware.TraceIDMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
