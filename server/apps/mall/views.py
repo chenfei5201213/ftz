@@ -163,27 +163,27 @@ class PayPayment(APIView):
     def get(self, request, *args, **kwargs):
         order_id = request.query_params.get('order_id')
         order = Order.objects.filter(id=order_id).first()
-        wx_pay_service = WeChatPayService()
-        out_trade_no = order.order_uuid
-        result = wx_pay_service.query_order(out_trade_no)
-        wx_code, wx_result = result
-        product_info = {}
-        if wx_code == 200:
-            wx_result = json.loads(wx_result)
-            if wx_result.get('trade_state') == 'SUCCESS':
-                payment_record = PaymentRecord.objects.filter(order=order_id).order_by('-id').first()
-                if payment_record.status != PaymentStatus.PAID.value:
-                    payment_record.status = PaymentStatus.PAID.value
-                    payment_record.pay_time = wx_result.get('success_time')
-                    pay_result_detail = json.loads(
-                        payment_record.pay_result_detail) if payment_record.pay_result_detail else {}
-                    pay_result_detail.update({'pay_success_result': wx_result})
-                    payment_record.pay_result_detail = json.dumps(pay_result_detail)
-                    payment_record.save()
-                    order.status = PaymentStatus.PAID.value
-                    order.save()
-                    send_bug_course_success_message.delay(payment_record.order.id)
-            product_info = ProductSellSerializer(order.product).data
+        if order.status != PaymentStatus.PAID.value:
+            wx_pay_service = WeChatPayService()
+            out_trade_no = order.order_uuid
+            result = wx_pay_service.query_order(out_trade_no)
+            wx_code, wx_result = result
+            if wx_code == 200:
+                wx_result = json.loads(wx_result)
+                if wx_result.get('trade_state') == 'SUCCESS':
+                    payment_record = PaymentRecord.objects.filter(order=order_id).order_by('-id').first()
+                    if payment_record.status != PaymentStatus.PAID.value or order.status != PaymentStatus.PAID.value:
+                        payment_record.status = PaymentStatus.PAID.value
+                        payment_record.pay_time = wx_result.get('success_time')
+                        pay_result_detail = json.loads(
+                            payment_record.pay_result_detail) if payment_record.pay_result_detail else {}
+                        pay_result_detail.update({'pay_success_result': wx_result})
+                        payment_record.pay_result_detail = json.dumps(pay_result_detail)
+                        payment_record.save()
+                        order.status = PaymentStatus.PAID.value
+                        order.save()
+                        send_bug_course_success_message.delay(payment_record.order.id)
+        product_info = ProductSellSerializer(order.product).data
         order_info = OrderSerializer(order).data
         order_info['course_info'] = product_info.get('course_info')
         order_info['term_courses'] = product_info.get('term_courses')
