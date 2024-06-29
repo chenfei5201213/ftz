@@ -167,6 +167,7 @@ class PayPayment(APIView):
         out_trade_no = order.order_uuid
         result = wx_pay_service.query_order(out_trade_no)
         wx_code, wx_result = result
+        product_info = {}
         if wx_code == 200:
             wx_result = json.loads(wx_result)
             if wx_result.get('trade_state') == 'SUCCESS':
@@ -182,7 +183,11 @@ class PayPayment(APIView):
                     order.status = PaymentStatus.PAID.value
                     order.save()
                     send_bug_course_success_message.delay(payment_record.order.id)
-        return Response(wx_result)
+            product_info = ProductSellSerializer(order.product).data
+        order_info = OrderSerializer(order).data
+        order_info['course_info'] = product_info.get('course_info')
+        order_info['term_courses'] = product_info.get('term_courses')
+        return Response(order_info)
 
 
 class MyOrderView(APIView):
