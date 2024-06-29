@@ -305,14 +305,8 @@ class Test01View(APIView):
 
     def get(self, request):
         # 获取当前日期
-        today = timezone.localdate()
-
-        # 创建一个 Q 对象，用于查询 open_time 是今天的记录
-        today_query = Q(open_time__date=today)
-
-        # 执行查询
-        records = CourseScheduleContent.objects.filter(today_query)
-        send_bug_course_success_message.delay('o77756JY-IHm6zh-Ez3HVsLJIKvA', {"title": "测试课程"})
+        logger.info('12345test')
+        send_bug_course_success_message.delay(547)
         return Response(data={})
 
 

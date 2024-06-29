@@ -171,16 +171,17 @@ class PayPayment(APIView):
             wx_result = json.loads(wx_result)
             if wx_result.get('trade_state') == 'SUCCESS':
                 payment_record = PaymentRecord.objects.filter(order=order_id).order_by('-id').first()
-                payment_record.status = PaymentStatus.PAID.value
-                payment_record.pay_time = wx_result.get('success_time')
-                pay_result_detail = json.loads(
-                    payment_record.pay_result_detail) if payment_record.pay_result_detail else {}
-                pay_result_detail.update({'pay_success_result': wx_result})
-                payment_record.pay_result_detail = json.dumps(pay_result_detail)
-                payment_record.save()
-                order.status = PaymentStatus.PAID.value
-
-                order.save()
+                if payment_record.status != PaymentStatus.PAID.value:
+                    payment_record.status = PaymentStatus.PAID.value
+                    payment_record.pay_time = wx_result.get('success_time')
+                    pay_result_detail = json.loads(
+                        payment_record.pay_result_detail) if payment_record.pay_result_detail else {}
+                    pay_result_detail.update({'pay_success_result': wx_result})
+                    payment_record.pay_result_detail = json.dumps(pay_result_detail)
+                    payment_record.save()
+                    order.status = PaymentStatus.PAID.value
+                    order.save()
+                    send_bug_course_success_message.delay(payment_record.order.id)
         return Response(wx_result)
 
 
@@ -208,35 +209,6 @@ class MyOrderView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class OrderPayTest(APIView):
-    authentication_classes = [ExternalUserAuth]
-    permission_classes = [ExternalUserPermission]
-
-    def post(self, request, *args, **kwargs):
-        user = request.user
-        order_id = request.data.get('order_id')
-        order = Order.objects.filter(id=order_id).first()
-        wx_pay_service = WeChatPayService()
-        result = wx_pay_service.create_jsapi_order(order, user)
-        return Response(result)
-
-    def get(self, request, *args, **kwargs):
-        user = request.user
-        order_id = request.query_params.get('order_id')
-        order = Order.objects.filter(id=order_id).first()
-        wx_pay_service = WeChatPayService()
-        out_trade_no = order.order_uuid
-        result = wx_pay_service.query_order(out_trade_no)
-        wx_code, wx_result = result
-        if wx_code == 200:
-            wx_result = json.loads(wx_result)
-            if wx_result.get('trade_state') == 'SUCCESS':
-                PaymentRecord.objects.filter(order=order_id).update(status=PaymentStatus.PAID.value)
-                order.status = PaymentStatus.PAID.value
-                order.save
-        return Response(wx_result)
-
-
 class WxPayNotify(APIView):
     permission_classes = [AllowAny]
 
@@ -250,10 +222,11 @@ class WxPayNotify(APIView):
             result = _result['data']['resource']
             transaction_id = result.get('transaction_id')
             pay_record = PaymentRecord.objects.filter(pay_id=transaction_id).first()
-            pay_record.status = PaymentStatus.PAID.value
-            pay_record.order.status = PaymentStatus.PAID.value
-            pay_record.save()
-            send_bug_course_success_message.dely('', '')
+            if pay_record.status != PaymentStatus.PAID.value:
+                pay_record.status = PaymentStatus.PAID.value
+                pay_record.order.status = PaymentStatus.PAID.value
+                pay_record.save()
+                send_bug_course_success_message.delay(pay_record.order.id)
             # 更新支付记录和订单状态
             return Response({'code': 'SUCCESS', 'message': '成功'})
         return Response({'code': 'FAILED', 'message': '失败'})

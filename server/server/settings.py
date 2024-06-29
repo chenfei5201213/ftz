@@ -19,7 +19,7 @@ from environ import Env
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENVIRONMENT = os.getenv('DJANGO_ENV', 'dev')
 env = Env()
-env.read_env(f'./.env.{ENVIRONMENT}')
+env.read_env(os.path.join(BASE_DIR, f'.env.{ENVIRONMENT}'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/

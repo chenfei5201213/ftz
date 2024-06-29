@@ -6,6 +6,9 @@ from django.db.models import Q
 from django.utils import timezone
 
 from apps.ftz.models import CourseScheduleContent
+from apps.ftz.serializers import CourseSerializer
+from apps.mall.models import Order
+from apps.mall.serializers import ProductSellSerializer
 from apps.system.models import RequestLog
 from utils.wechat.wechat_util import WchatTemplateMessage
 
@@ -18,9 +21,15 @@ def show():
 
 
 @shared_task
-def send_bug_course_success_message(openid: str, course_info: dict):
+def send_bug_course_success_message(order_id: int):
+    order = Order.objects.filter(id=order_id).get()
+    openid = order.user.openid
+    if not openid:
+        logger.error(f'用户{order.user.id} 没有公众号注册，无法推送消息')
+        return
+    product_info = ProductSellSerializer(order.product).data
     wx = WchatTemplateMessage()
-    result = wx.send_bug_course_success_message(openid, course_info)
+    result = wx.send_bug_course_success_message(openid, product_info)
     logger.info(f"openid: {openid}, send_bug_course_success_message_result: {result}")
 
 

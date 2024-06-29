@@ -112,12 +112,14 @@ class WechatUtil(WechatBase):
 
 class WchatTemplateMessage(WechatBase):
 
-    def send_bug_course_success_message(self, openid, course_info: dict):
+    def send_bug_course_success_message(self, openid, product_info: dict):
         body = COURSE_REGISTRATION_SUCCESS_NOTIFICATION
+        course_info = product_info.get('course_info', {})
+        term_courses = product_info.get('term_courses', {})
         body['touser'] = openid
         body['url'] = ''  # todo 待补充 加老师页面链接
         body['data']['thing1']['value'] = course_info.get('title')
-        body['data']['time7']['value'] = course_info.get('open_time')
+        body['data']['time7']['value'] = term_courses.get('course_start')
         params = {
             'access_token': self.get_access_token().get("access_token")
         }
