@@ -1,7 +1,6 @@
 import json
+import logging
 
-from django.db import IntegrityError
-from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status
 from rest_framework.permissions import AllowAny
@@ -15,12 +14,13 @@ from .models import Product, Order, PaymentRecord
 from .serializers import ProductSerializer, PaymentRecordSerializer, OrderSerializer, ProductSellSerializer
 from .service import ProductService
 
-from ..ftz.models import TermCourse
 from ..payments.services.wechat_pay import WeChatPayService
-from ..system.authentication import ExternalUserAuth, CustomBackend
+from ..system.authentication import ExternalUserAuth
 from ..system.permission import ExternalUserPermission
 from ..system.tasks import send_bug_course_success_message
 from ..user_center.service import StudyContentService
+
+logger = logging.getLogger(__name__)
 
 
 class ProductViewSet(ModelViewSet):
@@ -170,9 +170,17 @@ class PayPayment(APIView):
         if wx_code == 200:
             wx_result = json.loads(wx_result)
             if wx_result.get('trade_state') == 'SUCCESS':
-                PaymentRecord.objects.filter(order=order_id).update(status=PaymentStatus.PAID.value)
+                payment_record = PaymentRecord.objects.filter(order=order_id).order_by('-id').first()
+                payment_record.status = PaymentStatus.PAID.value
+                payment_record.pay_time = wx_result.get('success_time')
+                pay_result_detail = json.loads(
+                    payment_record.pay_result_detail) if payment_record.pay_result_detail else {}
+                pay_result_detail.update({'pay_success_result': wx_result})
+                payment_record.pay_result_detail = json.dumps(pay_result_detail)
+                payment_record.save()
                 order.status = PaymentStatus.PAID.value
-                order.save
+
+                order.save()
         return Response(wx_result)
 
 
@@ -233,6 +241,7 @@ class WxPayNotify(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
+        logger.info(f'request.headers: {request.headers}, request.data:{request.data}')
         wx_pay_service = WeChatPayService()
         _result = wx_pay_service.callback(request.headers, request.data)
         # _result = {'code': 'SUCCESS', 'data': {'resource':{'transaction_id': 'wx07154418608943b9047bfe2a04a8a60000'}}}

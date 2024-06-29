@@ -87,7 +87,7 @@ class PaymentRecord(SoftModel):
     status = models.CharField(max_length=20, choices=[])
     pay_id = models.CharField(max_length=256)
     pay_time = models.DateTimeField(null=True, blank=True)
-    pay_result_detail = models.CharField(max_length=1024, choices=[])
+    pay_result_detail = models.CharField(max_length=65535, choices=[])
     # history = HistoricalRecords()
 
     def __init__(self, *args, **kwargs):
