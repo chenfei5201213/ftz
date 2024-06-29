@@ -71,7 +71,6 @@
           v-show="tableDataList.count>0"
           :total="tableDataList.count"
           :page-size.sync="listQuery.page_size"
-          :layout="prev,pager,next"
           :current-page.sync="listQuery.page"
           @current-change="getList"
         ></el-pagination>
@@ -80,7 +79,7 @@
       :title="dialogType === 'edit' ? '编辑素材' : '新增素材'">
       <el-form :model="readyData" label-width="110px" label-position="right">
         <el-form-item label="标题" prop="title">
-          <el-input v-model="tableData.title" :placeholder="标题" />
+          <el-input v-model="tableData.title" placeholder="标题" />
         </el-form-item>
         <el-form-item label="素材类型" prop="type">
           <el-select @change="changeType" v-model="tableData.type" placeholder="请选择" style="width: 100%">
@@ -301,7 +300,7 @@ export default {
       })
     },
     resetFilter() {
-      this.getList(this.listQuery)
+      this.getList(1);
     },
     handleFilter() {
       const newData = this.tableDataList.filter(

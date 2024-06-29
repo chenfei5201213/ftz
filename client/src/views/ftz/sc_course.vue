@@ -107,8 +107,7 @@
       <el-form
         ref="Form"
         :model="tableData"
-
-        label-width="80px"
+        label-width="100px"
         label-position="right"
       >
         <el-row :gutter="20">
@@ -158,12 +157,34 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="老师二维码" prop="teacher_qr_code">
-              <el-input v-model="tableData.teacher_qr_code" placeholder="老师二维码"/>
+              <el-upload
+                class="avatar-uploader"
+                :action="upUrl"
+                accept="image/jpeg, image/gif, image/png, image/bmp"
+                :show-file-list="false"
+                :on-success="handleAvatarSuccess"
+                :before-upload="beforeAvatarUpload"
+                :headers="upHeaders"
+              >
+                <img v-if="tableData.teacher_qr_code" :src="tableData.teacher_qr_code" class="avatar"/>
+                <i v-else class="el-icon-plus avatar-uploader-icon"/>
+              </el-upload>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="助教老师二维码" prop="assistant_teacher_qr_code">
-              <el-input v-model="tableData.assistant_teacher_qr_code" placeholder="助教老师二维码"/>
+              <el-upload
+                class="avatar-uploader"
+                :action="upUrl"
+                accept="image/jpeg, image/gif, image/png, image/bmp"
+                :show-file-list="false"
+                :on-success="handleAvatarass"
+                :before-upload="beforeAvatarUpload"
+                :headers="upHeaders"
+              >
+                <img v-if="tableData.assistant_teacher_qr_code" :src="tableData.assistant_teacher_qr_code" class="avatar"/>
+                <i v-else class="el-icon-plus avatar-uploader-icon"/>
+              </el-upload>
             </el-form-item>
           </el-col>
         </el-row>
@@ -198,19 +219,14 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-
           </el-col>
         </el-row>
         <el-row :gutter="20">
           <el-col :span="12">
-
           </el-col>
           <el-col :span="12">
-
           </el-col>
         </el-row>
-
-
       </el-form>
       <span slot="footer">
         <el-button type="danger" @click="dialogVisible = false">取消</el-button>
@@ -232,6 +248,7 @@ import {
   deleteScCourse
 } from "@/api/sc_course";
 import {genTree, deepClone} from "@/utils";
+import {upUrl, upHeaders} from "@/api/file";
 import checkPermission from "@/utils/permission";
 import {getEnumConfigList} from "@/api/enum_config";
 
@@ -239,6 +256,8 @@ const defaultM = {};
 export default {
   data() {
     return {
+      upHeaders: upHeaders(),
+      upUrl: upUrl(),
       tableData: {
         id: "",
         question_type: "",
@@ -275,6 +294,19 @@ export default {
   },
   methods: {
     checkPermission,
+    handleAvatarSuccess(res) {
+      this.tableData.teacher_qr_code = res.data.file
+    },
+    beforeAvatarUpload(file) {
+      const isLt2M = file.size / 1024 / 1024 < 2;
+      if (!isLt2M) {
+        this.$message.error("二维码大小不能超过 2MB!");
+      }
+      return isLt2M;
+    },
+    handleAvatarass(res) {
+      this.tableData.assistant_teacher_qr_code = res.data.file
+    },
     getCourseList() {
       return new Promise((resolve, reject) => {
         getCourseList({}).then((response) => {
@@ -375,3 +407,23 @@ export default {
   },
 };
 </script>
+<style scoped>
+.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 100px;
+  height: 100px;
+  line-height: 100px;
+  text-align: center;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  display: block;
+}
+</style>
