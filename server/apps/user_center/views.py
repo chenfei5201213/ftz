@@ -14,6 +14,7 @@ from rest_framework import filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.views import TokenRefreshView
 
+from component.cache.material_cache_helper import MaterialCacheHelper
 from utils.custom_exception import FtzException
 from utils.wechat.wechat_util import WechatUtil, WechatMiniUtil
 
@@ -146,7 +147,8 @@ def gen_token(user: ExternalUser, code, unionid):
     token_result = cache.get(tk_unionid_key)
     if not token_result:
         token = ExternalUserTokenObtainPairSerializer.get_token(user)
-        token_result = {'access': str(token.access_token), 'refresh': str(token), 'user': ExternalUserSerializer(user).data}
+        token_result = {'access': str(token.access_token), 'refresh': str(token),
+                        'user': ExternalUserSerializer(user).data}
         cache.set(tk_code_key, token_result, timeout=7200)
         cache.set(tk_unionid_key, token_result, timeout=7200)
     else:
@@ -337,8 +339,14 @@ class StudyMaterialDetailQView(APIView):
     def get(self, request, *args, **kwargs):
         try:
             study_material_id = request.query_params.get('study_material_id')
-            study_material = StudyMaterial.objects.filter(id=study_material_id).first()
-            return Response(StudyMaterialDetailSerializer(study_material).data)
+            cache_helper = MaterialCacheHelper(study_material_id)
+            data = cache_helper.get_material_detail()
+            if data is None:
+                study_material = StudyMaterial.objects.filter(id=study_material_id).first()
+                study_material_info = StudyMaterialDetailSerializer(study_material).data if study_material else {}
+                cache_helper.set_material_detail(study_material_info)
+                data = study_material_info
+            return Response(data)
         except FtzException as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
