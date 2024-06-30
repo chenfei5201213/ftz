@@ -5,7 +5,7 @@ import time
 
 from django.utils import timezone
 
-from server.settings import REDIRECT_URI
+from server.settings import REDIRECT_URI, BUY_FINISH_URL
 from utils.wechat.template_message_config import COURSE_REGISTRATION_SUCCESS_NOTIFICATION, CLASS_REMINDER_MESSAGE
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'server.settings'
@@ -111,13 +111,12 @@ class WechatUtil(WechatBase):
 
 
 class WchatTemplateMessage(WechatBase):
-
-    def send_bug_course_success_message(self, openid, product_info: dict):
+    def send_bug_course_success_message(self, openid, product_info: dict, order_id: int):
         body = COURSE_REGISTRATION_SUCCESS_NOTIFICATION
         course_info = product_info.get('course_info', {})
         term_courses = product_info.get('term_courses', {})
         body['touser'] = openid
-        body['url'] = ''  # todo 待补充 加老师页面链接
+        body['url'] = BUY_FINISH_URL + str(order_id)
         body['data']['thing1']['value'] = course_info.get('title')
         body['data']['time7']['value'] = term_courses.get('course_start')
         params = {

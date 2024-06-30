@@ -157,9 +157,10 @@ class PayPayment(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self, request, *args, **kwargs):
-        logger.info("tets")
         order_id = request.query_params.get('order_id')
         order = Order.objects.filter(id=order_id).first()
+        product_obj = order.product
+        product_info = ProductSellSerializer(product_obj).data
         if order.status != PaymentStatus.PAID.value:
             wx_pay_service = WeChatPayService()
             out_trade_no = order.order_uuid
@@ -181,7 +182,9 @@ class PayPayment(APIView):
                         order.save()
                         send_bug_course_success_message.delay(payment_record.order.id)
         order_info = OrderSerializer(order).data
-        order_info['course_info'] = TermCourseService(order.user.id, order.product.course_id).get_have_term_courses()
+
+        order_info['course_info'] = product_info.get('course_info')
+        order_info['term_courses'] = product_info.get('term_courses')
         return Response(order_info)
 
 

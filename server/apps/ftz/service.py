@@ -15,9 +15,10 @@ logger = logging.getLogger(__name__)
 
 
 class TermCourseService:
-    def __init__(self, user_id, course_id):
+    def __init__(self, user_id, course_id, term_course_id: int = None):
         self.user_id = user_id
         self.course_id = course_id
+        self.term_course_id = term_course_id
         self.user = None
         self.course = None
         self.init()
@@ -28,18 +29,9 @@ class TermCourseService:
 
     def get_only_term(self):
         """
-        获取最近一个正在售卖的期课
+        获取期课
         """
-        now = datetime.now()
-        try:
-            term_course = TermCourse.objects.filter(
-                course=self.course,
-                enrollment_start__lte=now,
-                enrollment_end__gte=now,
-            ).first()
-            return term_course
-        except TermCourse.DoesNotExist:
-            return None
+        return TermCourse.objects.filter(id=self.term_course_id).get()
 
     def insert_student(self):
         """
@@ -166,11 +158,4 @@ class TermCourseService:
             logger.info(
                 f'study_material_id: {study_material_id}, lesson_id: {lesson_id} 当前状态为：{course_content}, 目标状态：{status},不允许回退状态，默认不处理')
         return course_content
-
-    def get_have_term_courses(self):
-        course_schedule = CourseScheduleStudent.objects.filter(user=self.user, term_course__course=self.course_id).first()
-        if course_schedule:
-            term_course = course_schedule.term_course
-            term_courses_info = TermCourseDetailSerializer(term_course).data
-            return term_courses_info
 

@@ -15,6 +15,7 @@ class ProductSerializer(serializers.ModelSerializer):
     type_description = serializers.SerializerMethodField()
     status_description = serializers.SerializerMethodField()
     course_info = CourseSerializer(source='course', read_only=True)
+    term_course_info = TermCourseSerializer(read_only=True, source='term_course')
 
     class Meta:
         model = Product

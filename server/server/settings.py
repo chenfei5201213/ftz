@@ -343,6 +343,9 @@ NOTIFY_URL = f'https://{env("DOMAIN_NAME")}/api/mall/pay/wx/notify/'
 REDIRECT_URI = "https://www.fantuanzi.com.cn/web/index.html"  # todo 临时写死
 # REDIRECT_URI = f'https://{env("DOMAIN_NAME")}/web/index.html'
 
+# 支付成功推送公众号消息落地页URL
+BUY_FINISH_URL = f'https://{env("DOMAIN_NAME")}/web/index.html#/pages/sale/index?orderId='
+
 # 微信支付平台证书缓存目录，减少证书下载调用次数，首次使用确保此目录为空目录.
 # 初始调试时可不设置，调试通过后再设置，示例值:'./cert'
 CERT_DIR = None

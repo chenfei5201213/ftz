@@ -29,7 +29,7 @@ def send_bug_course_success_message(order_id: int):
         return
     product_info = ProductSellSerializer(order.product).data
     wx = WchatTemplateMessage()
-    result = wx.send_bug_course_success_message(openid, product_info)
+    result = wx.send_bug_course_success_message(openid, product_info, order_id)
     logger.info(f"openid: {openid}, send_bug_course_success_message_result: {result}")
 
 
