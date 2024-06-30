@@ -2,8 +2,9 @@ import json
 import logging
 import uuid
 
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.utils import timezone
+from psycopg.errors import UniqueViolation
 
 from utils.custom_exception import ErrorCode
 from .exception import OrderException, ProductException, InsertTermContext, OrderPayException
@@ -27,6 +28,7 @@ class ProductService:
         serializer = ProductSerializer(products, many=True)
         return serializer.data
 
+    @transaction.atomic
     def create_order(self, product_id, user_id, count=1):
         # 获取商品和用户信息
         try:
@@ -58,7 +60,7 @@ class ProductService:
             raise OrderException("订单不存在")
         except Product.DoesNotExist:
             raise ProductException("商品不存在", ErrorCode.ProductNotExit.value)
-        except IntegrityError:
+        except (IntegrityError, UniqueViolation):
             order = Order.objects.filter(user=user_id, product=product_id).first()
             data = {
                 'order_info': OrderSerializer(order).data if order else {}
@@ -68,11 +70,9 @@ class ProductService:
                 'payment_record_info': PaymentRecordSerializer(payment_record).data if payment_record else {}
             })
             raise OrderException('订单已存在，请无重复创建', ErrorCode.OrderDuplication.value, data=data)
-        except InsertTermContext:
-            return serializer.data
         except Exception as e:
             logger.exception(f'创建订单异常')
-            raise e
+            raise OrderException('创建订单异常', ErrorCode.OrderException.value)
 
     def create_payment_record(self, user: ExternalUser, order_id, amount, payment_method=PaymentMethod.WECHAT.value):
         try:

@@ -1,6 +1,8 @@
 import json
 import logging
 
+from django.db import transaction, IntegrityError
+from django.db.transaction import TransactionManagementError
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status
@@ -129,8 +131,14 @@ class OrderCreate(APIView):
             }
             data.update(**e.data)
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError as e:
+            # 捕获 IntegrityError 并返回错误响应
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except TransactionManagementError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             # 捕获其他异常并返回错误响应
+            logger.exception(f'创建订单未知异常: ')
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

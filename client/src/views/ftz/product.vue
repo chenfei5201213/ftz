@@ -94,7 +94,6 @@
       v-show="tableDataList.count>0"
       :total="tableDataList.count"
       :page-size.sync="listQuery.page_size"
-      :layout="prev,pager,next"
       :current-page.sync="listQuery.page"
       @current-change="getList"
     ></el-pagination>
@@ -105,36 +104,49 @@
       <el-form
         ref="Form"
         :model="tableData"
-
         label-width="80px"
         label-position="right"
       >
-        <el-form-item label="课程" prop="course">
-          <el-select v-model="tableData.course" placeholder="请选择">
-            <el-option
-              v-for="item in courseList"
-              :key="item.id"
-              :label="`【${item.id}】- ${item.title} (${item.type})`"
-              :value="item.id">
-              <!--            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.value }}</span>-->
-            </el-option>
-          </el-select>
-        </el-form-item>
+      <el-row>
+        <el-col :span="12">
+          <el-form-item label="课程" prop="course">
+            <el-select v-model="tableData.course" placeholder="请选择" @change="changeGetSCList">
+              <el-option
+                v-for="item in courseList"
+                :key="item.id"
+                :label="`【${item.id}】- ${item.title} (${item.type})`"
+                :value="item.id">
+                <!--            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.value }}</span>-->
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="关联期课" prop="term_course">
+            <el-select v-model="tableData.term_course" placeholder="请选择">
+              <el-option
+                v-for="item in courseScList"
+                :key="item.id"
+                :label="`【期课ID:${item.id}】- 第${item.term_number}期`"
+                :value="item.id">
+                <!--            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.value }}</span>-->
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
         <el-form-item label="商品标题" prop="term_number">
           <el-input v-model="tableData.name" placeholder="商品标题"/>
         </el-form-item>
         <el-form-item label="商品原价(元)" prop="original_price">
           <el-input v-model="tableData.original_price" placeholder="商品价格，支持小数点后两位"/>
         </el-form-item>
-
         <el-form-item label="商品售价(元)" prop="price">
           <el-input v-model="tableData.price" placeholder="商品价格，支持小数点后两位"/>
         </el-form-item>
         <el-form-item label="商品描述" prop="description">
           <el-input v-model="tableData.description" placeholder="描述"/>
         </el-form-item>
-
-
         <el-form-item label="商品类型" prop="type">
           <el-select
             v-model="tableData.type"
@@ -184,6 +196,7 @@ import {
   updateProduct,
   deleteProduct
 } from "@/api/product";
+import { getScCourseList } from "@/api/sc_course";
 import {genTree, deepClone} from "@/utils";
 import checkPermission from "@/utils/permission";
 import {getEnumConfigList} from "@/api/enum_config";
@@ -199,10 +212,12 @@ export default {
         options: "",
         survey: "",
         create_time: "",
-        update_time: ""
+        update_time: "",
+        term_course:''
       },
       search: "",
       tableDataList: {},
+      courseScList:[],
       statusOptions: {},
       listLoading: true,
       dialogVisible: false,
@@ -236,6 +251,15 @@ export default {
       getEnumConfigList(query).then((response) => {
         this.typeOptions = response.data.results;
       })
+    },
+    changeGetSCList(){
+      this.tableData.term_course = '';
+      this.getScList();
+    },
+    getScList(){
+        getScCourseList({course:this.tableData.course}).then((response) => {
+          this.courseScList = response.data.results;
+        });
     },
     getProductStatusList() {
       let query = {module: this.enumConfigQuery.module, service: 'status'};
@@ -275,42 +299,41 @@ export default {
       this.tableData = genTree(newData);
     },
     handleAdd() {
-      this.tableData = Object.assign({}, defaultM);
-      this.dialogType = "new";
-      this.dialogVisible = true;
-      this.tableData.survey = this.course;
-      this.$nextTick(() => {
-        this.$refs["Form"].clearValidate();
-      });
+        this.tableData = Object.assign({}, defaultM);
+        this.dialogType = "new";
+        this.dialogVisible = true;
+        this.tableData.survey = this.course;
+        this.$nextTick(() => {
+            this.$refs["Form"].clearValidate();
+        });
     },
     handleEdit(scope) {
-      this.tableData = Object.assign({}, scope.row); // copy obj
-      this.dialogType = "edit";
-      this.dialogVisible = true;
-      this.$nextTick(() => {
-        this.$refs["Form"].clearValidate();
-      });
+        this.tableData = Object.assign({}, scope.row); // copy obj
+        this.getScList();
+        this.dialogType = "edit";
+        this.dialogVisible = true;
+        this.$nextTick(() => {
+            this.$refs["Form"].clearValidate();
+        });
     },
     handleDelete(scope) {
-      this.$confirm("确认删除?", "警告", {
-        confirmButtonText: "确认",
-        cancelButtonText: "取消",
-        type: "error",
-      })
-        .then(async () => {
-          await deleteProduct(scope.row.id);
-          this.getList();
-          this.$message({
-            type: "success",
-            message: "成功删除!",
-          });
-        })
-        .catch((err) => {
-          console.error(err);
+        this.$confirm("确认删除?", "警告", {
+            confirmButtonText: "确认",
+            cancelButtonText: "取消",
+            type: "error",
+        }).then(async () => {
+            await deleteProduct(scope.row.id);
+            this.getList();
+            this.$message({
+                type: "success",
+                message: "成功删除!",
+            });
+        }).catch((err) => {
+            console.error(err);
         });
     },
     goToQuestionsPage(scope) {
-      this.$router.push({name: 'questions', params: scope});
+        this.$router.push({name: 'questions', params: scope});
     },
     async confirm(form) {
       this.$refs[form].validate((valid) => {
