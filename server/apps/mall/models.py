@@ -88,9 +88,9 @@ class PaymentRecord(SoftModel):
     payment_date = models.DateTimeField(null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=[])
-    pay_id = models.CharField(max_length=256)
+    pay_id = models.CharField(max_length=256, blank=True, null=True)
     pay_time = models.DateTimeField(null=True, blank=True)
-    pay_result_detail = models.CharField(max_length=65535, choices=[])
+    pay_result_detail = models.CharField(max_length=65535, blank=True, null=True)
 
     # history = HistoricalRecords()
 
