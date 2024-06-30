@@ -16,7 +16,6 @@ from ..payments.services.wechat_pay import WeChatPayService
 from ..user_center.models import ExternalUser
 from .enum_config import OrderStatus, PaymentStatus, ProductStatus, PaymentMethod, UserType, StudyStatus
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -28,7 +27,6 @@ class ProductService:
         serializer = ProductSerializer(products, many=True)
         return serializer.data
 
-    @transaction.atomic
     def create_order(self, product_id, user_id, count=1):
         # 获取商品和用户信息
         try:
