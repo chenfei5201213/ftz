@@ -16,6 +16,7 @@ class ErrorCode(Enum):
     OrderPayCreateException = 10025  # '订单未支付'
 
     TermCourseException = 100300  # 期课未知异常
+    TermCourseEndException = 100301  # 期课已结束
 
     ExternalUserException = 100400  # 用户未知异常
     ExternalUserDuplication = 100400  # 用户已存在

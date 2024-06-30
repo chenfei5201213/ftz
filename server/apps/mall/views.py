@@ -13,6 +13,7 @@ from .enum_config import PaymentStatus
 from .models import Product, Order, PaymentRecord
 from .serializers import ProductSerializer, PaymentRecordSerializer, OrderSerializer, ProductSellSerializer
 from .service import ProductService
+from ..ftz.service import TermCourseService
 
 from ..payments.services.wechat_pay import WeChatPayService
 from ..system.authentication import ExternalUserAuth
@@ -69,18 +70,6 @@ class ProductSellViewSet(ModelViewSet):
         if status_param:
             queryset = queryset.filter(status=status_param)
         queryset = queryset.order_by('-id')
-        # # 获取当前时间
-        # now = timezone.now()
-        #
-        # # 过滤出期课即将开始到未结束的商品
-        # # 使用 Q 对象来构建复杂的查询
-        # term_courses = TermCourse.objects.filter(
-        #     # enrollment_start__lte=now,
-        #     enrollment_end__gte=now
-        # )
-        # course_ids = term_courses.values_list('course_id', flat=True).distinct()
-        # queryset = queryset.filter(course_id__in=course_ids)
-
         return queryset
 
 
@@ -161,6 +150,7 @@ class PayPayment(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self, request, *args, **kwargs):
+        logger.info("tets")
         order_id = request.query_params.get('order_id')
         order = Order.objects.filter(id=order_id).first()
         if order.status != PaymentStatus.PAID.value:
@@ -183,10 +173,8 @@ class PayPayment(APIView):
                         order.status = PaymentStatus.PAID.value
                         order.save()
                         send_bug_course_success_message.delay(payment_record.order.id)
-        product_info = ProductSellSerializer(order.product).data
         order_info = OrderSerializer(order).data
-        order_info['course_info'] = product_info.get('course_info')
-        order_info['term_courses'] = product_info.get('term_courses')
+        order_info['course_info'] = TermCourseService(order.user.id, order.product.course_id).get_have_term_courses()
         return Response(order_info)
 
 

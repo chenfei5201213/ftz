@@ -5,9 +5,9 @@ from django.utils import timezone
 
 from apps.ftz.models import Course, TermCourse, CourseScheduleStudent, CourseScheduleContent, Lesson, StudyMaterial, \
     UserStudyRecord
-from apps.ftz.serializers import CourseScheduleContentSerializer
+from apps.ftz.serializers import CourseScheduleContentSerializer, TermCourseDetailSerializer
 from apps.mall.enum_config import StudyStatus
-from apps.mall.exception import InsertTermContext
+from apps.mall.exception import InsertTermContext, InsertTermStudent
 from apps.user_center.models import ExternalUser
 from utils.custom_exception import ErrorCode
 
@@ -18,12 +18,13 @@ class TermCourseService:
     def __init__(self, user_id, course_id):
         self.user_id = user_id
         self.course_id = course_id
+        self.user = None
+        self.course = None
         self.init()
 
     def init(self):
         self.user = ExternalUser.objects.get(id=self.user_id)
         self.course = Course.objects.get(id=self.course_id)
-        pass
 
     def get_only_term(self):
         """
@@ -50,8 +51,10 @@ class TermCourseService:
                 user=self.user,
                 term_course=term_course,
                 exp_time=term_course.course_end,
-                study_status=StudyStatus.LOCKED.value[0]  # todo 这里最好使用枚举值
+                study_status=StudyStatus.LOCKED.value[0]
             )
+            return True
+        raise InsertTermStudent('期课已结束，下次早点来吧', ErrorCode.TermCourseEndException.value)
 
     def insert_student_context(self):
         """
@@ -163,3 +166,11 @@ class TermCourseService:
             logger.info(
                 f'study_material_id: {study_material_id}, lesson_id: {lesson_id} 当前状态为：{course_content}, 目标状态：{status},不允许回退状态，默认不处理')
         return course_content
+
+    def get_have_term_courses(self):
+        course_schedule = CourseScheduleStudent.objects.filter(user=self.user, term_course__course=self.course_id).first()
+        if course_schedule:
+            term_course = course_schedule.term_course
+            term_courses_info = TermCourseDetailSerializer(term_course).data
+            return term_courses_info
+

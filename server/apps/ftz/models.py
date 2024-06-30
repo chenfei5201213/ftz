@@ -282,7 +282,7 @@ class TermCourse(SoftModel):
         ]
 
     def __str__(self):
-        return f"{self.course} - {self.schedule_no}"
+        return f"{self.course} - {self.term_number}"
 
 
 class CourseScheduleStudent(SoftModel):
