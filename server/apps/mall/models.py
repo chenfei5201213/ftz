@@ -17,6 +17,7 @@ class Product(SoftModel):
     price = models.DecimalField('现价', max_digits=10, decimal_places=2)
     original_price = models.DecimalField('原价', max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=[])
+
     # history = HistoricalRecords()
 
     def __init__(self, *args, **kwargs):
@@ -51,7 +52,8 @@ class Order(SoftModel):
     order_date = models.DateTimeField(auto_now_add=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=[])
-    order_uuid = models.CharField(max_length=128)
+    order_uuid = models.CharField(max_length=128, blank=True, null=True)
+
     # history = HistoricalRecords()
 
     def __init__(self, *args, **kwargs):
@@ -89,6 +91,7 @@ class PaymentRecord(SoftModel):
     pay_id = models.CharField(max_length=256)
     pay_time = models.DateTimeField(null=True, blank=True)
     pay_result_detail = models.CharField(max_length=65535, choices=[])
+
     # history = HistoricalRecords()
 
     def __init__(self, *args, **kwargs):
