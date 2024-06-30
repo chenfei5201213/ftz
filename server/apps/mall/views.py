@@ -1,6 +1,7 @@
 import json
 import logging
 
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status
 from rest_framework.permissions import AllowAny
@@ -58,7 +59,7 @@ class ProductSellViewSet(ModelViewSet):
 
     def get_queryset(self):
         # 获取基础的查询集
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(term_course__enrollment_end__gte=timezone.now())
 
         # 获取请求中的参数
         type_param = self.request.query_params.get('type')
@@ -72,11 +73,11 @@ class ProductSellViewSet(ModelViewSet):
         queryset = queryset.order_by('-id')
         return queryset
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        _data = self.get_serializer(queryset, many=True).data
-        data = [i for i in _data if i.get('term_courses')]
-        return Response(data)
+    # def list(self, request, *args, **kwargs):
+    #     queryset = self.filter_queryset(self.get_queryset())
+    #     _data = self.get_serializer(queryset, many=True).data
+    #     data = [i for i in _data if i.get('term_courses')]
+    #     return Response(data)
 
 
 class OrderViewSet(ModelViewSet):

@@ -4,7 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from .models import Product, Order, PaymentRecord
-from apps.ftz.serializers import CourseSerializer, TermCourseSerializer
+from apps.ftz.serializers import CourseSerializer, TermCourseSerializer, TermCourseDetailSerializer
 from ..ftz.models import TermCourse
 
 
@@ -33,8 +33,8 @@ class ProductSellSerializer(serializers.ModelSerializer):
     """
     type_description = serializers.SerializerMethodField()
     status_description = serializers.SerializerMethodField()
-    course_info = CourseSerializer(source='course', read_only=True)
-    term_courses = serializers.SerializerMethodField()
+    course_info = CourseSerializer(read_only=True, source='course')
+    term_courses = TermCourseSerializer(read_only=True, source='term_course')
 
     class Meta:
         model = Product
@@ -45,15 +45,6 @@ class ProductSellSerializer(serializers.ModelSerializer):
 
     def get_status_description(self, obj):
         return obj.status_description
-
-    def get_term_courses(self, obj):
-        # 获取与商品关联的期课信息
-        # term_courses = obj.course.termcourse_set.all()
-        term_courses = TermCourse.objects.filter(course=obj.course, enrollment_end__gte=timezone.now()).first()
-        if not term_courses:
-            return {}
-        serializer = TermCourseSerializer(term_courses)
-        return serializer.data
 
 
 class OrderSerializer(serializers.ModelSerializer):
