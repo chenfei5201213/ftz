@@ -4,12 +4,13 @@ from simple_history.models import HistoricalRecords
 from utils.model import SoftModel
 from apps.user_center.models import ExternalUser
 from apps.system.models import User
-from apps.ftz.models import Course, get_enum_choices, EnumConfig
+from apps.ftz.models import Course, get_enum_choices, EnumConfig, TermCourse
 
 
 class Product(SoftModel):
     """商品表"""
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, blank=True, null=True)
+    term_course = models.ForeignKey(TermCourse, on_delete=models.SET_NULL, blank=True, null=True)
     name = models.CharField(max_length=255)
     type = models.CharField('商品类型', max_length=20, choices=[])
     description = models.TextField('描述', blank=True)

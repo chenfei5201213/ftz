@@ -72,6 +72,12 @@ class ProductSellViewSet(ModelViewSet):
         queryset = queryset.order_by('-id')
         return queryset
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        _data = self.get_serializer(queryset, many=True).data
+        data = [i for i in _data if i.get('term_courses')]
+        return Response(data)
+
 
 class OrderViewSet(ModelViewSet):
     """
