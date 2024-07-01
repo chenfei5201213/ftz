@@ -367,15 +367,20 @@ class StudyMaterialDetailView(APIView):
             user_id = request.user.id
             lesson_id = request.query_params.get('lesson_id')
             study_material_id = request.query_params.get('study_material_id')
-            study_content = CourseScheduleContent.objects.filter(user=user_id, lesson=lesson_id,
-                                                                 study_material=study_material_id).first()
-            if not study_content:
-                return Response(data={'error': '当前资源未购买，请联系客服'}, status=status.HTTP_400_BAD_REQUEST)
-            study_content_info = CourseScheduleContentDetailSerializer(study_content).data
-            study_service = StudyContentService(user_id)
-            card = study_service.card_study_progress(study_content.card, study_content.lesson, int(study_material_id))
-            study_content_info['card'] = card
-            return Response(study_content_info)
+            cache_helper = MaterialCacheHelper(study_material_id)
+            data = cache_helper.get_material_study_progress()
+            if not data:
+                study_content = CourseScheduleContent.objects.filter(user=user_id, lesson=lesson_id,
+                                                                     study_material=study_material_id).first()
+                if not study_content:
+                    return Response(data={'error': '当前资源未购买，请联系客服'}, status=status.HTTP_400_BAD_REQUEST)
+                study_content_info = CourseScheduleContentDetailSerializer(study_content).data
+                study_service = StudyContentService(user_id)
+                card = study_service.card_study_progress(study_content.card, study_content.lesson, int(study_material_id))
+                study_content_info['card'] = card
+                cache_helper.set_material_study_progress(study_content_info)
+                data = study_content_info
+            return Response(data)
         except FtzException as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
