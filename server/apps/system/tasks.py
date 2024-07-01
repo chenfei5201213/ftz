@@ -57,20 +57,23 @@ def class_reminder():
     for content in contents:
         try:
             only_key = f"{content.user_id}-{content.lesson_id}"
-            if user_lesson.get('only_key'):
+            if user_lesson.get(only_key):
                 content
             logger.info(f"user_lesson: {only_key} 满足消息通知")
             user_lesson[only_key] = 1
             user = content.user
             course = content.term_course.course
-            open_time = content.open_time.strftime("%Y年%m月%d日")
+            open_time = content.open_time.astimezone(timezone.get_current_timezone()).strftime("%Y年%m月%d日")
             course_info = {
                 'title': course.title,
                 'open_time': open_time
             }
-            wx = WchatTemplateMessage()
-            result = wx.send_class_reminder(user.openid, course_info)
-            logger.info(f"openid: {user.openid}, send_bug_course_success_message_result: {result}")
+            if user.openid:
+                wx = WchatTemplateMessage()
+                result = wx.send_class_reminder(user.openid, course_info)
+                logger.info(f"openid: {user.openid}, send_bug_course_success_message_result: {result}")
+            else:
+                logger.info(f'用户{user.id} 没有公众号注册，无法推送消息')
         except Exception as e:
             logger.exception(f'上课提醒异常: {repr(e)}')
 
