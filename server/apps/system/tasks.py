@@ -1,9 +1,12 @@
 # Create your tasks here
 from __future__ import absolute_import, unicode_literals
 import logging
+from datetime import timedelta
+
 from celery import shared_task
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.datetime_safe import datetime
 
 from apps.ftz.models import CourseScheduleContent
 from apps.ftz.serializers import CourseSerializer
@@ -38,19 +41,25 @@ def class_reminder():
     """
     上课提醒
     """
-    # 获取当天0点的时间
-    today_start_time = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
-    # 获取明天0点的时间
-    tomorrow_start_time = today_start_time + timezone.timedelta(days=1)
+    # 获取当前时区的今天和明天的日期
+    today = timezone.localtime(timezone.now()).date()
+    tomorrow = today + timedelta(days=1)
+
+    # 将日期转换为datetime对象，并添加时区信息
+    today_start = timezone.make_aware(datetime.combine(today, datetime.min.time()), timezone.get_current_timezone())
+    tomorrow_start = timezone.make_aware(datetime.combine(tomorrow, datetime.min.time()),
+                                         timezone.get_current_timezone())
     # 创建一个 Q 对象，用于查询 open_time 大于等于当天0点且小于明天0点的记录
-    time_query = Q(open_time__gte=today_start_time) & Q(open_time__lt=tomorrow_start_time)
+    time_query = Q(open_time__gte=today_start) & Q(open_time__lt=tomorrow_start)
     contents = CourseScheduleContent.objects.filter(time_query).all()
+    logger.info(f"class_reminder_contents: {len(contents)}")
     user_lesson = {}
     for content in contents:
         try:
             only_key = f"{content.user_id}-{content.lesson_id}"
             if user_lesson.get('only_key'):
                 content
+            logger.info(f"user_lesson: {only_key} 满足消息通知")
             user_lesson[only_key] = 1
             user = content.user
             course = content.term_course.course
@@ -63,7 +72,7 @@ def class_reminder():
             result = wx.send_class_reminder(user.openid, course_info)
             logger.info(f"openid: {user.openid}, send_bug_course_success_message_result: {result}")
         except Exception as e:
-            logger.exception(f'上课提醒异常')
+            logger.exception(f'上课提醒异常: {repr(e)}')
 
 
 @shared_task

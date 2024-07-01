@@ -22,7 +22,7 @@ from .serializers import TermCourseSerializer, CourseScheduleStudentSerializer, 
 from .serializers import StudyMaterialSimpleListSerializer
 from .user_course_service import UserCourseService
 from ..system.authentication import ExternalUserTokenObtainPairSerializer
-from ..system.tasks import send_bug_course_success_message
+from ..system.tasks import send_bug_course_success_message, class_reminder
 from ..user_center.models import ExternalUser
 from ..user_center.serializers import ExternalUserSerializer
 
@@ -306,7 +306,7 @@ class Test01View(APIView):
     def get(self, request):
         # 获取当前日期
         logger.info('12345test')
-        send_bug_course_success_message.delay(547)
+        class_reminder()
         return Response(data={})
 
 
