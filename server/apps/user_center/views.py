@@ -183,6 +183,10 @@ class WechatEchoStr(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)  # 返回 500 错误
 
+    def post(self, request):
+        """https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Getting_Started_Guide.html"""
+        pass
+
 
 class ExternalUserView(ModelViewSet):
     perms_map = {'get': '*', 'post': 'role_create',
