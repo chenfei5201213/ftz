@@ -365,17 +365,18 @@ class StudyMaterialDetailView(APIView):
     def get(self, request, *args, **kwargs):
         try:
             user_id = request.user.id
+            course_id = request.query_params.get('course_id')
             lesson_id = request.query_params.get('lesson_id')
             study_material_id = request.query_params.get('study_material_id')
-            study_content = CourseScheduleContent.objects.filter(user=user_id, lesson=lesson_id,
-                                                                 study_material=study_material_id).first()
-            if not study_content:
-                return Response(data={'error': '当前资源未购买，请联系客服'}, status=status.HTTP_400_BAD_REQUEST)
+            if any([v is None for v in [course_id, lesson_id, study_material_id]]):
+                return Response({'error': '参数错误'}, status=status.HTTP_400_BAD_REQUEST)
             cache_helper = MaterialCacheHelper(study_material_id)
-            course_id = study_content.term_course.course.id
             data = cache_helper.get_material_study_progress(course_id, lesson_id)
             if not data:
-
+                study_content = CourseScheduleContent.objects.filter(user=user_id, lesson=lesson_id,
+                                                                     study_material=study_material_id).first()
+                if not study_content:
+                    return Response(data={'error': '当前资源未购买，请联系客服'}, status=status.HTTP_400_BAD_REQUEST)
                 study_content_info = CourseScheduleContentDetailSerializer(study_content).data
                 study_service = StudyContentService(user_id)
                 card = study_service.card_study_progress(study_content.card, study_content.lesson, int(study_material_id))
