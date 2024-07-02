@@ -32,6 +32,7 @@ from ..system.authentication import ExternalUserTokenObtainPairSerializer, Exter
 from ..system.models import File, User
 from ..system.permission import ExternalUserPermission
 from ..system.serializers import FileSerializer
+from ..system.tasks import study_report_task
 
 logger = logging.getLogger('__name__')
 
@@ -244,17 +245,12 @@ class StudyReportView(APIView):
         study_material_id = request.data.get('study_material_id')
         study_status = request.data.get('study_status')
         study_duration = request.data.get('study_duration', 1)
-        if study_status not in StudyStatus.__members__:
+        if study_status not in StudyStatus.__members__ or any(
+                [v is None for v in [course_id, lesson_id, study_material_id, study_status]]):
             return Response(f"study_status: {study_status} 不在{StudyStatus.__members__}中",
                             status=status.HTTP_400_BAD_REQUEST)
-        term_service = TermCourseService(user_id, course_id)
-
-        study_content = term_service.update_study_status(study_material_id, lesson_id,
-                                                         StudyStatus[study_status].value[0], study_duration)
-        if not study_content:
-            return Response("学习内容不存在", status.HTTP_400_BAD_REQUEST)
-        serializer = CourseScheduleContentDetailSerializer(study_content)
-        return Response(data=serializer.data)
+        study_report_task.delay(user_id, course_id, study_material_id, lesson_id, study_status, study_duration)
+        return Response(data="上报成功")
 
 
 class MyCourseView(APIView):
@@ -383,7 +379,8 @@ class StudyMaterialDetailView(APIView):
                     return Response(data={'error': '当前资源未购买，请联系客服'}, status=status.HTTP_400_BAD_REQUEST)
                 study_content_info = CourseScheduleContentDetailSerializer(study_content).data
                 study_service = StudyContentService(user_id)
-                card = study_service.card_study_progress(study_content.card, study_content.lesson, int(study_material_id))
+                card = study_service.card_study_progress(study_content.card, study_content.lesson,
+                                                         int(study_material_id))
                 study_content_info['card'] = card
                 cache_helper.set_material_study_progress(study_content_info, course_id, lesson_id)
                 data = study_content_info

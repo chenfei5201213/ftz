@@ -1,6 +1,6 @@
 from django.core.cache import cache
 
-from component.cache import TIMEOUT
+from component.cache import TIMEOUT, to_redis_key
 
 
 class MaterialCacheHelper:
@@ -8,7 +8,8 @@ class MaterialCacheHelper:
         self.material_id = material_id
 
     def material_detail_key(self):
-        return f'material:d:{self.material_id}'
+        """md: 素材详情缩写"""
+        return to_redis_key('md', self.material_id)
 
     def set_material_detail(self, data: dict):
         return cache.set(self.material_detail_key(), data, timeout=TIMEOUT)
@@ -18,7 +19,7 @@ class MaterialCacheHelper:
 
     def material_study_progress_key(self, course_id, lesson_id):
         """学习进度key"""
-        return f'material:sp:{course_id}:{lesson_id}:{self.material_id}:'
+        return to_redis_key('msp', course_id, lesson_id, self.material_id)
 
     def set_material_study_progress(self, data: dict, course_id, lesson_id):
         return cache.set(self.material_study_progress_key(course_id, lesson_id), data, timeout=TIMEOUT)

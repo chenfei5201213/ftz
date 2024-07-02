@@ -10,6 +10,8 @@ from django.utils.datetime_safe import datetime
 
 from apps.ftz.models import CourseScheduleContent
 from apps.ftz.serializers import CourseSerializer
+from apps.ftz.service import TermCourseService
+from apps.mall.enum_config import StudyStatus
 from apps.mall.models import Order
 from apps.mall.serializers import ProductSellSerializer
 from apps.system.models import RequestLog
@@ -97,3 +99,16 @@ def send_class_reminder(openid, course_info):
     wx = WchatTemplateMessage()
     result = wx.send_class_reminder(openid, course_info)
     logger.info(f"openid: {openid}, class_reminder_result: {result}")
+
+
+@shared_task
+def study_report_task(user_id, course_id, study_material_id, lesson_id, study_status, study_duration):
+    try:
+        term_service = TermCourseService(user_id, course_id)
+        study_content = term_service.update_study_status(study_material_id, lesson_id,
+                                                         StudyStatus[study_status].value[0], study_duration)
+        if not study_content:
+            logger.error(
+                f"user_id:{user_id}, course_id:{course_id},lesson_id:{lesson_id}, study_material_id:{study_material_id} 没有对应的学习内容 ")
+    except Exception as e:
+        logger.exception(f"同步学习状态异常：{user_id}-{course_id}-{lesson_id}-{study_material_id}, {repr(e)}")
