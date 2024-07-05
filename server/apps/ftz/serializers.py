@@ -96,7 +96,6 @@ class CardListSerializer(serializers.ModelSerializer):
     status_description = serializers.SerializerMethodField()
     study_materials = serializers.PrimaryKeyRelatedField(queryset=StudyMaterial.objects.all(), many=True)
 
-
     # study_materials = serializers.SerializerMethodField()
 
     class Meta:
@@ -282,6 +281,13 @@ class UserResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserResponse
         # fields = ['id', 'survey_title', 'question_text', 'answer', 'response_time', 'update_time', 'create_time']
+        fields = '__all__'
+
+
+class SurveyReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserResponse
+        # fields = ['survey', 'user', 'question', 'answer', 'response_time']
         fields = '__all__'
 
 

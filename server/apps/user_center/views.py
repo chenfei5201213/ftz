@@ -2,6 +2,7 @@ import hashlib
 import logging
 
 from django.core.cache import cache
+from django.utils import timezone
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, RetrieveModelMixin
 from rest_framework.parsers import MultiPartParser, JSONParser
@@ -21,10 +22,11 @@ from utils.wechat.wechat_util import WechatUtil, WechatMiniUtil
 from server import settings
 
 from .models import ExternalUser, ExternalOauth
-from .serializers import ExternalUserSerializer, ExternalOauthSerializer
+from .serializers import ExternalUserSerializer, ExternalOauthSerializer, LogReportSerializer
 from .service import ExternalUserService
 from ..ftz.models import CourseScheduleContent, StudyMaterial
-from ..ftz.serializers import CourseScheduleContentDetailSerializer, StudyMaterialDetailSerializer
+from ..ftz.serializers import CourseScheduleContentDetailSerializer, StudyMaterialDetailSerializer, \
+    SurveyReportSerializer
 from ..ftz.service import TermCourseService
 from ..mall.enum_config import StudyStatus
 from .service import StudyContentService
@@ -32,7 +34,7 @@ from ..system.authentication import ExternalUserTokenObtainPairSerializer, Exter
 from ..system.models import File, User
 from ..system.permission import ExternalUserPermission
 from ..system.serializers import FileSerializer
-from ..system.tasks import study_report_task
+from ..system.tasks import study_report_task, survey_report_task, log_report_task
 
 logger = logging.getLogger('__name__')
 
@@ -251,6 +253,35 @@ class StudyReportView(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
         study_report_task.delay(user_id, course_id, study_material_id, lesson_id, study_status, study_duration)
         return Response(data="上报成功")
+
+
+class SurveyReportView(APIView):
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+
+    def post(self, request):
+        request.data['user'] = request.user.id
+        serializer = SurveyReportSerializer(data=request.data)
+        if serializer.is_valid():
+            survey_report_task.delay(serializer.data)
+            return Response(data="上报成功")
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogReportView(APIView):
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+
+    def post(self, request):
+        request.data['user'] = request.user.id
+        request.data['event_report_time'] = timezone.now()
+        serializer = LogReportSerializer(data=request.data)
+        if serializer.is_valid():
+            log_report_task.delay(serializer.data)
+            return Response(data="上报成功")
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MyCourseView(APIView):

@@ -65,3 +65,20 @@ class ExternalOauth(SoftModel):
 
     def __str__(self):
         return f"{self.user.nickname} - {self.expires_in}"
+
+
+class UserBehavior(SoftModel):
+    user = models.ForeignKey(ExternalUser, on_delete=models.CASCADE)  # 关联到Django的User模型
+    event_type = models.CharField(max_length=50)  # 事件类型
+    event_value = models.CharField(max_length=256)  # 事件值
+    event_detail = models.JSONField(null=True, blank=True)  # 事件详情，使用JSONField存储
+    event_time = models.DateTimeField()  # 事件发生的时间戳
+    event_report_time = models.DateTimeField(null=True, blank=True)  # 事件上报的时间戳
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'event_type']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.id} - {self.event_type} - {self.report_time}"

@@ -9,12 +9,13 @@ from django.utils import timezone
 from django.utils.datetime_safe import datetime
 
 from apps.ftz.models import CourseScheduleContent
-from apps.ftz.serializers import CourseSerializer
+from apps.ftz.serializers import CourseSerializer, SurveyReportSerializer
 from apps.ftz.service import TermCourseService
 from apps.mall.enum_config import StudyStatus
 from apps.mall.models import Order
 from apps.mall.serializers import ProductSellSerializer
 from apps.system.models import RequestLog
+from apps.user_center.serializers import LogReportSerializer
 from utils.wechat.wechat_util import WchatTemplateMessage
 
 logger = logging.getLogger(__name__)
@@ -112,3 +113,27 @@ def study_report_task(user_id, course_id, study_material_id, lesson_id, study_st
                 f"user_id:{user_id}, course_id:{course_id},lesson_id:{lesson_id}, study_material_id:{study_material_id} 没有对应的学习内容 ")
     except Exception as e:
         logger.exception(f"同步学习状态异常：{user_id}-{course_id}-{lesson_id}-{study_material_id}, {repr(e)}")
+
+
+@shared_task
+def survey_report_task(survey_serializer_data):
+    serializer = SurveyReportSerializer(data=survey_serializer_data)
+    if serializer.is_valid():
+        serializer_obj = serializer.save()
+        # 这里可以添加其他需要执行的代码，比如发送通知等
+        return serializer_obj.id  # 返回保存的实例ID
+    else:
+        logger.error(f"survey_report_task: {serializer.errors}")
+        return serializer.errors
+
+
+@shared_task
+def log_report_task(survey_serializer_data):
+    serializer = LogReportSerializer(data=survey_serializer_data)
+    if serializer.is_valid():
+        serializer_obj = serializer.save()
+        # 这里可以添加其他需要执行的代码，比如发送通知等
+        return serializer_obj.id  # 返回保存的实例ID
+    else:
+        logger.error(f"log_report_task: {serializer.errors}")
+        return serializer.errors

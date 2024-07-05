@@ -3,7 +3,7 @@ from rest_framework import routers
 from .views import WechatLogin, WechatEchoStr, ExternalUserView, ExternalOauthView, TermCourseContentView, \
     WechatMiniLogin, UserLogin, WechatCallbackLogin, MyTokenRefreshView, StudyReportView, MyCourseView, \
     CourseLessonListView, CourseLessonDetailView, StudyMaterialDetailView, LearningProgressView, \
-    FileViewSet, FreeCourse, StudyMaterialDetailQView
+    FileViewSet, FreeCourse, StudyMaterialDetailQView, SurveyReportView, LogReportView
 
 router = routers.DefaultRouter()
 router.register('user', ExternalUserView, basename='user')
@@ -29,4 +29,7 @@ urlpatterns = [
          name='my_course_lesson_material_detail'),
     path('my/course/learning_progress/', LearningProgressView.as_view(), name='my_course_learning_progress'),
     # path('wx/handle/', WechatEchoStr.as_view()),
+
+    path('survey/report/', SurveyReportView.as_view()),
+    path('log/report/', LogReportView.as_view()),
 ]

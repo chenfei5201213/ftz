@@ -241,10 +241,10 @@ class UserResponse(SoftModel):
     用户回答表，记录用户对调查问题的回答。
     """
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, verbose_name="调查问卷", related_name='r_survey')
-    user_id = models.CharField(max_length=100, verbose_name="用户标识")
+    user = models.ForeignKey(ExternalUser, on_delete=models.SET_NULL, blank=True, null=True)  # 用户id
     question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name="问题", related_name='r_question')
     answer = models.TextField(verbose_name="回答")
-    response_time = models.DateTimeField(auto_now_add=True, verbose_name="回答时间")
+    response_time = models.DateTimeField(verbose_name="回答时间")
 
     class Meta:
         verbose_name = "用户回答"
