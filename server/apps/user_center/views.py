@@ -16,6 +16,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from component.cache.material_cache_helper import MaterialCacheHelper
+from component.cache.user_habit_cache_helper import UserHabitCacheHelper
 from utils.custom_exception import FtzException
 from utils.wechat.wechat_util import WechatUtil, WechatMiniUtil
 
@@ -24,6 +25,7 @@ from server import settings
 from .models import ExternalUser, ExternalOauth
 from .serializers import ExternalUserSerializer, ExternalOauthSerializer, LogReportSerializer
 from .service import ExternalUserService
+from .user_habit_service import UserHabitService
 from ..ftz.models import CourseScheduleContent, StudyMaterial
 from ..ftz.serializers import CourseScheduleContentDetailSerializer, StudyMaterialDetailSerializer, \
     SurveyReportSerializer
@@ -264,7 +266,32 @@ class SurveyReportView(APIView):
         serializer = SurveyReportSerializer(data=request.data)
         if serializer.is_valid():
             survey_report_task.delay(serializer.data)
+            UserHabitCacheHelper(request.user).set_user_survey_data(1)
             return Response(data="上报成功")
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class BatchSurveyReportView(APIView):
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+
+    def post(self, request):
+        records = request.data.get('records', [])
+
+        # 检查是否提供了有效的数据
+        if not records:
+            return Response(data="无效的请求数据", status=status.HTTP_400_BAD_REQUEST)
+        [i.update({'user': request.user.id}) for i in records]
+        serializer = SurveyReportSerializer(data=records, many=True)
+
+        # 验证数据
+        if serializer.is_valid():
+            # 调用异步任务，传递验证后的数据
+            for log_report in serializer.data:
+                survey_report_task.delay(log_report)
+            UserHabitCacheHelper(request.user).set_user_survey_data(1)
+            return Response(data="批量上报成功", status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -289,13 +316,13 @@ class BatchLogReportView(APIView):
     permission_classes = [ExternalUserPermission]
 
     def post(self, request):
-        log_reports = request.data.get('log_reports', [])
+        records = request.data.get('records', [])
 
         # 检查是否提供了有效的数据
-        if not log_reports:
+        if not records:
             return Response(data="无效的请求数据", status=status.HTTP_400_BAD_REQUEST)
-        [i.update({'user': request.user.id}) for i in log_reports]
-        serializer = LogReportSerializer(data=log_reports, many=True)
+        [i.update({'user': request.user.id}) for i in records]
+        serializer = LogReportSerializer(data=records, many=True)
 
         # 验证数据
         if serializer.is_valid():
@@ -523,4 +550,23 @@ class FreeCourse(APIView):
         except Exception as e:
             # 捕获其他异常并返回错误响应
             logger.exception(f'领取课程异常')
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UserHabitView(APIView):
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+
+    def get(self, request, *args, **kwargs):
+        """获取用户习惯"""
+        try:
+            user_habit_service = UserHabitService(request.user)
+            data = user_habit_service.get_all()
+            return Response(data)
+        except FtzException as e:
+            logger.exception(f'内部错误：')
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            logger.exception(f'获取用户习惯')
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
