@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import uuid
 
 from django.core.cache import cache
 from django.utils import timezone
@@ -191,6 +192,30 @@ class WechatEchoStr(APIView):
     def post(self, request):
         """https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Getting_Started_Guide.html"""
         pass
+
+
+class GenWechatSignature(APIView):
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+
+    def get(self, request):
+        token = settings.WECHAT_TOKEN  # 从 Django 设置中获取 Token
+        timestamp = str(timezone.now().timestamp())
+        nonce = str(uuid.uuid4())
+        # 验证消息的确来自微信服务器
+        list_ = [token.encode('utf-8'), timestamp.encode('utf-8'), nonce.encode('utf-8')]
+        list_.sort()
+        sha1 = hashlib.sha1()
+        # map(sha1.update, list_)
+        [sha1.update(item) for item in list_]
+        hashcode = sha1.hexdigest()
+        data = {
+            'timestamp': timestamp,
+            'nonceStr': nonce,
+            'signature': hashcode,
+            'appId': settings.APPID
+        }
+        return Response(data=data)
 
 
 class ExternalUserView(ModelViewSet):
