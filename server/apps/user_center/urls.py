@@ -3,7 +3,7 @@ from rest_framework import routers
 from .views import WechatLogin, WechatEchoStr, ExternalUserView, ExternalOauthView, TermCourseContentView, \
     WechatMiniLogin, UserLogin, WechatCallbackLogin, MyTokenRefreshView, StudyReportView, MyCourseView, \
     CourseLessonListView, CourseLessonDetailView, StudyMaterialDetailView, LearningProgressView, \
-    FileViewSet, FreeCourse, StudyMaterialDetailQView, SurveyReportView, LogReportView
+    FileViewSet, FreeCourse, StudyMaterialDetailQView, SurveyReportView, LogReportView, BatchLogReportView
 
 router = routers.DefaultRouter()
 router.register('user', ExternalUserView, basename='user')
@@ -32,4 +32,5 @@ urlpatterns = [
 
     path('survey/report/', SurveyReportView.as_view()),
     path('log/report/', LogReportView.as_view()),
+    path('log/batch_report/', BatchLogReportView.as_view()),
 ]

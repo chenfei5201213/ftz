@@ -284,6 +284,29 @@ class LogReportView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class BatchLogReportView(APIView):
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+
+    def post(self, request):
+        log_reports = request.data.get('log_reports', [])
+
+        # 检查是否提供了有效的数据
+        if not log_reports:
+            return Response(data="无效的请求数据", status=status.HTTP_400_BAD_REQUEST)
+        [i.update({'user': request.user.id}) for i in log_reports]
+        serializer = LogReportSerializer(data=log_reports, many=True)
+
+        # 验证数据
+        if serializer.is_valid():
+            # 调用异步任务，传递验证后的数据
+            for log_report in serializer.data:
+                log_report_task.delay(log_report)
+            return Response(data="批量上报成功", status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class MyCourseView(APIView):
     authentication_classes = [ExternalUserAuth]
     permission_classes = [ExternalUserPermission]

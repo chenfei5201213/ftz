@@ -69,6 +69,7 @@ class ExternalOauth(SoftModel):
 
 class UserBehavior(SoftModel):
     user = models.ForeignKey(ExternalUser, on_delete=models.CASCADE)  # 关联到Django的User模型
+    channel = models.CharField(max_length=50, default='default')  # 渠道
     event_type = models.CharField(max_length=50)  # 事件类型
     event_value = models.CharField(max_length=256)  # 事件值
     event_detail = models.JSONField(null=True, blank=True)  # 事件详情，使用JSONField存储
@@ -77,7 +78,7 @@ class UserBehavior(SoftModel):
 
     class Meta:
         indexes = [
-            models.Index(fields=['user', 'event_type']),
+            models.Index(fields=['user', 'event_type', 'channel']),
         ]
 
     def __str__(self):
