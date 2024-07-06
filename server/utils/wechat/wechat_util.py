@@ -116,7 +116,7 @@ class WechatUtil(WechatBase):
         }
         # response = requests.get(url, params=params)
         response = self.request(method='get', url=WX_TICKET_URI, params=params)
-        return response.json().get("ticket")
+        return response.get("ticket")
 
 
 class WchatTemplateMessage(WechatBase):
