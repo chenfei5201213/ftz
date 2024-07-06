@@ -249,6 +249,7 @@ class UserResponse(SoftModel):
     class Meta:
         verbose_name = "用户回答"
         verbose_name_plural = "用户回答列表"
+        # unique_together = ('survey', 'user', 'question')  # 在模型中设置联合唯一约束
 
 
 class TermCourse(SoftModel):

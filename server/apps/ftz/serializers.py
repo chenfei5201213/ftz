@@ -290,6 +290,24 @@ class SurveyReportSerializer(serializers.ModelSerializer):
         # fields = ['survey', 'user', 'question', 'answer', 'response_time']
         fields = '__all__'
 
+    def create(self, validated_data):
+        # 尝试获取唯一的约束
+        survey = validated_data.get('survey')
+        user = validated_data.get('user')
+        question = validated_data.get('question')
+
+        # 检查是否存在具有相同 survey, user, question 的实例
+        try:
+            existing_response = UserResponse.objects.get(survey=survey, user=user, question=question)
+            # 如果存在，则更新现有的实例
+            for key, value in validated_data.items():
+                setattr(existing_response, key, value)
+            existing_response.save()
+            return existing_response
+        except UserResponse.DoesNotExist:
+            # 如果不存在，则创建新的实例
+            return super().create(validated_data)
+
 
 class TermCourseDetailSerializer(serializers.ModelSerializer):
     course_info = CourseSerializer(read_only=True, source='course')
