@@ -19,7 +19,7 @@ from utils.retry_requests import retry_request
 
 from utils.wechat import APPID, WX_AUTH_URL, SECRET, WX_CODE_ACCESS_TOKEN_URL, \
     WX_CODE_ACCESS_REFRESH_TOKEN_URL, \
-    WX_USER_INFO_URL, WX_ACCESS_TOKEN_URL, WX_TEMPLATE_MESSAGE_SEND_URL
+    WX_USER_INFO_URL, WX_ACCESS_TOKEN_URL, WX_TEMPLATE_MESSAGE_SEND_URL, WX_TICKET_URI
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +108,15 @@ class WechatUtil(WechatBase):
         }
         user_info = self.request(method='get', url=WX_USER_INFO_URL, params=user_info_params)
         return user_info
+
+    def get_jsapi_ticket(self):
+        params = {
+            "access_token": self.get_access_token(),
+            "type": "jsapi"
+        }
+        # response = requests.get(url, params=params)
+        response = self.request(method='get', url=WX_TICKET_URI, params=params)
+        return response.json().get("ticket")
 
 
 class WchatTemplateMessage(WechatBase):
@@ -229,3 +238,6 @@ if __name__ == '__main__':
     wx = WchatTemplateMessage()
     token = wx.send_class_reminder('o77756JY-IHm6zh-Ez3HVsLJIKvA', {"title": "测试课程", 'open_time': timezone.localtime().strftime("%Y年%m月%d日")})
     print(token)
+    # wx = WechatUtil()
+    # tk = wx.get_jsapi_ticket()
+    # print(tk)

@@ -21,6 +21,9 @@ WX_USER_INFO_URL = "https://api.weixin.qq.com/sns/userinfo"
 # REDIRECT_URI = "http://www.ngsmq.online/api/us/wx/login/"
 # REDIRECT_URI = "http://www.ngsmq.online/web/index.html"
 
+# 获取凭证
+WX_TICKET_URI = "https://api.weixin.qq.com/cgi-bin/ticket/getticket"
+
 
 # 基础消息
 WX_TEMPLATE_MESSAGE_SEND_URL = "https://api.weixin.qq.com/cgi-bin/message/template/send"
