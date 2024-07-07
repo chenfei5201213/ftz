@@ -6,7 +6,7 @@ from .views import CourseViewSet, LessonViewSet, CardViewSet, StudyMaterialViewS
 from .views import SurveyViewSet, QuestionViewSet, UserResponseViewSet, CourseScheduleViewSet
 from .views import CourseScheduleStudentViewSet, UserStudyRecordViewSet, StudyMaterialSimpleViewSet
 from .views import CardListSimpleViewSet, UserStudyContentViewSet, Test01View, QueryUserCourseInfo, RestUserCourse
-from .views import AdminUserView, AdminUserTokenView
+from .views import AdminUserView, AdminUserTokenView, WechatMenuCreate, WechatMenuDelete
 
 router = routers.DefaultRouter()
 router.register('course', CourseViewSet, basename='course')
@@ -33,4 +33,7 @@ urlpatterns = [
     path('user/reset_course/', RestUserCourse.as_view()),
     path('admin/user/', AdminUserView.as_view()),
     path('admin/token/', AdminUserTokenView.as_view()),
+    path('admin/wx/menu/create/', WechatMenuCreate.as_view()),
+    path('admin/wx/menu/delete/', WechatMenuDelete.as_view()),
+
 ]

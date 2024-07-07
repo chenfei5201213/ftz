@@ -31,3 +31,4 @@ WX_TEMPLATE_MESSAGE_SEND_URL = "https://api.weixin.qq.com/cgi-bin/message/templa
 # 公众号菜单
 WX_MENU_GET_URL = "https://api.weixin.qq.com/cgi-bin/get_current_selfmenu_info"
 WX_MENU_CREATE_URL = " https://api.weixin.qq.com/cgi-bin/menu/create"
+WX_MENU_DELETE_URL = "https://api.weixin.qq.com/cgi-bin/menu/delete"

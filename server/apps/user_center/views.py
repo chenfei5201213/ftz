@@ -15,6 +15,7 @@ from rest_framework.views import APIView
 from rest_framework import filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_xml.parsers import XMLParser
 
 from component.cache.material_cache_helper import MaterialCacheHelper
 from component.cache.user_habit_cache_helper import UserHabitCacheHelper
@@ -165,6 +166,7 @@ def gen_token(user: ExternalUser, code, unionid):
 
 class WechatEchoStr(APIView):
     permission_classes = [AllowAny]
+    parser_classes = [XMLParser,]
 
     def get(self, request):
         try:
@@ -194,22 +196,20 @@ class WechatEchoStr(APIView):
         """https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Getting_Started_Guide.html"""
         try:
             wx_data = request.data
-            logger.info("Handle Post webdata is ", wx_data)
-            # 解析 XML 数据
-            rec_msg = receive.parse_xml(wx_data)
-            if isinstance(rec_msg, receive.Msg) and rec_msg.MsgType == 'text':
-                to_user = rec_msg.FromUserName
-                from_user = rec_msg.ToUserName
-                if 'smq' in rec_msg.Content:
-                    content = "欢迎来到饭团子的世界~"
-                    # 创建回复消息
-                    reply_msg = reply.TextMsg(to_user, from_user, content)
-                    # 发送回复消息
-                    reply_msg.send()
-                    return Response("success", status=status.HTTP_200_OK)
+            logger.info(f"Handle Post webdata is {wx_data} ")
+            to_user = wx_data.get('ToUserName')
+            from_user = wx_data.get('FromUserName')
+            if wx_data.get('MsgType') == 'text' and 'smq' in wx_data.get('Content'):
+                content = "欢迎来到饭团子的世界~"
+                # 创建回复消息
+                reply_msg = reply.TextMsg(to_user, from_user, content)
+                # 发送回复消息
+                reply_msg.send()
+                return Response("success", status=status.HTTP_200_OK)
             else:
                 return Response("success", status=status.HTTP_200_OK)
         except Exception as e:
+            logger.exception(f"接收消息异常：{repr(e)}")
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 

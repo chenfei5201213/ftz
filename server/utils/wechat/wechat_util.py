@@ -20,7 +20,7 @@ from utils.retry_requests import retry_request
 from utils.wechat import APPID, WX_AUTH_URL, SECRET, WX_CODE_ACCESS_TOKEN_URL, \
     WX_CODE_ACCESS_REFRESH_TOKEN_URL, \
     WX_USER_INFO_URL, WX_ACCESS_TOKEN_URL, WX_TEMPLATE_MESSAGE_SEND_URL, WX_TICKET_URI, WX_MENU_GET_URL, \
-    WX_MENU_CREATE_URL
+    WX_MENU_CREATE_URL, WX_MENU_DELETE_URL
 
 logger = logging.getLogger(__name__)
 
@@ -165,6 +165,15 @@ class WechatMenu(WechatBase):
             'access_token': self.get_access_token().get("access_token")
         }
         result = self.request(method='post', url=WX_MENU_CREATE_URL, params=params, json=menu_data)
+        return result
+
+    def delete_menu(self, menu_data):
+        """
+        """
+        params = {
+            'access_token': self.get_access_token().get("access_token")
+        }
+        result = self.request(method='get', url=WX_MENU_DELETE_URL, params=params, json=menu_data)
         return result
 
 

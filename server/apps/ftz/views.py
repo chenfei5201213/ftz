@@ -361,3 +361,22 @@ class AdminUserTokenView(APIView):
                             'user': ExternalUserSerializer(user).data}
             cache.set(tk_unionid_key, token_result, timeout=7200)
         return Response(data=token_result)
+
+
+class WechatMenuCreate(APIView):
+    def post(self, request, *args, **kwargs):
+        admin_user = request.user
+        logger.info(f"admin_user:{admin_user}")
+        menu_data = request.data
+        wx = WechatMenu()
+        result = wx.create_menu(menu_data)
+        return Response(data=result)
+
+
+class WechatMenuDelete(APIView):
+    def post(self, request, *args, **kwargs):
+        admin_user = request.user
+        logger.info(f"admin_user:{admin_user}")
+        wx = WechatMenu()
+        result = wx.delete_menu()
+        return Response(data=result)
