@@ -203,8 +203,8 @@ class WechatEchoStr(APIView):
                 # 创建回复消息
                 reply_msg = reply.TextMsg(to_user, from_user, content)
                 # 发送回复消息
-                reply_msg.send()
-                return Response("success", status=status.HTTP_200_OK)
+                return HttpResponse(reply_msg.send())
+                # return Response("success", status=status.HTTP_200_OK)
             else:
                 return Response("success", status=status.HTTP_200_OK)
         except Exception as e:
