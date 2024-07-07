@@ -198,8 +198,8 @@ class WechatEchoStr(APIView):
             wx_data = receive.parse_xml(data)
             if not wx_data:
                 return HttpResponse('success')
-            to_user = wx_data.ToUserName
-            from_user = wx_data.FromUserName
+            to_user = wx_data.FromUserName
+            from_user = wx_data.ToUserName
             if wx_data.MsgType == 'text' and 'smq' in str(wx_data.Content):
                 content = "欢迎来到饭团子的世界~"
                 # 创建回复消息
