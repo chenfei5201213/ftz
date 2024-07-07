@@ -194,8 +194,10 @@ class WechatEchoStr(APIView):
         """https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Getting_Started_Guide.html"""
         try:
             data = request.body
+            logger.info(f"Handle Post webdata is {data} ")
             wx_data = receive.parse_xml(data)
-            logger.info(f"Handle Post webdata is {wx_data} ")
+            if not wx_data:
+                return HttpResponse('success')
             to_user = wx_data.ToUserName
             from_user = wx_data.FromUserName
             if wx_data.MsgType == 'text' and 'smq' in str(wx_data.Content):
@@ -206,7 +208,7 @@ class WechatEchoStr(APIView):
                 return HttpResponse(reply_msg.send())
                 # return Response("success", status=status.HTTP_200_OK)
             else:
-                return Response("success", status=status.HTTP_200_OK)
+                return HttpResponse("success")
         except Exception as e:
             logger.exception(f"接收消息异常：{repr(e)}")
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
