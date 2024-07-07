@@ -9,13 +9,14 @@ from django.utils import timezone
 from django.utils.datetime_safe import datetime
 
 from apps.ftz.models import CourseScheduleContent
-from apps.ftz.serializers import CourseSerializer, SurveyReportSerializer
+from apps.ftz.serializers import SurveyReportSerializer
 from apps.ftz.service import TermCourseService
 from apps.mall.enum_config import StudyStatus
 from apps.mall.models import Order
 from apps.mall.serializers import ProductSellSerializer
-from apps.system.models import RequestLog
+from apps.system.models import RequestLog, Dict
 from apps.user_center.serializers import LogReportSerializer
+from component.cache.auto_reply_message_cache_helper import AutoReplyMessageHelper
 from utils.wechat.wechat_util import WechatTemplateMessage
 
 logger = logging.getLogger(__name__)
@@ -137,3 +138,17 @@ def log_report_task(survey_serializer_data):
     else:
         logger.error(f"log_report_task: {serializer.errors}")
         return serializer.errors
+
+
+@shared_task
+def auto_reply_message_task():
+    auto_reply_info = Dict.objects.filter(type__code='auto_reply_message', is_used=True).order_by('sort').all()
+    keywords = [{'keyword': i.name, 'response': i.description} for i in auto_reply_info]
+    AutoReplyMessageHelper().set_auto_reply_message(keywords)
+
+
+@shared_task
+def auto_replay_message_on_subscribe_task():
+    auto_reply_info = Dict.objects.filter(type__code='subscribe', is_used=True).order_by('sort').all()
+    keywords = [{'keyword': i.name, 'response': i.description} for i in auto_reply_info]
+    AutoReplyMessageHelper().set_auto_replay_msg_subscribe(keywords)

@@ -11,6 +11,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework import filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 
+from component.cache.auto_reply_message_cache_helper import AutoReplyMessageHelper
 from utils.wechat.wechat_util import WechatMenu
 from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig, Survey, Question, UserResponse, \
     CourseScheduleContent
@@ -23,7 +24,8 @@ from .serializers import TermCourseSerializer, CourseScheduleStudentSerializer, 
 from .serializers import StudyMaterialSimpleListSerializer
 from .user_course_service import UserCourseService
 from ..system.authentication import ExternalUserTokenObtainPairSerializer
-from ..system.tasks import send_bug_course_success_message, class_reminder
+from ..system.tasks import send_bug_course_success_message, class_reminder, auto_reply_message_task, \
+    auto_replay_message_on_subscribe_task
 from ..user_center.models import ExternalUser
 from ..user_center.serializers import ExternalUserSerializer
 
@@ -306,8 +308,8 @@ class Test01View(APIView):
 
     def get(self, request):
         # 获取当前日期
-        wx = WechatMenu()
-        r = wx.get_current_menu()
+        auto_replay_message_on_subscribe_task()
+        r = AutoReplyMessageHelper().get_auto_replay_msg_subscribe()
         return Response(data=r)
 
 

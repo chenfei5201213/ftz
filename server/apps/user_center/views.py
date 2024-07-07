@@ -20,6 +20,8 @@ from component.cache.material_cache_helper import MaterialCacheHelper
 from component.cache.user_habit_cache_helper import UserHabitCacheHelper
 from utils.custom_exception import FtzException
 from utils.wechat import receive, reply
+from utils.wechat.auto_reply_message import WechatAutoReplyMessage
+from utils.wechat.wechat_enum import WechatMsgType
 from utils.wechat.wechat_util import WechatUtil, WechatMiniUtil
 
 from server import settings
@@ -190,7 +192,7 @@ class WechatEchoStr(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)  # 返回 500 错误
 
-    def post(self, request, format=None):
+    def post(self, request):
         """https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Getting_Started_Guide.html"""
         try:
             data = request.body
@@ -198,19 +200,18 @@ class WechatEchoStr(APIView):
             wx_data = receive.parse_xml(data)
             if not wx_data:
                 return HttpResponse('success')
-            to_user = wx_data.FromUserName
-            from_user = wx_data.ToUserName
-            if wx_data.MsgType == 'text' and 'smq' in str(wx_data.Content):
-                content = "欢迎来到饭团子的世界~"
-                # 创建回复消息
-                reply_msg = reply.TextMsg(to_user, from_user, content)
-                # 发送回复消息
-                result = reply_msg.send()
+            if isinstance(wx_data, receive.Msg) and wx_data.MsgType == WechatMsgType.TEXT.value[0]:
+                result = WechatAutoReplyMessage.text_msg_auto_pro(wx_data)
+            elif isinstance(wx_data, receive.EventMsg) and wx_data.MsgType == WechatMsgType.EVENT.value[0]:
+                result = WechatAutoReplyMessage.subscribe_auto_reply(wx_data)
+            # if wx_data.MsgType == 'text' and 'smq' in str(wx_data.Content):
+            #     content = "欢迎来到饭团子的世界~"
+            #     # 创建回复消息
+            #     reply_msg = reply.TextMsg(to_user, from_user, content)
+            #     # 发送回复消息
+            #     result = reply_msg.send()
                 logger.info(result)
-                return HttpResponse(result)
-                # return Response("success", status=status.HTTP_200_OK)
-            else:
-                return HttpResponse("success")
+            return HttpResponse(result)
         except Exception as e:
             logger.exception(f"接收消息异常：{repr(e)}")
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
