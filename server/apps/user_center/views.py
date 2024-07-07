@@ -15,7 +15,6 @@ from rest_framework.views import APIView
 from rest_framework import filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.views import TokenRefreshView
-from rest_framework_xml.parsers import XMLParser
 
 from component.cache.material_cache_helper import MaterialCacheHelper
 from component.cache.user_habit_cache_helper import UserHabitCacheHelper
@@ -166,7 +165,6 @@ def gen_token(user: ExternalUser, code, unionid):
 
 class WechatEchoStr(APIView):
     permission_classes = [AllowAny]
-    parser_classes = [XMLParser,]
 
     def get(self, request):
         try:
@@ -192,14 +190,15 @@ class WechatEchoStr(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)  # 返回 500 错误
 
-    def post(self, request):
+    def post(self, request, format=None):
         """https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Getting_Started_Guide.html"""
         try:
-            wx_data = request.data
+            data = request.body
+            wx_data = receive.parse_xml(data)
             logger.info(f"Handle Post webdata is {wx_data} ")
-            to_user = wx_data.get('ToUserName')
-            from_user = wx_data.get('FromUserName')
-            if wx_data.get('MsgType') == 'text' and 'smq' in wx_data.get('Content'):
+            to_user = wx_data.ToUserName
+            from_user = wx_data.FromUserName
+            if wx_data.MsgType == 'text' and 'smq' in str(wx_data.Content):
                 content = "欢迎来到饭团子的世界~"
                 # 创建回复消息
                 reply_msg = reply.TextMsg(to_user, from_user, content)
