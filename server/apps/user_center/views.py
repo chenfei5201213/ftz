@@ -19,6 +19,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from component.cache.material_cache_helper import MaterialCacheHelper
 from component.cache.user_habit_cache_helper import UserHabitCacheHelper
 from utils.custom_exception import FtzException
+from utils.wechat import receive, reply
 from utils.wechat.wechat_util import WechatUtil, WechatMiniUtil
 
 from server import settings
@@ -191,7 +192,25 @@ class WechatEchoStr(APIView):
 
     def post(self, request):
         """https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Getting_Started_Guide.html"""
-        pass
+        try:
+            wx_data = request.data
+            logger.info("Handle Post webdata is ", wx_data)
+            # 解析 XML 数据
+            rec_msg = receive.parse_xml(wx_data)
+            if isinstance(rec_msg, receive.Msg) and rec_msg.MsgType == 'text':
+                to_user = rec_msg.FromUserName
+                from_user = rec_msg.ToUserName
+                if 'smq' in rec_msg.Content:
+                    content = "欢迎来到饭团子的世界~"
+                    # 创建回复消息
+                    reply_msg = reply.TextMsg(to_user, from_user, content)
+                    # 发送回复消息
+                    reply_msg.send()
+                    return Response("success", status=status.HTTP_200_OK)
+            else:
+                return Response("success", status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
 class GenWechatSignature(APIView):

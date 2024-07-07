@@ -11,6 +11,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework import filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 
+from utils.wechat.wechat_util import WechatMenu
 from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig, Survey, Question, UserResponse, \
     CourseScheduleContent
 from .models import TermCourse, CourseScheduleStudent, UserStudyRecord
@@ -305,9 +306,9 @@ class Test01View(APIView):
 
     def get(self, request):
         # 获取当前日期
-        logger.info('12345test')
-        class_reminder()
-        return Response(data={})
+        wx = WechatMenu()
+        r = wx.get_current_menu()
+        return Response(data=r)
 
 
 class RestUserCourse(APIView):

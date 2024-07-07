@@ -19,7 +19,8 @@ from utils.retry_requests import retry_request
 
 from utils.wechat import APPID, WX_AUTH_URL, SECRET, WX_CODE_ACCESS_TOKEN_URL, \
     WX_CODE_ACCESS_REFRESH_TOKEN_URL, \
-    WX_USER_INFO_URL, WX_ACCESS_TOKEN_URL, WX_TEMPLATE_MESSAGE_SEND_URL, WX_TICKET_URI
+    WX_USER_INFO_URL, WX_ACCESS_TOKEN_URL, WX_TEMPLATE_MESSAGE_SEND_URL, WX_TICKET_URI, WX_MENU_GET_URL, \
+    WX_MENU_CREATE_URL
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +120,7 @@ class WechatUtil(WechatBase):
         return response.get("ticket")
 
 
-class WchatTemplateMessage(WechatBase):
+class WechatTemplateMessage(WechatBase):
     def send_bug_course_success_message(self, openid, product_info: dict, order_id: int):
         body = COURSE_REGISTRATION_SUCCESS_NOTIFICATION
         course_info = product_info.get('course_info', {})
@@ -144,6 +145,26 @@ class WchatTemplateMessage(WechatBase):
             'access_token': self.get_access_token().get("access_token")
         }
         result = self.request(method='post', url=WX_TEMPLATE_MESSAGE_SEND_URL, params=params, json=body)
+        return result
+
+
+class WechatMenu(WechatBase):
+
+    def get_current_menu(self):
+        params = {
+            'access_token': self.get_access_token().get("access_token")
+        }
+        result = self.request(method='get', url=WX_MENU_GET_URL, params=params)
+        return result
+
+    def create_menu(self, menu_data):
+        """
+        https://developers.weixin.qq.com/doc/offiaccount/Custom_Menus/Creating_Custom-Defined_Menu.html
+        """
+        params = {
+            'access_token': self.get_access_token().get("access_token")
+        }
+        result = self.request(method='post', url=WX_MENU_CREATE_URL, params=params, json=menu_data)
         return result
 
 
@@ -235,9 +256,10 @@ if __name__ == '__main__':
     # userid = 'o0Dq76zXxM6v0dFJJRTcF302NyTs'
     # code = '0e1dz5100MYFgS1Go9100dOXdC4dz51J'
     # xcx.get_phone_number(ac, code, userid)
-    wx = WchatTemplateMessage()
-    token = wx.send_class_reminder('o77756JY-IHm6zh-Ez3HVsLJIKvA', {"title": "测试课程", 'open_time': timezone.localtime().strftime("%Y年%m月%d日")})
-    print(token)
-    # wx = WechatUtil()
-    # tk = wx.get_jsapi_ticket()
-    # print(tk)
+    # wx = WechatTemplateMessage()
+    # token = wx.send_class_reminder('o77756JY-IHm6zh-Ez3HVsLJIKvA',
+    #                                {"title": "测试课程", 'open_time': timezone.localtime().strftime("%Y年%m月%d日")})
+    # print(token)
+    wx = WechatMenu()
+    r = wx.get_current_menu()
+    print(r)

@@ -27,3 +27,7 @@ WX_TICKET_URI = "https://api.weixin.qq.com/cgi-bin/ticket/getticket"
 
 # 基础消息
 WX_TEMPLATE_MESSAGE_SEND_URL = "https://api.weixin.qq.com/cgi-bin/message/template/send"
+
+# 公众号菜单
+WX_MENU_GET_URL = "https://api.weixin.qq.com/cgi-bin/get_current_selfmenu_info"
+WX_MENU_CREATE_URL = " https://api.weixin.qq.com/cgi-bin/menu/create"

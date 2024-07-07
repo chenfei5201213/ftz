@@ -16,7 +16,7 @@ from apps.mall.models import Order
 from apps.mall.serializers import ProductSellSerializer
 from apps.system.models import RequestLog
 from apps.user_center.serializers import LogReportSerializer
-from utils.wechat.wechat_util import WchatTemplateMessage
+from utils.wechat.wechat_util import WechatTemplateMessage
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ def send_bug_course_success_message(order_id: int):
         logger.error(f'用户{order.user.id} 没有公众号注册，无法推送消息')
         return
     product_info = ProductSellSerializer(order.product).data
-    wx = WchatTemplateMessage()
+    wx = WechatTemplateMessage()
     result = wx.send_bug_course_success_message(openid, product_info, order_id)
     logger.info(f"openid: {openid}, send_bug_course_success_message_result: {result}")
 
@@ -97,7 +97,7 @@ def save_request_log(method, path, remote_addr, query_params, body_params, durat
 
 @shared_task
 def send_class_reminder(openid, course_info):
-    wx = WchatTemplateMessage()
+    wx = WechatTemplateMessage()
     result = wx.send_class_reminder(openid, course_info)
     logger.info(f"openid: {openid}, class_reminder_result: {result}")
 
