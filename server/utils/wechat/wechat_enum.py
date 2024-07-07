@@ -13,8 +13,8 @@ class WechatMsgType(Enum):
 class WechatEventType(Enum):
     SUBSCRIBE = ('subscribe', '订阅')
     UNSUBSCRIBE = ('unsubscribe', '取消订阅')
+    CLICK = ('CLICK', '点击')
 
 
-
-
-
+class WechatClickKey(Enum):
+    MENU_CLICK_FAQ = ('menu_click_faq', '常见问题')

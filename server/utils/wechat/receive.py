@@ -2,7 +2,7 @@
 # filename: receive.py
 import xml.etree.ElementTree as ET
 
-from utils.wechat.wechat_enum import WechatMsgType
+from utils.wechat.wechat_enum import WechatMsgType, WechatEventType
 
 
 def parse_xml(web_data):
@@ -15,6 +15,9 @@ def parse_xml(web_data):
     elif msg_type == WechatMsgType.IMAGE.value[0]:
         return ImageMsg(xmlData)
     elif msg_type == WechatMsgType.EVENT.value[0]:
+        event = xmlData.find('Event').text
+        if event == WechatEventType.CLICK.value[0]:
+            return ClickMsg(xmlData)
         return EventMsg(xmlData)
 
 
@@ -40,6 +43,12 @@ class EventMsg(object):
         self.FromUserName = xmlData.find('FromUserName').text
         self.CreateTime = xmlData.find('CreateTime').text
         self.MsgType = xmlData.find('MsgType').text
+
+
+class ClickMsg(EventMsg):
+    def __init__(self, xmlData):
+        EventMsg.__init__(self, xmlData)
+        self.EventKey = xmlData.find('EventKey').text
 
 
 class ImageMsg(Msg):

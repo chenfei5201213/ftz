@@ -203,7 +203,7 @@ class WechatEchoStr(APIView):
             if isinstance(wx_data, receive.Msg) and wx_data.MsgType == WechatMsgType.TEXT.value[0]:
                 result = WechatAutoReplyMessage.text_msg_auto_pro(wx_data)
             elif isinstance(wx_data, receive.EventMsg) and wx_data.MsgType == WechatMsgType.EVENT.value[0]:
-                result = WechatAutoReplyMessage.subscribe_auto_reply(wx_data)
+                result = WechatAutoReplyMessage.event_auto_reply(wx_data)
             # if wx_data.MsgType == 'text' and 'smq' in str(wx_data.Content):
             #     content = "欢迎来到饭团子的世界~"
             #     # 创建回复消息

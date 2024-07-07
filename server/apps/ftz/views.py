@@ -25,7 +25,7 @@ from .serializers import StudyMaterialSimpleListSerializer
 from .user_course_service import UserCourseService
 from ..system.authentication import ExternalUserTokenObtainPairSerializer
 from ..system.tasks import send_bug_course_success_message, class_reminder, auto_reply_message_task, \
-    auto_replay_message_on_subscribe_task
+    auto_replay_message_on_subscribe_task, auto_replay_message_on_click_task
 from ..user_center.models import ExternalUser
 from ..user_center.serializers import ExternalUserSerializer
 
@@ -309,7 +309,9 @@ class Test01View(APIView):
     def get(self, request):
         # 获取当前日期
         auto_replay_message_on_subscribe_task()
-        r = AutoReplyMessageHelper().get_auto_replay_msg_subscribe()
+        auto_reply_message_task()
+        auto_replay_message_on_click_task()
+        r = AutoReplyMessageHelper().get_auto_replay_msg_click()
         return Response(data=r)
 
 

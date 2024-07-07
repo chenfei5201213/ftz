@@ -149,6 +149,14 @@ def auto_reply_message_task():
 
 @shared_task
 def auto_replay_message_on_subscribe_task():
-    auto_reply_info = Dict.objects.filter(type__code='subscribe', is_used=True).order_by('sort').all()
+    auto_reply_info = Dict.objects.filter(type__code='subscribe_auto_reply_message', is_used=True).order_by(
+        'sort').all()
     keywords = [{'keyword': i.name, 'response': i.description} for i in auto_reply_info]
     AutoReplyMessageHelper().set_auto_replay_msg_subscribe(keywords)
+
+
+@shared_task
+def auto_replay_message_on_click_task():
+    auto_reply_info = Dict.objects.filter(type__code='click_auto_reply_message', is_used=True).order_by('sort').all()
+    keywords = [{'keyword': i.code, 'response': i.description} for i in auto_reply_info]
+    AutoReplyMessageHelper().set_auto_replay_msg_click(keywords)
