@@ -144,7 +144,10 @@ def log_report_task(survey_serializer_data):
 def auto_reply_message_task():
     auto_reply_info = Dict.objects.filter(type__code='auto_reply_message', is_used=True).order_by('sort').all()
     keywords = [{'keyword': i.name, 'response': i.description} for i in auto_reply_info]
-    AutoReplyMessageHelper().set_auto_reply_message(keywords)
+    logger.info(f"auto_reply_message_task: {keywords}")
+    if keywords:
+        AutoReplyMessageHelper().set_auto_reply_message(keywords)
+
 
 
 @shared_task
@@ -152,11 +155,15 @@ def auto_replay_message_on_subscribe_task():
     auto_reply_info = Dict.objects.filter(type__code='subscribe_auto_reply_message', is_used=True).order_by(
         'sort').all()
     keywords = [{'keyword': i.name, 'response': i.description} for i in auto_reply_info]
-    AutoReplyMessageHelper().set_auto_replay_msg_subscribe(keywords)
+    logger.info(f"auto_replay_message_on_subscribe_task: {keywords}")
+    if keywords:
+        AutoReplyMessageHelper().set_auto_replay_msg_subscribe(keywords)
 
 
 @shared_task
 def auto_replay_message_on_click_task():
     auto_reply_info = Dict.objects.filter(type__code='click_auto_reply_message', is_used=True).order_by('sort').all()
     keywords = [{'keyword': i.code, 'response': i.description} for i in auto_reply_info]
-    AutoReplyMessageHelper().set_auto_replay_msg_click(keywords)
+    logger.info(f"auto_replay_message_on_click_task: {keywords}")
+    if keywords:
+        AutoReplyMessageHelper().set_auto_replay_msg_click(keywords)
