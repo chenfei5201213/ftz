@@ -149,7 +149,6 @@ def auto_reply_message_task():
         AutoReplyMessageHelper().set_auto_reply_message(keywords)
 
 
-
 @shared_task
 def auto_replay_message_on_subscribe_task():
     auto_reply_info = Dict.objects.filter(type__code='subscribe_auto_reply_message', is_used=True).order_by(
