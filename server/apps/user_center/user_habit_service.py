@@ -1,3 +1,4 @@
+from apps.ftz.models import UserResponse
 from apps.user_center.models import ExternalUser
 from component.cache.user_habit_cache_helper import UserHabitCacheHelper
 
@@ -14,4 +15,9 @@ class UserHabitService:
 
     @property
     def get_user_survey(self):
-        return self.user_habit_cache.get_user_survey_data()
+        result = self.user_habit_cache.get_user_survey_data()
+        if result is None:
+            if UserResponse.objects.filter(user=self.user).filter():
+                self.user_habit_cache.set_user_survey_data(1)
+            result = self.user_habit_cache.get_user_survey_data()
+        return result

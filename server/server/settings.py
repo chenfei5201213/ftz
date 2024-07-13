@@ -206,6 +206,7 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
         "LOCATION": f"redis://{env('REDIS_HOST')}:{env('REDIS_PORT')}/1",
+        "timeout": None
     }
 }
 
