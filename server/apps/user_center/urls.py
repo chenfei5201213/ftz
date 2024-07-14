@@ -4,7 +4,7 @@ from .views import WechatLogin, WechatEchoStr, ExternalUserView, ExternalOauthVi
     WechatMiniLogin, UserLogin, WechatCallbackLogin, MyTokenRefreshView, StudyReportView, MyCourseView, \
     CourseLessonListView, CourseLessonDetailView, StudyMaterialDetailView, LearningProgressView, \
     FileViewSet, FreeCourse, StudyMaterialDetailQView, SurveyReportView, LogReportView, BatchLogReportView, \
-    BatchSurveyReportView, UserHabitView, GenWechatSignature
+    BatchSurveyReportView, UserHabitView, GenWechatSignature, TermCourseView
 
 router = routers.DefaultRouter()
 router.register('user', ExternalUserView, basename='user')
@@ -20,6 +20,7 @@ urlpatterns = [
     path('wx/login/', WechatCallbackLogin.as_view()),
     path('wx/signature/', GenWechatSignature.as_view()),
     path('term_course_content/', TermCourseContentView.as_view()),
+    path('term_course/', TermCourseView.as_view()),
     path('study/report/', StudyReportView.as_view()),
     path('my/course/', MyCourseView.as_view(), name='my_course'),
     path('my/course/lesson/', CourseLessonListView.as_view(), name='my_course_lesson'),

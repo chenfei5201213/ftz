@@ -30,9 +30,9 @@ from .models import ExternalUser, ExternalOauth
 from .serializers import ExternalUserSerializer, ExternalOauthSerializer, LogReportSerializer
 from .service import ExternalUserService
 from .user_habit_service import UserHabitService
-from ..ftz.models import CourseScheduleContent, StudyMaterial
+from ..ftz.models import CourseScheduleContent, StudyMaterial, TermCourse
 from ..ftz.serializers import CourseScheduleContentDetailSerializer, StudyMaterialDetailSerializer, \
-    SurveyReportSerializer
+    SurveyReportSerializer, TermCourseSerializer
 from ..ftz.service import TermCourseService
 from ..mall.enum_config import StudyStatus
 from .service import StudyContentService
@@ -204,12 +204,12 @@ class WechatEchoStr(APIView):
                 result = WechatAutoReplyMessage.text_msg_auto_pro(wx_data)
             elif isinstance(wx_data, receive.EventMsg) and wx_data.MsgType == WechatMsgType.EVENT.value[0]:
                 result = WechatAutoReplyMessage.event_auto_reply(wx_data)
-            # if wx_data.MsgType == 'text' and 'smq' in str(wx_data.Content):
-            #     content = "欢迎来到饭团子的世界~"
-            #     # 创建回复消息
-            #     reply_msg = reply.TextMsg(to_user, from_user, content)
-            #     # 发送回复消息
-            #     result = reply_msg.send()
+                # if wx_data.MsgType == 'text' and 'smq' in str(wx_data.Content):
+                #     content = "欢迎来到饭团子的世界~"
+                #     # 创建回复消息
+                #     reply_msg = reply.TextMsg(to_user, from_user, content)
+                #     # 发送回复消息
+                #     result = reply_msg.send()
                 logger.info(result)
             return HttpResponse(result)
         except Exception as e:
@@ -296,6 +296,20 @@ class TermCourseContentView(APIView):
         term_service = TermCourseService(user, course)
         data = term_service.get_term_course_content(term_course_id)
         return Response(data=data)
+
+
+class TermCourseView(APIView):
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+
+    def get(self, request):
+        try:
+            term_course_id = request.query_params.get('term_course_id')
+            term_course = TermCourse.objects.filter(id=term_course_id).get()
+            data = TermCourseSerializer(term_course).data
+            return Response(data=data)
+        except Exception:
+            return Response(data=f'term_course_id:{term_course_id}不存在', status=status.HTTP_400_BAD_REQUEST)
 
 
 class StudyReportView(APIView):
