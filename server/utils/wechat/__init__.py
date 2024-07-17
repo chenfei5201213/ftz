@@ -8,10 +8,11 @@ WX_AUTH_URL = "https://open.weixin.qq.com/connect/oauth2/authorize"
 # 基础令牌 https://developers.weixin.qq.com/doc/offiaccount/Basic_Information/Get_access_token.html
 WX_ACCESS_TOKEN_URL = 'https://api.weixin.qq.com/cgi-bin/token'
 
-
 # 微信换取用户信息和访问令牌的URL(通过code获取)
 WX_CODE_ACCESS_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/access_token"
 WX_CODE_ACCESS_REFRESH_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/refresh_token"
+
+WX_STABLE_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/stable_token"
 
 # 微信换取用户信息的URL
 WX_USER_INFO_URL = "https://api.weixin.qq.com/sns/userinfo"
@@ -23,7 +24,6 @@ WX_USER_INFO_URL = "https://api.weixin.qq.com/sns/userinfo"
 
 # 获取凭证
 WX_TICKET_URI = "https://api.weixin.qq.com/cgi-bin/ticket/getticket"
-
 
 # 基础消息
 WX_TEMPLATE_MESSAGE_SEND_URL = "https://api.weixin.qq.com/cgi-bin/message/template/send"

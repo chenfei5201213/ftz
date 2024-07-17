@@ -20,7 +20,7 @@ from utils.retry_requests import retry_request
 from utils.wechat import APPID, WX_AUTH_URL, SECRET, WX_CODE_ACCESS_TOKEN_URL, \
     WX_CODE_ACCESS_REFRESH_TOKEN_URL, \
     WX_USER_INFO_URL, WX_ACCESS_TOKEN_URL, WX_TEMPLATE_MESSAGE_SEND_URL, WX_TICKET_URI, WX_MENU_GET_URL, \
-    WX_MENU_CREATE_URL, WX_MENU_DELETE_URL
+    WX_MENU_CREATE_URL, WX_MENU_DELETE_URL, WX_STABLE_TOKEN_URL
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +51,28 @@ class WechatBase:
                 'secret': SECRET
             }
             access_token_data = self.request(method='get', url=WX_ACCESS_TOKEN_URL, params=params)
+            if not access_token_data.get('errcode'):
+                access_token_data['init_time'] = int(time.time())
+                cache.set(self.access_token_redis_key, access_token_data, timeout=access_token_data.get('expires_in'))
+            else:
+                raise WxException(f"获取token异常：{access_token_data.get('errcode')}",
+                                  ErrorCode.WxGzhInterFaceException.value)
+        return access_token_data
+
+    @property
+    def stable_token_redis_key(self):
+        return f"wx:st:{self.appid}"
+
+    def get_stable_token(self):
+        access_token_data = cache.get(self.stable_token_redis_key)
+        if not access_token_data or int(
+                time.time() > access_token_data.get('init_time', 0) + access_token_data['expires_in'] + 10):
+            params = {
+                'grant_type': 'client_credential',
+                'appid': self.appid,
+                'secret': SECRET
+            }
+            access_token_data = self.request(method='get', url=WX_STABLE_TOKEN_URL, params=params)
             if not access_token_data.get('errcode'):
                 access_token_data['init_time'] = int(time.time())
                 cache.set(self.access_token_redis_key, access_token_data, timeout=access_token_data.get('expires_in'))
@@ -112,7 +134,7 @@ class WechatUtil(WechatBase):
 
     def get_jsapi_ticket(self):
         params = {
-            "access_token": self.get_access_token(),
+            "access_token": self.get_stable_token(),
             "type": "jsapi"
         }
         # response = requests.get(url, params=params)
