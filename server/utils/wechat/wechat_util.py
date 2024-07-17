@@ -31,7 +31,7 @@ class WechatBase:
 
     def request(self, method, url, *args, **kwargs):
         res = retry_request(method, url, *args, **kwargs)
-        logger.info(f"method={method},url={url}, args={args}, kwargs={kwargs} ")
+        logger.info(f"method={method},url={url}, args={args}, kwargs={kwargs}, res={res.content} ")
         if res.status_code == 200:
             return res.json()
         logger.error(f"status_code:{res.status_code}, result: {res.content}")
@@ -117,7 +117,7 @@ class WechatUtil(WechatBase):
         }
         # response = requests.get(url, params=params)
         response = self.request(method='get', url=WX_TICKET_URI, params=params)
-        return response.get("ticket")
+        return response
 
 
 class WechatTemplateMessage(WechatBase):

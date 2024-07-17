@@ -240,7 +240,10 @@ class GenWechatSignature(APIView):
         #     'appId': settings.APPID
         # }
         wx = WechatUtil()
-        ticket = wx.get_jsapi_ticket()
+        result = wx.get_jsapi_ticket()
+        ticket = result.get("ticket")
+        if not ticket:
+            return Response(data=result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         _signature = "jsapi_ticket={}&noncestr={}&timestamp={}&url={}".format(
             ticket, nonce, timestamp, url
         )
