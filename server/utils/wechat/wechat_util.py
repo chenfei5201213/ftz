@@ -72,7 +72,7 @@ class WechatBase:
                 'appid': self.appid,
                 'secret': SECRET
             }
-            access_token_data = self.request(method='get', url=WX_STABLE_TOKEN_URL, params=params)
+            access_token_data = self.request(method='post', url=WX_STABLE_TOKEN_URL, json=params)
             if not access_token_data.get('errcode'):
                 access_token_data['init_time'] = int(time.time())
                 cache.set(self.access_token_redis_key, access_token_data, timeout=access_token_data.get('expires_in'))
