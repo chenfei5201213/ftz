@@ -135,7 +135,6 @@ class WechatUtil(WechatBase):
     def get_jsapi_ticket(self):
         params = {
             "access_token": self.get_stable_token().get("access_token"),
-            "access_token": '82_gDbaFbmkaqlJevI8H3Cs0Xv4ehPJ3MHDz74H1LUXLRRg9mv1Fl-is1EwQ90EXazZ_tVQFvrf8DCI5jlavnjRhxurxAWNLmucS69kZI4-0lOppsye_VSjWdt0OsEMGQeAEATNX',
             "type": "jsapi"
         }
         # response = requests.get(url, params=params)
