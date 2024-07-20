@@ -3,6 +3,7 @@ import logging
 from django.core.cache import cache
 from django.db.models import Prefetch, Q
 from django.utils import timezone
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -113,11 +114,20 @@ class CardViewSet(ModelViewSet):
             return CardDetailSerializer
         return self.serializer_class
 
-    # def get_queryset(self):
-    #     queryset = Card.objects.all().prefetch_related(
-    #         Prefetch('cardstudymaterial_set', queryset=CardStudyMaterial.objects.only('studymaterial_id'))
-    #     )
-    #     return queryset
+    def get_queryset(self):
+        queryset = super(CardViewSet, self).get_queryset()
+        card_ids = self.request.query_params.getlist('card_ids[]', None)
+
+        if card_ids:
+            try:
+                # 将card_ids字符串转换为整数列表
+                # card_ids_list = list(map(int, card_ids.split(',')))
+                # 使用id__in查询过滤queryset
+                queryset = queryset.filter(id__in=card_ids)
+            except ValueError:
+                # 如果转换失败，抛出异常
+                raise ValidationError("Invalid card_ids parameter")
+        return queryset
 
 
 class CardListSimpleViewSet(ModelViewSet):
@@ -153,6 +163,19 @@ class StudyMaterialViewSet(ModelViewSet):
         if self.action == 'retrieve':
             return StudyMaterialDetailSerializer
         return self.serializer_class
+
+    def get_queryset(self):
+        queryset = super(StudyMaterialViewSet, self).get_queryset()
+        ids = self.request.query_params.getlist('ids[]', None)
+
+        if ids:
+            try:
+                # 使用id__in查询过滤queryset
+                queryset = queryset.filter(id__in=ids)
+            except ValueError:
+                # 如果转换失败，抛出异常
+                raise ValidationError("Invalid card_ids parameter")
+        return queryset
 
 
 class StudyMaterialSimpleViewSet(ModelViewSet):

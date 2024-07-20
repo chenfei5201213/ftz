@@ -3,6 +3,28 @@
     <el-card>
       <div>
         <el-button type="primary" icon="el-icon-plus" @click="handleAdd">新增素材</el-button>
+        <el-select v-model="courseId" placeholder="选择课程"
+                   @change="changeGetLessonList"
+                   @clear="clearGetList"
+                   clearable style="width: 280px">
+          <el-option v-for="(item, index) in courseList"
+                     :key="index"
+                     :label="`【${item.id}】- ${item.title} (${item.type})`"
+                     :value="item.id">
+
+          </el-option>
+        </el-select>
+        <el-select v-model="lessonId" placeholder="选择课时"
+                   @change="changeGetCardList"
+                   @clear="clearGetList"
+                   clearable style="width: 200px">
+          <el-option v-for="(item, index) in lessonList"
+                     :key="index"
+                     :label="`【${item.id}】- ${item.title} (${item.type})`"
+                     :value="item.id">
+
+          </el-option>
+        </el-select>
         <el-select v-model="listQuery.type" placeholder="素材类型" clearable style="width: 120px">
           <el-option v-for="(item, index) in typeOptions" :key="index" :label="item.name" :value="item.value"></el-option>
         </el-select>
@@ -168,7 +190,9 @@ import {
   updateMaterial,
   deleteMaterial
 } from '@/api/material'
-import { getEnumConfigList } from '@/api/enum_config'
+import {getCourseList} from "@/api/course";
+import {getLessonList} from "@/api/lesson";
+import {getCardList} from "@/api/card";
 import { genTree, deepClone } from '@/utils'
 import { checkPermission } from '@/utils/permission'
 import { upUrl, upHeaders } from '@/api/file'
@@ -184,6 +208,13 @@ export default {
   },
   data() {
     return {
+      courseList: [],
+      courseId: '',
+      lessonList: [],
+      lessonId: '',
+      courseSearch: {},
+      lessonSearch: {},
+      cardSearch: {},
       upHeaders: upHeaders(),
       upUrl: upUrl(),
       tableData: {
@@ -252,10 +283,65 @@ export default {
   },
   computed: {},
   created() {
+    this.getCourseData()
+    this.getLessonData()
     this.getList()
     this.clearData()
   },
   methods: {
+    changeGetLessonList(){
+      this.lessonSearch.course_id = this.courseId;
+      this.getLessonData();
+    },
+    clearGetList(){
+      this.courseId='';
+      this.lessonId='';
+      this.listQuery.ids='';
+      this.getList();
+    },
+    changeGetCardList(){
+      const selectedLesson = this.lessonList.find(lesson => lesson.id === this.lessonId);
+      this.cardSearch.card_ids = selectedLesson.cards;
+      getCardList(this.cardSearch).then((response) => {
+          this.cardList = response.data.results;
+          const combinedStudyMaterials = Array.prototype.concat.apply([], this.cardList.map(card => card.study_materials));
+          this.listQuery.ids = combinedStudyMaterials
+          this.getList();
+        })
+    },
+    getCourseData() {
+      return new Promise((resolve, reject) => {
+        getCourseList(this.courseSearch).then((response) => {
+          this.courseList = response.data.results;
+          // if (this.courseList && this.courseList.length > 0) {
+          //   this.courseId = this.courseList[0].id;
+          // }
+          resolve()
+        })
+      })
+    },
+    getLessonData() {
+      return new Promise((resolve, reject) => {
+        getLessonList(this.lessonSearch).then((response) => {
+          this.lessonList = response.data.results;
+          // if (this.lessonList && this.lessonList.length > 0) {
+          //   this.lessonId = this.lessonList[0].id;
+          // }
+          resolve()
+        })
+      })
+    },
+    getCardData() {
+      return new Promise((resolve, reject) => {
+        getCardList(this.cardSearch).then((response) => {
+          this.courseList = response.data.results;
+          // if (this.courseList && this.courseList.length > 0) {
+          //   this.courseId = this.courseList[0].id;
+          // }
+          resolve()
+        })
+      })
+    },
     checkPermission,
     changeType(e) {
       this.fileData = this.typeOptions[e].datas
