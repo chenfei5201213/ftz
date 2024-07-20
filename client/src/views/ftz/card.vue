@@ -3,6 +3,28 @@
     <el-card>
       <div>
         <el-button type="primary" icon="el-icon-plus" @click="handleAdd">新增卡片</el-button>
+        <el-select v-model="courseId" placeholder="选择课程"
+                   @change="changeGetLessonList"
+                   @clear="clearGetList"
+                   clearable style="width: 280px">
+          <el-option v-for="(item, index) in courseList"
+                     :key="index"
+                     :label="`【${item.id}】- ${item.title} (${item.type})`"
+                     :value="item.id">
+
+          </el-option>
+        </el-select>
+        <el-select v-model="lessonId" placeholder="选择课时"
+                   @change="changeGetCardList"
+                   @clear="clearGetList"
+                   clearable style="width: 200px">
+          <el-option v-for="(item, index) in lessonList"
+                     :key="index"
+                     :label="`【${item.id}】- ${item.title} (${item.type})`"
+                     :value="item.id">
+
+          </el-option>
+        </el-select>
         <el-select v-model="listQuery.type"
                    placeholder="卡片类型"
                    clearable
@@ -207,11 +229,12 @@ import {
   updateCard,
   deleteCard
 } from "@/api/card";
-import {genTree, deepClone} from "@/utils";
 import checkPermission from "@/utils/permission";
 import {upUrl, upHeaders} from "@/api/file";
 import {getEnumConfigList} from "@/api/enum_config";
 import {getMaterialSimpleList} from "@/api/material";
+import {getCourseList} from "@/api/course";
+import {getLessonList} from "@/api/lesson";
 
 const defaultM = {
   title: "",
@@ -227,6 +250,12 @@ const defaultM = {
 export default {
   data() {
     return {
+      courseList: [],
+      courseId: '',
+      lessonList: [],
+      lessonId: '',
+      courseSearch: {},
+      lessonSearch: {},
       upHeaders: upHeaders(),
       upUrl: upUrl(),
       tableData: {
@@ -261,8 +290,44 @@ export default {
     this.getList();
     this.getCardTypeList();
     this.getDifficultyList();
+    this.getCourseData()
+    this.getLessonData()
   },
   methods: {
+    changeGetLessonList() {
+      this.lessonSearch.course_id = this.courseId;
+      this.getLessonData();
+    },
+    clearGetList() {
+      this.courseId = '';
+      this.lessonId = '';
+      this.listQuery.card_ids = '';
+      this.getList();
+    },
+    changeGetCardList() {
+      const selectedLesson = this.lessonList.find(lesson => lesson.id === this.lessonId);
+      this.listQuery.card_ids = selectedLesson.cards;
+      this.getList();
+    },
+    getCourseData() {
+      return new Promise((resolve, reject) => {
+        getCourseList(this.courseSearch).then((response) => {
+          this.courseList = response.data.results;
+          resolve()
+        })
+      })
+    },
+    getLessonData() {
+      return new Promise((resolve, reject) => {
+        getLessonList(this.lessonSearch).then((response) => {
+          this.lessonList = response.data.results;
+          // if (this.lessonList && this.lessonList.length > 0) {
+          //   this.lessonId = this.lessonList[0].id;
+          // }
+          resolve()
+        })
+      })
+    },
     checkPermission,
     getCardTypeList() {
       let query = {module: this.module_name, service: 'type'};
@@ -383,6 +448,7 @@ export default {
   line-height: 100px;
   text-align: center;
 }
+
 .el-select-dropdown {
   overflow-y: auto; /* 添加这个样式 */
 }
