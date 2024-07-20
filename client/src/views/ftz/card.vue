@@ -196,7 +196,9 @@
               v-model="tableData.study_materials"
               :multiple="true"
               :filterable="true"
-              placeholder="请选择"
+              reserve-keyword
+              placeholder="请输入素材名称关键词"
+              :remote-method="remoteGetMaterials"
               style="width: 90%"
             >
               <el-option
@@ -333,6 +335,11 @@ export default {
       let query = {module: this.module_name, service: 'type'};
       getEnumConfigList(query).then((response) => {
         this.typeOptions = response.data.results;
+      })
+    },
+    remoteGetMaterials(query_str) {
+      getMaterialSimpleList({'search': query_str}).then((response) => {
+        this.materialData = response.data;
       })
     },
     getMaterialDataList() {
