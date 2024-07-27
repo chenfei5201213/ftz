@@ -4,6 +4,7 @@ import logging
 from datetime import timedelta
 
 from celery import shared_task
+from django.db import IntegrityError
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.datetime_safe import datetime
@@ -15,8 +16,10 @@ from apps.mall.enum_config import StudyStatus
 from apps.mall.models import Order
 from apps.mall.serializers import ProductSellSerializer
 from apps.system.models import RequestLog, Dict
-from apps.user_center.serializers import LogReportSerializer
+from apps.user_center.models import UserCollect
+from apps.user_center.serializers import LogReportSerializer, UserCollectSerializer
 from component.cache.auto_reply_message_cache_helper import AutoReplyMessageHelper
+from component.cache.user_collect_cache_helper import UserCollectCacheHelper
 from utils.wechat.wechat_util import WechatTemplateMessage
 
 logger = logging.getLogger(__name__)
@@ -166,3 +169,38 @@ def auto_replay_message_on_click_task():
     logger.info(f"auto_replay_message_on_click_task: {keywords}")
     if keywords:
         AutoReplyMessageHelper().set_auto_replay_msg_click(keywords)
+
+
+@shared_task
+def user_collect_task(serializer_data):
+    serializer = UserCollectSerializer(data=serializer_data)
+    if serializer.is_valid():
+        serializer_obj = (UserCollect.objects.get_queryset(all=True).
+                          filter(user_id=serializer_data.get('user'),
+                                 collect_type=serializer_data.get('collect_type'),
+                                 event_id=serializer_data.get('event_id')).first())
+        if serializer_obj:
+            serializer_obj.is_deleted = False
+            serializer_obj.save()
+        else:
+            serializer_obj = serializer.save()
+        UserCollectCacheHelper(serializer_obj.user).set_material_collect_data(serializer_obj.event_id)
+        return serializer_obj.id  # 返回保存或更新的实例ID
+
+    else:
+        logger.error(f"user_collect_task: {serializer.errors}")
+        return serializer.errors
+
+
+@shared_task
+def delete_user_collect_task(data):
+    collect = UserCollect.objects.get_queryset(all=True).filter(user_id=data.get('user'),
+                                                                collect_type=data.get('collect_type'),
+                                                                event_id=data.get('event_id')).first()
+    if collect:
+        collect.delete()
+        UserCollectCacheHelper(collect.user).delete_material_collect_data(data.get('event_id'))
+        return collect.id  # 返回保存的实例ID
+    else:
+        logger.error(f"user_collect_delete_task: {data}记录不存在")
+        return None

@@ -1,6 +1,6 @@
 from django.db import models
 
-from utils.model import SoftModel, BaseModel
+from utils.model import SoftModel, BaseModel, get_enum_choices
 
 
 class ExternalUser(SoftModel):
@@ -68,6 +68,9 @@ class ExternalOauth(SoftModel):
 
 
 class UserBehavior(SoftModel):
+    """
+    用户行为记录表，用户埋点上报
+    """
     user = models.ForeignKey(ExternalUser, on_delete=models.CASCADE)  # 关联到Django的User模型
     channel = models.CharField(max_length=50, default='default')  # 渠道
     event_type = models.CharField(max_length=50)  # 事件类型
@@ -83,3 +86,28 @@ class UserBehavior(SoftModel):
 
     def __str__(self):
         return f"{self.user.id} - {self.event_type} - {self.report_time}"
+
+
+class UserCollect(SoftModel):
+    """
+    用户收藏表
+    """
+    user = models.ForeignKey(ExternalUser, on_delete=models.CASCADE)  # 关联到Django的User模型
+    collect_type = models.CharField('收藏类型', max_length=128, choices=[])
+    event_id = models.BigIntegerField(verbose_name="收藏记录id")
+    event_detail = models.JSONField(null=True, blank=True)  # 事件详情，使用JSONField存储
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'collect_type']),
+        ]
+        # unique_together = (
+        #     ('user', 'collect_type', 'event_id'),
+        # )
+
+    def __init__(self, *args, **kwargs):
+        super(UserCollect, self).__init__(*args, **kwargs)
+        self._meta.get_field('collect_type').choices = get_enum_choices(module='user_collect', service='collect_type')
+
+    def __str__(self):
+        return f"{self.user.id} - {self.collect_type}"

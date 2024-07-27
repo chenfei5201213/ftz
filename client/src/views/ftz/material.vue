@@ -268,7 +268,7 @@ export default {
         {value:'15',name:'单词跟读',datas:[{label:'单词',col:'char1',type:'char'},{label:'片假名',col:'content1',type:'content'},{label:'文字解释',col:'char2',type:'char'},{label:'原始语音',col:'video1',type:'video'}]},
         {value:'16',name:'句子跟读页',datas:[{label:'日语句子',col:'char1',type:'char'},{label:'中文翻译',col:'char2',type:'char'},{label:'原始语音',col:'video1',type:'video'}]},
         {value:'17',name:'书写页',datas:[{label:'文字',col:'char1',type:'char'},{label:'读音',col:'video1',type:'video'},{label:'字帖中展示的文字',col:'char2',type:'char'}]},
-        {value:'18',name:'连线页',datas:[{label:'汉字单词',col:'char1',type:'char'},{label:'日语单词',col:'char2',type:'char'},{label:'汉语单词',col:'char3',type:'char'},{label:'日语单词',col:'char4',type:'char'},{label:'汉语单词',col:'char5',type:'char'},{label:'日语单词',col:'char6',type:'char'},{label:'汉语单词',col:'char7',type:'char'},{label:'日语单词',col:'char8',type:'char'}]},
+        {value:'18',name:'连线页',datas:[{label:'汉字单词',col:'char1',type:'char'},{label:'日语单词',col:'char2',type:'char'},{label:'汉语单词',col:'char3',type:'char'},{label:'日语单词',col:'char4',type:'char'},{label:'汉语单词',col:'char5',type:'char'},{label:'日语单词',col:'char6',type:'char'},{label:'汉语单词',col:'char7',type:'char'},{label:'日语单词',col:'char8',type:'char'},{label:'汉语单词',col:'char9',type:'char'},{label:'日语单词',col:'char10',type:'char'}]},
         {value:'19',name:'图文内容页',datas:[{label:'选择音视频类型',col:'num',type:'select1'},{label:'音视频素材',col:'video1',type:'video'},{label:'文字内容',col:'content1',type:'content'}]},
         {value:'20',name:'双图文内容页',datas:[{label:'图文素材1',col:'file1',type:'file'},{label:'图文素材2',col:'file2',type:'file'},{label:'文字内容',col:'content1',type:'content'}]},
         {value:'21',name:'纯文本页',datas:[{label:'文字内容',col:'content1',type:'content'}]},

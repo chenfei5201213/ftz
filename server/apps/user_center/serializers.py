@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import ExternalUser, ExternalOauth, UserBehavior
+from .models import ExternalUser, ExternalOauth, UserBehavior, UserCollect
 
 
 class ExternalUserSerializer(serializers.ModelSerializer):
@@ -22,4 +22,10 @@ class ExternalOauthSerializer(serializers.ModelSerializer):
 class LogReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserBehavior
+        fields = '__all__'
+
+
+class UserCollectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserCollect
         fields = '__all__'

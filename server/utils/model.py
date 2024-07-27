@@ -1,6 +1,8 @@
 from django.db import models
 import django.utils.timezone as timezone
 from django.db.models.query import QuerySet
+from simple_history.models import HistoricalRecords
+
 
 # 自定义软删除查询基类
 
@@ -63,10 +65,12 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+
 class SoftModel(BaseModel):
     """
     软删除基本表
     """
+
     class Meta:
         abstract = True
 
@@ -84,4 +88,21 @@ class SoftModel(BaseModel):
             return super(SoftModel, self).delete(using=using, *args, **kwargs)
 
 
+class EnumConfig(SoftModel):
+    """
+    枚举配置表
+    """
+    module = models.CharField('模块', max_length=128, blank=False)
+    service = models.CharField('业务', max_length=128, blank=False)
+    name = models.CharField('名称', max_length=128, blank=False)
+    value = models.CharField('值', max_length=128, blank=False)
+    description = models.TextField('描述', blank=True)
+    history = HistoricalRecords()
 
+    class Meta:
+        app_label = 'ftz'  # 替换为实际的应用名称
+
+
+def get_enum_choices(module: str, service: str):
+    enum_choices = EnumConfig.objects.filter(module=module, service=service).values_list('value', 'name')
+    return enum_choices

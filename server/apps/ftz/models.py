@@ -2,7 +2,7 @@ from django.db import models
 from simple_history.models import HistoricalRecords
 
 from apps.user_center.models import ExternalUser
-from utils.model import SoftModel
+from utils.model import SoftModel, EnumConfig, get_enum_choices
 
 
 class Tag(SoftModel):
@@ -12,29 +12,6 @@ class Tag(SoftModel):
     name = models.CharField('名称', max_length=128, blank=False)
 
 
-class EnumConfig(SoftModel):
-    """
-    枚举配置表
-    """
-    module = models.CharField('模块', max_length=128, blank=False)
-    service = models.CharField('业务', max_length=128, blank=False)
-    name = models.CharField('名称', max_length=128, blank=False)
-    value = models.CharField('值', max_length=128, blank=False)
-    description = models.TextField('描述', blank=True)
-    history = HistoricalRecords()
-
-
-# class Group(SoftModel):
-#     """
-#     分组
-#     """
-#     name = models.CharField('名称', max_length=128, blank=False)
-#     description = models.CharField('描述', max_length=512, blank=True)
-
-
-def get_enum_choices(module: str, service: str):
-    enum_choices = EnumConfig.objects.filter(module=module, service=service).values_list('value', 'name')
-    return enum_choices
 
 
 class Course(SoftModel):

@@ -25,10 +25,12 @@ from utils.wechat.wechat_enum import WechatMsgType
 from utils.wechat.wechat_util import WechatUtil, WechatMiniUtil
 
 from server import settings
+from .enum_config import CollectTypeEnum
 
 from .models import ExternalUser, ExternalOauth
-from .serializers import ExternalUserSerializer, ExternalOauthSerializer, LogReportSerializer
+from .serializers import ExternalUserSerializer, ExternalOauthSerializer, LogReportSerializer, UserCollectSerializer
 from .service import ExternalUserService
+from .user_collect_service import UserCollectService
 from .user_habit_service import UserHabitService
 from ..ftz.models import CourseScheduleContent, StudyMaterial, TermCourse
 from ..ftz.serializers import CourseScheduleContentDetailSerializer, StudyMaterialDetailSerializer, \
@@ -40,7 +42,8 @@ from ..system.authentication import ExternalUserTokenObtainPairSerializer, Exter
 from ..system.models import File, User
 from ..system.permission import ExternalUserPermission
 from ..system.serializers import FileSerializer
-from ..system.tasks import study_report_task, survey_report_task, log_report_task
+from ..system.tasks import study_report_task, survey_report_task, log_report_task, user_collect_task, \
+    delete_user_collect_task
 
 logger = logging.getLogger('__name__')
 
@@ -647,4 +650,71 @@ class UserHabitView(APIView):
         except Exception as e:
             # 捕获其他异常并返回错误响应
             logger.exception(f'获取用户习惯')
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UserCollectView(APIView):
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+
+    def get(self, request, *args, **kwargs):
+        """获取用户收藏记录"""
+        try:
+            user_service = UserCollectService(request.user)
+            data = user_service.get_all()
+            return Response(data)
+        except FtzException as e:
+            logger.exception(f'内部错误：')
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            logger.exception(f'获取用户习惯')
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def post(self, request, *args, **kwargs):
+        """收藏记录"""
+        request.data['user'] = request.user.id
+        serializer = UserCollectSerializer(data=request.data)
+        if serializer.is_valid():
+            user_collect_task.delay(serializer.data)
+            # user_collect_task(serializer.data)
+            return Response(data="收藏成功")
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        """删除收藏"""
+        request.data['user'] = request.user.id
+        serializer = UserCollectSerializer(data=request.data)
+        if serializer.is_valid():
+            delete_user_collect_task.delay(serializer.data)
+            # delete_user_collect_task(serializer.data)
+            return Response(data="取消收藏成功")
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserCollectCheckView(APIView):
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+
+    def get(self, request, *args, **kwargs):
+        """获取用户收藏记录"""
+        try:
+            user_service = UserCollectService(request.user)
+            collect_type = request.query_params.get('collect_type')
+            event_id = request.query_params.get('event_id')
+            if any([v is None for v in [collect_type, event_id]]):
+                return Response({'error': '参数错误'}, status=status.HTTP_400_BAD_REQUEST)
+            if collect_type == CollectTypeEnum.MATERIAL.value[0]:
+                data = user_service.get_material(int(event_id))
+            else:
+                data = user_service.get_all()
+            return Response(data)
+        except FtzException as e:
+            logger.exception(f'内部错误：')
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            logger.exception(f'UserCollectCheckView')
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
