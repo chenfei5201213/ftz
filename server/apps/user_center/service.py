@@ -8,7 +8,7 @@ import pytz
 
 from apps.ftz.serializers import CourseScheduleContentSerializer, CourseScheduleContentDetailSerializer, \
     LessonDetailSerializer, LessonListSerializer, CourseSerializer, LessonDetailSimpleListSerializer, \
-    CardDetailSimpleSerializer
+    CardDetailSimpleSerializer, StudyMaterialListSerializer, StudyMaterialSimpleListSerializer
 from apps.mall.enum_config import StudyStatus, UserType, OrderStatus, ProductType, PaymentMethod
 from apps.mall.exception import InsertTermContext, OrderException
 from apps.mall.models import Order, Product
@@ -259,14 +259,10 @@ class StudyContentService:
         else:
             card['study_status'] = StudyStatus.UNLOCKED.value[0]
         card.pop('study_materials')
-        study_progress['current_index'] = study_materials_dict.get(study_material_id) or study_material_ids[0]
+        study_progress['current_index'] = study_materials_dict.get(study_material_id) or StudyMaterialSimpleListSerializer(StudyMaterial.objects.get(id=study_material_ids[0])).data
         study_material_id_index = study_material_ids.index(study_material_id) or 0
         next_index = study_material_ids[min(study_material_id_index + 1, len(study_material_ids) - 1)]
-        # if study_material_ids and len(study_material_ids) >= 1:
-        #     study_progress['next_index'] = study_materials_dict.get(next_index) or study_material_ids[1]
-        # else:
-        #     study_progress['next_index'] = study_materials_dict.get(next_index) or study_material_ids[0]
-        study_progress['next_index'] = next_index
+        study_progress['next_index'] = StudyMaterialSimpleListSerializer(StudyMaterial.objects.get(id=next_index)).data
         return card
 
     def check_study_status(self, study_content: CourseScheduleContent):
