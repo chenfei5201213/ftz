@@ -26,3 +26,7 @@ class MaterialCacheHelper:
 
     def get_material_study_progress(self, course_id, lesson_id):
         return cache.get(self.material_study_progress_key(course_id, lesson_id))
+
+    def delete_material(self):
+        cache.delete(self.material_detail_key())
+        cache.delete(self.material_study_progress_key())

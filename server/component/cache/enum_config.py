@@ -6,4 +6,8 @@ class RedisKeyPrefixEnum(Enum):
     MATERIAL = "ma", "素材id"
     MATERIAL_STUDY_PROGRESS = "msp", "学习进度"
     COLLECT = "collect", "收藏"
-
+    COURSE = "course", "课程"
+    COURSE_MATERIAL_COUNT = "course_md_count", "课程素材数量"
+    LESSON = "lesson", "课时"
+    LESSON_MATERIAL_COUNT = "lesson_md_count", "课时素材数量"
+    CARD = "card", "卡片"

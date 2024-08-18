@@ -330,11 +330,13 @@ class StudyReportView(APIView):
         study_material_id = request.data.get('study_material_id')
         study_status = request.data.get('study_status')
         study_duration = request.data.get('study_duration', 1)
+        card_id = request.data.get('card_id')
         if study_status not in StudyStatus.__members__ or any(
                 [v is None for v in [course_id, lesson_id, study_material_id, study_status]]):
             return Response(f"study_status: {study_status} 不在{StudyStatus.__members__}中",
                             status=status.HTTP_400_BAD_REQUEST)
-        study_report_task.delay(user_id, course_id, study_material_id, lesson_id, study_status, study_duration)
+        study_report_task.delay(user_id, course_id, study_material_id, lesson_id, study_status, study_duration, card_id)
+        # study_report_task(user_id, course_id, study_material_id, lesson_id, study_status, study_duration, card_id)
         return Response(data="上报成功")
 
 
@@ -455,7 +457,10 @@ class CourseLessonListView(APIView):
             user_id = request.user.id
             course_id = request.query_params.get('course_id')
             study_service = StudyContentService(user_id)
-            data = study_service.course_lessons(course_id)
+            term_course = study_service.get_my_term_course(course_id)
+            if not term_course:
+                return Response({'error': '期课信息不存在，请联系管理员'}, status.HTTP_400_BAD_REQUEST)
+            data = study_service.course_lessons(course_id, term_course.id)
             return Response(data)
         except FtzException as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

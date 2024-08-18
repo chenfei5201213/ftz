@@ -50,7 +50,7 @@ class ProductService:
             serializer = OrderSerializer(order)
             term_service = TermCourseService(user.id, product.course.id, product.term_course.id)
             term_service.insert_student()
-            term_service.insert_student_context()
+            # term_service.insert_student_context()
 
             return serializer.data
         except Order.DoesNotExist:

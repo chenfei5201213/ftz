@@ -21,17 +21,24 @@ class TermCourseService:
         self.term_course_id = term_course_id
         self.user = None
         self.course = None
+        self.term_course = None
         self.init()
 
     def init(self):
         self.user = ExternalUser.objects.get(id=self.user_id)
         self.course = Course.objects.get(id=self.course_id)
+        self.get_only_term()
 
     def get_only_term(self):
         """
         获取期课
         """
-        return TermCourse.objects.filter(id=self.term_course_id).get()
+        if self.term_course_id:
+            self.term_course = TermCourse.objects.filter(id=self.term_course_id).get()
+        else:
+            course_schedule_student = CourseScheduleStudent.objects.filter(user=self.user, term_course__course_id=self.course_id).get()
+            self.term_course = course_schedule_student.term_course
+        return self.term_course
 
     def insert_student(self):
         """
@@ -120,6 +127,30 @@ class TermCourseService:
             return serializer.data
         else:
             return []
+
+    def insert_study_content_finish(self, study_material_id, lesson_id, status, study_duration, card_id):
+        """学习过程中，上报学习状态"""
+        course_content = CourseScheduleContent.objects.filter(user=self.user_id, lesson=lesson_id,
+                                                              study_material=study_material_id).first()
+        if not course_content:
+            lesson_obj = Lesson.objects.filter(id=lesson_id).get()
+            course_content = CourseScheduleContent.objects.create(
+                user=self.user,
+                lesson_number=lesson_obj.lesson_number,
+                lesson=lesson_obj,
+                term_course=self.term_course,
+                study_material_id=study_material_id,
+                card_id=card_id,
+                # open_time=self.term_course.course_start,
+                open_time=self.term_course.course_start + timedelta(days=lesson_obj.lesson_number - 1),
+                study_status=status
+            )
+            course_content.save()
+        user_study_record = UserStudyRecord(user=course_content.user, lesson_number=course_content.lesson_number,
+                                            lesson=course_content.lesson,
+                                            study_material=course_content.study_material,
+                                            study_duration=study_duration)
+        user_study_record.save()
 
     def update_study_status(self, study_material_id, lesson_id, status, study_duration):
         """

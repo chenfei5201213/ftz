@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django.utils.datetime_safe import datetime
 
-from apps.ftz.models import CourseScheduleContent
+from apps.ftz.models import CourseScheduleContent, Lesson, Card
 from apps.ftz.serializers import SurveyReportSerializer
 from apps.ftz.service import TermCourseService
 from apps.mall.enum_config import StudyStatus
@@ -19,6 +19,10 @@ from apps.system.models import RequestLog, Dict
 from apps.user_center.models import UserCollect
 from apps.user_center.serializers import LogReportSerializer, UserCollectSerializer
 from component.cache.auto_reply_message_cache_helper import AutoReplyMessageHelper
+from component.cache.card_cache_helper import CardCacheHelper
+from component.cache.course_cache_helper import CourseCacheHelper
+from component.cache.lesson_cache_helper import LessonCacheHelper
+from component.cache.material_cache_helper import MaterialCacheHelper
 from component.cache.user_collect_cache_helper import UserCollectCacheHelper
 from utils.wechat.wechat_util import WechatTemplateMessage
 
@@ -107,11 +111,12 @@ def send_class_reminder(openid, course_info):
 
 
 @shared_task
-def study_report_task(user_id, course_id, study_material_id, lesson_id, study_status, study_duration):
+def study_report_task(user_id, course_id, study_material_id, lesson_id, study_status, study_duration, card_id=None):
     try:
         term_service = TermCourseService(user_id, course_id)
-        study_content = term_service.update_study_status(study_material_id, lesson_id,
-                                                         StudyStatus[study_status].value[0], study_duration)
+        study_content = term_service.insert_study_content_finish(study_material_id, lesson_id,
+                                                                 StudyStatus[study_status].value[0], study_duration,
+                                                                 card_id=card_id)
         if not study_content:
             logger.error(
                 f"user_id:{user_id}, course_id:{course_id},lesson_id:{lesson_id}, study_material_id:{study_material_id} 没有对应的学习内容 ")
@@ -204,3 +209,38 @@ def delete_user_collect_task(data):
     else:
         logger.error(f"user_collect_delete_task: {data}记录不存在")
         return None
+
+
+@shared_task
+def delete_lesson_cache(lesson_id):
+    lesson_cache_helper = LessonCacheHelper(lesson_id)
+    lesson_cache_helper.delete_lesson()
+    # 删除关联课程的缓存
+    lesson = Lesson.objects.filter(id=lesson_id).get()
+    if lesson:
+        delete_course_cache(lesson.course_id)
+
+
+@shared_task
+def delete_card_cache(card_id):
+    card_cache_helper = CardCacheHelper(card_id)
+    card_cache_helper.delete_card()
+
+    # 删除关联的课时缓存
+    lessons = Lesson.objects.filter(card_id=card_id).all()
+    if lessons:
+        for lesson in lessons:
+            delete_lesson_cache(lesson.id)
+
+
+@shared_task
+def delete_course_cache(card_id):
+    course_cache_helper = CourseCacheHelper(card_id)
+    course_cache_helper.delete_course()
+
+
+@shared_task
+def delete_material_cache(material):
+    material_cache_helper = MaterialCacheHelper(material)
+    material_cache_helper.delete_course()
+

@@ -12,8 +12,6 @@ class Tag(SoftModel):
     name = models.CharField('名称', max_length=128, blank=False)
 
 
-
-
 class Course(SoftModel):
     """
     课程表

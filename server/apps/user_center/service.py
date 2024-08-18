@@ -3,7 +3,7 @@ from django.db import IntegrityError
 
 from apps.ftz.models import TermCourse, CourseScheduleStudent, CourseScheduleContent, UserStudyRecord, StudyMaterial, \
     Course, Lesson, Card
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 
 from apps.ftz.serializers import CourseScheduleContentSerializer, CourseScheduleContentDetailSerializer, \
@@ -15,9 +15,12 @@ from apps.mall.models import Order, Product
 from apps.mall.serializers import OrderDetailSerializer
 from apps.mall.service import ProductService
 from apps.user_center.models import ExternalUser
+from component.cache.course_cache_helper import CourseCacheHelper
+from component.cache.lesson_cache_helper import LessonCacheHelper
 from utils.custom_exception import ErrorCode, FtzException
 
 logger = logging.getLogger(__name__)
+
 
 class ExternalUserService:
     def __init__(self, unionid):
@@ -67,7 +70,8 @@ class StudyContentService:
     def check_order_paid(self, course_id):
         """这里先不做校验"""
         # product = Product.objects.filter(course=course_id).first()
-        paid_order = Order.objects.filter(product__course_id=course_id, status=OrderStatus.PAID.value, user_id=self.user_id).first()
+        paid_order = Order.objects.filter(product__course_id=course_id, status=OrderStatus.PAID.value,
+                                          user_id=self.user_id).first()
         if not paid_order:
             logger.info(f'user_id={self.user_id} course_id: {course_id}，没有支付的订单')
             raise FtzException("订单未支付，请先完成订单支付再学习", ErrorCode.OrderNotPaidException.value)
@@ -87,7 +91,13 @@ class StudyContentService:
         我的课程
         """
         data = {}
-        course_ids = Order.objects.filter(user=self.user_id, status=status).values('product__course_id').all()
+        order_values = Order.objects.filter(user=self.user_id, status=status).values('product__course_id',
+                                                                                     'product__term_course_id').all()
+        course_ids = []
+        course_term = {}
+        for order in order_values:
+            course_term[order['product__course_id']] = order['product__term_course_id']
+            course_ids.append(order['product__course_id'])
         courses = Course.objects.filter(id__in=course_ids).order_by('-id').all()
         if courses:
             serializer = CourseSerializer(courses, many=True)
@@ -105,20 +115,24 @@ class StudyContentService:
                 'courses': serializer.data
             })
         for course_info in data.get('courses'):
-            total_count = CourseScheduleContent.objects.filter(term_course__course=course_info['id'],
-                                                               user=self.user_id).count()
+            total_count = CourseCacheHelper(course_info['id']).get_course_material_count()
             finish_count = CourseScheduleContent.objects.filter(term_course__course=course_info['id'],
                                                                 user=self.user_id,
                                                                 study_status=StudyStatus.COMPLETED.value[0]).count()
             course_info.update({
-                'lessons': self.course_lessons(course_info['id']),
+                'lessons': self.course_lessons(course_info['id'], course_term.get(course_info['id'])),
 
                 'total': total_count,
                 'finish_count': finish_count
             })
         return data
 
-    def course_lessons(self, course_id):
+    def get_my_term_course(self, course_id):
+        order = Order.objects.filter(user=self.user_id, product__course_id=course_id).get()
+        if order:
+            return order.product.term_course
+
+    def course_lessons(self, course_id, term_course_id):
         """
         仅展示支付的订单，某个课程的课时
         """
@@ -127,12 +141,19 @@ class StudyContentService:
         serializer = LessonListSerializer(lessons, many=True)
         lessons_info = serializer.data
         lessons_groups = {}
+        term_course = TermCourse.objects.filter(id=term_course_id).get()
         for lesson_info in lessons_info:
-            study_content = CourseScheduleContent.objects.filter(user=self.user_id, lesson=lesson_info['id']).order_by(
-                '-id').first()
+            study_material_finish_count = CourseScheduleContent.objects.filter(user=self.user_id,
+                                                                               lesson=lesson_info['id'],
+                                                                               term_course=term_course_id).count()
+            study_material_total_count = LessonCacheHelper(lesson_info['id']).get_lesson_material_count()
+            study_status = StudyStatus.LOCKED.value[0]
+            if study_material_finish_count > 0:
+                study_status = StudyStatus.COMPLETED.value[0] if study_material_finish_count >= study_material_total_count else StudyStatus.IN_PROGRESS.value[0]
+
             lesson_info.update({
-                "open_time": study_content.open_time if study_content else None,
-                "study_status": self.check_study_status(study_content)
+                "open_time": term_course.course_start + timedelta(days=lesson_info['lesson_number'] - 1),
+                "study_status": study_status
             })
             if not lessons_groups.get(lesson_info['group_name']):
                 lessons_groups[lesson_info['group_name']] = [lesson_info]
@@ -168,7 +189,7 @@ class StudyContentService:
             }
             for study_material in card['study_materials']:
                 if not contents_dict.get(study_material):
-                    logger.error(f"study_material: {study_material} 不存在")
+                    # logger.error(f"study_material: {study_material} 不存在")
                     continue
                 if contents_dict.get(study_material)['study_status'] > StudyStatus.IN_PROGRESS.value[0]:
                     study_progress['finish_count'] += 1

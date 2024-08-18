@@ -1,6 +1,6 @@
 TIMEOUT = 1 * 60 * 15  # 默认缓存时间
 
-AUTO_MESSAGE_CACHE_TIMEOUT = 30*60*60*24  # 默认缓存时间 30天
+AUTO_MESSAGE_CACHE_TIMEOUT = 30 * 60 * 60 * 24  # 默认缓存时间 30天
 
 REDIS_SEPARATOR = ":"  # redis key分隔符
 

@@ -26,7 +26,8 @@ from .serializers import StudyMaterialSimpleListSerializer
 from .user_course_service import UserCourseService
 from ..system.authentication import ExternalUserTokenObtainPairSerializer
 from ..system.tasks import send_bug_course_success_message, class_reminder, auto_reply_message_task, \
-    auto_replay_message_on_subscribe_task, auto_replay_message_on_click_task
+    auto_replay_message_on_subscribe_task, auto_replay_message_on_click_task, delete_lesson_cache, delete_card_cache, \
+    delete_course_cache, delete_material_cache
 from ..user_center.models import ExternalUser
 from ..user_center.serializers import ExternalUserSerializer
 
@@ -67,6 +68,10 @@ class CourseViewSet(ModelViewSet):
     #     all = self.request.query_params.get('all', True)
     #     return Course.objects.get_queryset(all=all)
 
+    def perform_update(self, serializer):
+        data = serializer.save()
+        delete_course_cache(data.id)
+
 
 class LessonViewSet(ModelViewSet):
     """
@@ -93,6 +98,10 @@ class LessonViewSet(ModelViewSet):
         if self.action == 'retrieve':
             return LessonDetailSerializer
         return self.serializer_class
+
+    def perform_update(self, serializer):
+        data = serializer.save()
+        delete_lesson_cache(data.id)
 
 
 class CardViewSet(ModelViewSet):
@@ -128,6 +137,10 @@ class CardViewSet(ModelViewSet):
                 # 如果转换失败，抛出异常
                 raise ValidationError("Invalid card_ids parameter")
         return queryset
+
+    def perform_update(self, serializer):
+        data = serializer.save()
+        delete_card_cache(data.id)
 
 
 class CardListSimpleViewSet(ModelViewSet):
@@ -176,6 +189,10 @@ class StudyMaterialViewSet(ModelViewSet):
                 # 如果转换失败，抛出异常
                 raise ValidationError("Invalid card_ids parameter")
         return queryset
+
+    def perform_update(self, serializer):
+        data = serializer.save()
+        delete_material_cache(data.id)
 
 
 class StudyMaterialSimpleViewSet(ModelViewSet):
