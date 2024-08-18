@@ -242,5 +242,11 @@ def delete_course_cache(card_id):
 @shared_task
 def delete_material_cache(material):
     material_cache_helper = MaterialCacheHelper(material)
-    material_cache_helper.delete_course()
+    material_cache_helper.delete_material()
+
+    cards = Card.objects.filter(study_materials__id=material).all()
+    if cards:
+        for card in cards:
+            card_cache_helper = CardCacheHelper(card.id)
+            card_cache_helper.delete_card()
 

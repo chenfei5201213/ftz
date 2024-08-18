@@ -29,4 +29,3 @@ class MaterialCacheHelper:
 
     def delete_material(self):
         cache.delete(self.material_detail_key())
-        cache.delete(self.material_study_progress_key())
