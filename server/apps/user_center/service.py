@@ -149,7 +149,9 @@ class StudyContentService:
             study_material_total_count = LessonCacheHelper(lesson_info['id']).get_lesson_material_count()
             study_status = StudyStatus.LOCKED.value[0]
             if study_material_finish_count > 0:
-                study_status = StudyStatus.COMPLETED.value[0] if study_material_finish_count >= study_material_total_count else StudyStatus.IN_PROGRESS.value[0]
+                study_status = StudyStatus.COMPLETED.value[
+                    0] if study_material_finish_count >= study_material_total_count else StudyStatus.IN_PROGRESS.value[
+                    0]
 
             lesson_info.update({
                 "open_time": term_course.course_start + timedelta(days=lesson_info['lesson_number'] - 1),
@@ -232,12 +234,13 @@ class StudyContentService:
     def card_study_progress(self, card_obj: Card, lesson: Lesson, study_material_id=None):
         card = CardDetailSimpleSerializer(card_obj).data
         study_content = CourseScheduleContent.objects.filter(card=card_obj.id, user=self.user_id,
-                                                             lesson=lesson.id).all()
-        contents = CourseScheduleContentSerializer(study_content, many=True).data
-        contents_dict = {i['study_material']: i for i in contents}
+                                                             lesson=lesson.id,
+                                                             study_status=StudyStatus.COMPLETED.value[0]).all()
+        # contents = CourseScheduleContentSerializer(study_content, many=True).data
+        # contents_dict = {i['study_material']: i for i in contents}
         study_progress = {
             "total_count": len(card['study_materials']),
-            "finish_count": 0,
+            "finish_count": min(len(study_content), len(card['study_materials'])),
             "current_index": 0,
             "next_index": 0,
         }
@@ -249,8 +252,8 @@ class StudyContentService:
             if not study_materials_dict.get(study_material['id']):
                 continue
             study_materials_dict[study_material['id']] = study_material
-            if contents_dict.get(study_material['id'])['study_status'] > StudyStatus.IN_PROGRESS.value[0]:
-                study_progress['finish_count'] += 1
+            # if contents_dict.get(study_material['id'])['study_status'] > StudyStatus.IN_PROGRESS.value[0]:
+            #     study_progress['finish_count'] += 1
         card['study_progress'] = study_progress
         if study_progress['total_count'] == study_progress['finish_count']:
             card['study_status'] = StudyStatus.COMPLETED.value[0]
@@ -259,7 +262,9 @@ class StudyContentService:
         else:
             card['study_status'] = StudyStatus.UNLOCKED.value[0]
         card.pop('study_materials')
-        study_progress['current_index'] = study_materials_dict.get(study_material_id) or StudyMaterialSimpleListSerializer(StudyMaterial.objects.get(id=study_material_id)).data
+        study_progress['current_index'] = study_materials_dict.get(
+            study_material_id) or StudyMaterialSimpleListSerializer(
+            StudyMaterial.objects.get(id=study_material_id)).data
         study_material_id_index = study_material_ids.index(study_material_id) or 0
         next_index = study_material_ids[min(study_material_id_index + 1, len(study_material_ids) - 1)]
         study_progress['next_index'] = StudyMaterialSimpleListSerializer(StudyMaterial.objects.get(id=next_index)).data
