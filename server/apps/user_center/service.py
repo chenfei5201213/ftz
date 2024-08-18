@@ -172,9 +172,9 @@ class StudyContentService:
         lesson_obj = Lesson.objects.filter(id=lesson_id).first()
         serializer = LessonDetailSerializer(lesson_obj)
         lesson = serializer.data
-        study_content = CourseScheduleContent.objects.filter(lesson=lesson_id, user=self.user_id).all()
-        contents = CourseScheduleContentSerializer(study_content, many=True).data
-        contents_dict = {i['study_material']: i for i in contents}
+        # study_content = CourseScheduleContent.objects.filter(lesson=lesson_id, user=self.user_id).all()
+        # contents = CourseScheduleContentSerializer(study_content, many=True).data
+        # contents_dict = {i['study_material']: i for i in contents}
         lesson_study_progress = {
             "total_count": len(lesson['cards']),
             "finish_count": 0,
@@ -183,18 +183,20 @@ class StudyContentService:
         }
         lesson['study_progress'] = lesson_study_progress
         for card in lesson['cards']:
+            study_content = CourseScheduleContent.objects.filter(card=card['id'], user=self.user_id, lesson=lesson_id, study_status=StudyStatus.COMPLETED.value[0]).all()
+
             study_progress = {
                 "total_count": len(card['study_materials']),
-                "finish_count": 0,
+                "finish_count": min(len(study_content), len(card['study_materials'])),
                 "current_index": 0,
                 "next_index": 0,
             }
-            for study_material in card['study_materials']:
-                if not contents_dict.get(study_material):
-                    # logger.error(f"study_material: {study_material} 不存在")
-                    continue
-                if contents_dict.get(study_material)['study_status'] > StudyStatus.IN_PROGRESS.value[0]:
-                    study_progress['finish_count'] += 1
+            # for study_material in card['study_materials']:
+            #     if not contents_dict.get(study_material):
+            #         # logger.error(f"study_material: {study_material} 不存在")
+            #         continue
+            #     if contents_dict.get(study_material)['study_status'] > StudyStatus.IN_PROGRESS.value[0]:
+            #         study_progress['finish_count'] += 1
             study_progress['current_index'] = card['study_materials'][max(study_progress['finish_count'] - 1, 0)]
 
             if study_progress['total_count'] != study_progress['finish_count']:
