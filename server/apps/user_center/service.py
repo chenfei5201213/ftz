@@ -259,7 +259,7 @@ class StudyContentService:
         else:
             card['study_status'] = StudyStatus.UNLOCKED.value[0]
         card.pop('study_materials')
-        study_progress['current_index'] = study_materials_dict.get(study_material_id) or StudyMaterialSimpleListSerializer(StudyMaterial.objects.get(id=study_material_ids[0])).data
+        study_progress['current_index'] = study_materials_dict.get(study_material_id) or StudyMaterialSimpleListSerializer(StudyMaterial.objects.get(id=study_material_id)).data
         study_material_id_index = study_material_ids.index(study_material_id) or 0
         next_index = study_material_ids[min(study_material_id_index + 1, len(study_material_ids) - 1)]
         study_progress['next_index'] = StudyMaterialSimpleListSerializer(StudyMaterial.objects.get(id=next_index)).data
