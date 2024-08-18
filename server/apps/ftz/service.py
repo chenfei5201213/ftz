@@ -146,11 +146,14 @@ class TermCourseService:
                 study_status=status
             )
             course_content.save()
-        user_study_record = UserStudyRecord(user=course_content.user, lesson_number=course_content.lesson_number,
-                                            lesson=course_content.lesson,
-                                            study_material=course_content.study_material,
-                                            study_duration=study_duration)
-        user_study_record.save()
+            user_study_record = UserStudyRecord(user=course_content.user, lesson_number=course_content.lesson_number,
+                                                lesson=course_content.lesson,
+                                                study_material=course_content.study_material,
+                                                study_duration=study_duration)
+            user_study_record.save()
+        else:
+            self.update_study_status(study_material_id, lesson_id, status, study_duration)
+        return course_content
 
     def update_study_status(self, study_material_id, lesson_id, status, study_duration):
         """

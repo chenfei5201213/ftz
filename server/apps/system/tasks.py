@@ -227,7 +227,7 @@ def delete_card_cache(card_id):
     card_cache_helper.delete_card()
 
     # 删除关联的课时缓存
-    lessons = Lesson.objects.filter(card_id=card_id).all()
+    lessons = Lesson.objects.filter(cards__id=card_id).all()
     if lessons:
         for lesson in lessons:
             delete_lesson_cache(lesson.id)
