@@ -546,8 +546,10 @@ class StudyMaterialDetailView(APIView):
                 # if not study_content:
                 #     return Response(data={'error': '当前资源未购买，请联系客服'}, status=status.HTTP_400_BAD_REQUEST)
                 # study_content_info = CourseScheduleContentDetailSerializer(study_content).data
+                lesson = Lesson.objects.get(id=lesson_id)
                 study_content_info = {
-                    'study_material_info': StudyMaterialListSerializer(StudyMaterial.objects.get(id=study_material_id)).data
+                    'study_material_info': StudyMaterialListSerializer(StudyMaterial.objects.get(id=study_material_id)).data,
+                    'lesson_number': lesson.lesson_number
                 }
                 study_service = StudyContentService(user_id)
                 card_obj = Card.objects.get(id=card_id)
