@@ -341,8 +341,8 @@ MINIAPP_KEY = '9d277900d826618a74dc35e323e14393'
 NOTIFY_URL = f'https://{env("DOMAIN_NAME")}/api/mall/pay/wx/notify/'
 # 设置授权回调URL
 # REDIRECT_URI = "http://www.ngsmq.online/api/us/wx/login/"
-REDIRECT_URI = "https://www.fantuanzi.com.cn/web/index.html"  # todo 临时写死
-# REDIRECT_URI = f'https://{env("DOMAIN_NAME")}/web/index.html'
+# REDIRECT_URI = "https://www.fantuanzi.com.cn/web/index.html"
+REDIRECT_URI = f'{env("WEB_PROTOCOL")}://{env("DOMAIN_NAME")}/web/index.html'
 
 # 支付成功推送公众号消息落地页URL
 BUY_FINISH_URL = f'https://{env("DOMAIN_NAME")}/web/index.html#/pages/sale/index?orderId='
