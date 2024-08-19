@@ -145,6 +145,7 @@ class StudyContentService:
         for lesson_info in lessons_info:
             study_material_finish_count = CourseScheduleContent.objects.filter(user=self.user_id,
                                                                                lesson=lesson_info['id'],
+                                                                               study_status=StudyStatus.COMPLETED.value[0],
                                                                                term_course=term_course_id).count()
             study_material_total_count = LessonCacheHelper(lesson_info['id']).get_lesson_material_count()
             study_status = StudyStatus.LOCKED.value[0]
