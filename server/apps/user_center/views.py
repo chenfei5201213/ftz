@@ -60,7 +60,11 @@ class UserLogin(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        redirect_url = WechatUtil().wechat_login()
+        from_page = request.query_params.get('from')
+        from_url = None
+        if from_page == 'sale':
+            from_url = '#/pages/sale/index'
+        redirect_url = WechatUtil().wechat_login(from_url)
         return Response(data={'redirect_url': redirect_url})
 
 

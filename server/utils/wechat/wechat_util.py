@@ -85,7 +85,7 @@ class WechatBase:
 class WechatUtil(WechatBase):
     """公众号"""
 
-    def wechat_login(self):
+    def wechat_login(self, from_url: str = None):
         """
         引导用户授权
         """
@@ -95,8 +95,11 @@ class WechatUtil(WechatBase):
             "scope": "snsapi_userinfo",
             "state": "STATE"
         }
+        redirect_uri = REDIRECT_URI
+        if from_url:
+            redirect_uri = REDIRECT_URI + from_url
         return WX_AUTH_URL + "?" + "&".join([f"{k}={v}" for k, v in params.items()]) + "&" + urlencode(
-            {"redirect_uri": REDIRECT_URI})
+            {"redirect_uri": redirect_uri})
 
     def access_token(self, code):
         params = {
