@@ -121,7 +121,7 @@ class StudyContentService:
                                                                 study_status=StudyStatus.COMPLETED.value[0]).count()
             course_info.update({
                 'lessons': self.course_lessons(course_info['id'], course_term.get(course_info['id'])),
-
+                'term_course_id': course_term.get(course_info['id']),
                 'total': total_count,
                 'finish_count': finish_count
             })
@@ -145,7 +145,8 @@ class StudyContentService:
         for lesson_info in lessons_info:
             study_material_finish_count = CourseScheduleContent.objects.filter(user=self.user_id,
                                                                                lesson=lesson_info['id'],
-                                                                               study_status=StudyStatus.COMPLETED.value[0],
+                                                                               study_status=StudyStatus.COMPLETED.value[
+                                                                                   0],
                                                                                term_course=term_course_id).count()
             study_material_total_count = LessonCacheHelper(lesson_info['id']).get_lesson_material_count()
             study_status = StudyStatus.LOCKED.value[0]
@@ -184,7 +185,8 @@ class StudyContentService:
         }
         lesson['study_progress'] = lesson_study_progress
         for card in lesson['cards']:
-            study_content = CourseScheduleContent.objects.filter(card=card['id'], user=self.user_id, lesson=lesson_id, study_status=StudyStatus.COMPLETED.value[0]).all()
+            study_content = CourseScheduleContent.objects.filter(card=card['id'], user=self.user_id, lesson=lesson_id,
+                                                                 study_status=StudyStatus.COMPLETED.value[0]).all()
 
             study_progress = {
                 "total_count": len(card['study_materials']),
