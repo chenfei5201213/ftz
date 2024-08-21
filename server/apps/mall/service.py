@@ -7,7 +7,7 @@ from django.utils import timezone
 from psycopg.errors import UniqueViolation
 
 from utils.custom_exception import ErrorCode
-from .exception import OrderException, ProductException, InsertTermContext, OrderPayException
+from .exception import OrderException, ProductException, InsertTermContext, OrderPayException, OrderExistException
 from .models import Product, Order, PaymentRecord
 from .serializers import ProductSerializer, OrderSerializer, PaymentRecordSerializer
 from ..ftz.service import TermCourseService
@@ -35,10 +35,10 @@ class ProductService:
                 logger.info(f"product: {product}")
                 raise ProductException("商品不存在或者已下架", ErrorCode.ProductOff.value)
             user = ExternalUser.objects.get(id=user_id)
-            order_old = Order.objects.filter(user=user, product=product).filter(
+            order = Order.objects.filter(user=user, product=product).filter(
                 status__in=[OrderStatus.PAID.value, OrderStatus.PENDING.value]).first()
-            if order_old:
-                return OrderSerializer(order_old).data
+            if order:
+                raise OrderExistException('订单已存在', ErrorCode.OrderDuplication.value)
 
             total_amount = product.price * count
             # 创建订单
@@ -63,8 +63,8 @@ class ProductService:
             raise OrderException("订单不存在")
         except Product.DoesNotExist:
             raise ProductException("商品不存在", ErrorCode.ProductNotExit.value)
-        except (IntegrityError, UniqueViolation):
-            order = Order.objects.filter(user=user_id, product=product_id).first()
+        except (OrderExistException):
+            # order = Order.objects.filter(user=user_id, product=product_id).first()
             data = {
                 'order_info': OrderSerializer(order).data if order else {}
             }

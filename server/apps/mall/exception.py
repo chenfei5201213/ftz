@@ -9,6 +9,10 @@ class OrderPayException(FtzException):
     pass
 
 
+class OrderExistException(FtzException):
+    pass
+
+
 class ProductException(FtzException):
     pass
 

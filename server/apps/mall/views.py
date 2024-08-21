@@ -187,7 +187,8 @@ class PayPayment(APIView):
                     payment_record.save()
                     order.status = PaymentStatus[wx_result.get('trade_state')].value
                     order.save()
-                    send_bug_course_success_message.delay(payment_record.order.id)
+                    if wx_result.get('trade_state') == 'SUCCESS':
+                        send_bug_course_success_message.delay(payment_record.order.id)
         order_info = OrderSerializer(order).data
 
         order_info['course_info'] = product_info.get('course_info')
