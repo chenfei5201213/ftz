@@ -35,6 +35,11 @@ class ProductService:
                 logger.info(f"product: {product}")
                 raise ProductException("商品不存在或者已下架", ErrorCode.ProductOff.value)
             user = ExternalUser.objects.get(id=user_id)
+            order_old = Order.objects.filter(user=user, product=product).filter(
+                status__in=[OrderStatus.PAID.value, OrderStatus.PENDING.value]).first()
+            if order_old:
+                return OrderSerializer(order_old).data
+
             total_amount = product.price * count
             # 创建订单
             full_uuid = uuid.uuid4()
@@ -76,6 +81,12 @@ class ProductService:
         try:
             # 获取订单信息
             order = Order.objects.get(id=order_id)
+            if order.status == OrderStatus.CLOSED.value:
+                raise OrderPayException('订单已关闭', ErrorCode.OrderPayClosedException.value)
+            if order.status == OrderStatus.PAID.value:
+                raise OrderPayException('订单已支付', ErrorCode.OrderPayPaidException.value)
+
+            # 创建支付记录
             if payment_method == PaymentMethod.WECHAT.value:
                 wx_pay_service = WeChatPayService()
                 result = wx_pay_service.create_jsapi_order(order, user)

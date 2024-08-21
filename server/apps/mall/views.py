@@ -159,7 +159,7 @@ class PayPayment(APIView):
                                                                    amount=amount, payment_method=payment_method)
             return Response(payment_record)
         except FtzException as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data=e.__dict__, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             # 捕获其他异常并返回错误响应
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -176,19 +176,18 @@ class PayPayment(APIView):
             wx_code, wx_result = result
             if wx_code == 200:
                 wx_result = json.loads(wx_result)
-                if wx_result.get('trade_state') == 'SUCCESS':
+                if wx_result.get('trade_state') in ['SUCCESS', 'CLOSED']:
                     payment_record = PaymentRecord.objects.filter(order=order_id).order_by('-id').first()
-                    if payment_record.status != PaymentStatus.PAID.value or order.status != PaymentStatus.PAID.value:
-                        payment_record.status = PaymentStatus.PAID.value
-                        payment_record.pay_time = wx_result.get('success_time')
-                        pay_result_detail = json.loads(
-                            payment_record.pay_result_detail) if payment_record.pay_result_detail else {}
-                        pay_result_detail.update({'pay_success_result': wx_result})
-                        payment_record.pay_result_detail = json.dumps(pay_result_detail)
-                        payment_record.save()
-                        order.status = PaymentStatus.PAID.value
-                        order.save()
-                        send_bug_course_success_message.delay(payment_record.order.id)
+                    payment_record.status = PaymentStatus[wx_result.get('trade_state')].value
+                    payment_record.pay_time = wx_result.get('success_time')
+                    pay_result_detail = json.loads(
+                        payment_record.pay_result_detail) if payment_record.pay_result_detail else {}
+                    pay_result_detail.update({'pay_success_result': wx_result})
+                    payment_record.pay_result_detail = json.dumps(pay_result_detail)
+                    payment_record.save()
+                    order.status = PaymentStatus[wx_result.get('trade_state')].value
+                    order.save()
+                    send_bug_course_success_message.delay(payment_record.order.id)
         order_info = OrderSerializer(order).data
 
         order_info['course_info'] = product_info.get('course_info')

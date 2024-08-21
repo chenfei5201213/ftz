@@ -14,6 +14,7 @@ class ErrorCode(Enum):
     OrderCreateException = 100203  # '订单已存在'
     OrderNotPaidException = 10024  # '订单未支付'
     OrderPayCreateException = 10025  # '订单未支付'
+    OrderPayClosedException = 10026  # '订单已关闭'
 
     TermCourseException = 100300  # 期课未知异常
     TermCourseEndException = 100301  # 期课已结束

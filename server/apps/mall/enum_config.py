@@ -7,14 +7,17 @@ class OrderStatus(Enum):
     PAID = 'paid'
     FAILED = 'failed'
     CANCELLED = 'cancelled'
+    CLOSED = 'closed'
 
 
 class PaymentStatus(Enum):
     INIT = 'init'
     PENDING = 'pending'
     PAID = 'paid'
+    SUCCESS = 'paid'
     FAILED = 'failed'
     CANCELLED = 'cancelled'
+    CLOSED = 'closed'
 
 
 class ProductStatus(Enum):

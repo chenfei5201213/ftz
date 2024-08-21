@@ -60,14 +60,14 @@ class Order(SoftModel):
         super(Order, self).__init__(*args, **kwargs)
         self._meta.get_field('status').choices = get_enum_choices(module='order', service='status')
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['user', 'product'], name='unique_user_product')
-        ]
+    # class Meta:
+        # constraints = [
+        #     models.UniqueConstraint(fields=['user', 'product'], name='unique_user_product')
+        # ]
         # 联合索引
-        indexes = [
-            models.Index(fields=['user', 'product']),
-        ]
+        # indexes = [
+        #     models.Index(fields=['user', 'product']),
+        # ]
 
     @property
     def status_description(self):
