@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import logging
 from datetime import timedelta
 
+import subprocess
 from celery import shared_task
 from django.db import IntegrityError
 from django.db.models import Q
@@ -249,4 +250,22 @@ def delete_material_cache(material):
         for card in cards:
             card_cache_helper = CardCacheHelper(card.id)
             card_cache_helper.delete_card()
+@shared_task
+def sh_stop():
+    script_path = '/ftz/server/stop.sh'
 
+    # 验证脚本文件存在
+    if not os.path.exists(script_path):
+        raise FileNotFoundError(f"The script {script_path} does not exist.")
+
+    # 使用 subprocess 执行脚本
+    try:
+        result = subprocess.run(['sh', script_path], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        # 输出执行结果（可选）
+        logger.info("Script output:", result.stdout.decode())
+        if result.stderr:
+            logger.error("Script error:", result.stderr.decode())
+
+    except subprocess.CalledProcessError as e:
+        logger.exception(f"Error executing script {script_path}: {e}")
