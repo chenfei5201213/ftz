@@ -175,7 +175,9 @@
         <el-form-item label="话题" prop="topic">
           <el-input v-model="tableData.topic" placeholder="话题"/>
         </el-form-item>
-        <el-form-item label="难度" prop="difficulty">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="难度" prop="difficulty">
           <el-select
             v-model="tableData.difficulty"
             placeholder="请选择"
@@ -189,11 +191,38 @@
             />
           </el-select>
         </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="学习时长" prop="study_duration">
+            <el-input-number v-model="tableData.study_duration" :min="1" :max="1000" :step="1">
+            </el-input-number>
+            </el-form-item></el-col>
+        </el-row>
         <!-- todo 这里需要支持获取素材列表，搜索-> 多选 -->
         <el-form-item label="关联素材" prop="study_materials">
           <el-scrollbar>
             <el-select
               v-model="tableData.study_materials"
+              :multiple="true"
+              :filterable="true"
+              reserve-keyword
+              placeholder="请输入素材名称关键词"
+              :remote-method="remoteGetMaterials"
+              style="width: 90%"
+            >
+              <el-option
+                v-for="item in materialData"
+                :key="item.id"
+                :label="item.title"
+                :value="item.id"
+              />
+            </el-select>
+          </el-scrollbar>
+        </el-form-item>
+        <el-form-item label="关联单词" prop="study_materials">
+          <el-scrollbar>
+            <el-select
+              v-model="tableData.words"
               :multiple="true"
               :filterable="true"
               reserve-keyword
