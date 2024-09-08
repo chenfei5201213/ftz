@@ -95,6 +95,9 @@ class Card(SoftModel):
     difficulty = models.CharField('难度', max_length=32, choices=[], blank=False, default='easy')
     study_materials = models.ManyToManyField(StudyMaterial, blank=True, verbose_name='素材',
                                              related_name='study_materials')
+    words = models.ManyToManyField(StudyMaterial, blank=True, verbose_name='单词卡',
+                                             related_name='words')
+    study_duration = models.IntegerField('学习时长', default=10)  # 学习时长
     history = HistoricalRecords()
 
     # , through='CardStudyMaterial'

@@ -104,22 +104,31 @@ class CardListSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         study_materials_data = validated_data.pop('study_materials', None)
+        words_data = validated_data.pop('words', None)
         instance = super().create(validated_data)
 
         if study_materials_data:
             for index, study_material in enumerate(study_materials_data):
                 instance.study_materials.add(study_material, through_defaults={'order': index})
+        if words_data:
+            for index1, word in enumerate(words_data):
+                instance.words.add(word, through_defaults={'order': index1})
 
         return instance
 
     def update(self, instance, validated_data):
         study_materials_data = validated_data.pop('study_materials', None)
+        words_data = validated_data.pop('words', None)
         instance = super().update(instance, validated_data)
 
         if study_materials_data:
             instance.study_materials.clear()
             for index, study_material in enumerate(study_materials_data):
                 instance.study_materials.add(study_material, through_defaults={'order': index})
+        if words_data:
+            instance.words.clear()
+            for index1, word in enumerate(words_data):
+                instance.words.add(word, through_defaults={'order': index1})
 
         return instance
 
