@@ -9,7 +9,7 @@ import pytz
 from apps.ftz.serializers import CourseScheduleContentSerializer, CourseScheduleContentDetailSerializer, \
     LessonDetailSerializer, LessonListSerializer, CourseSerializer, LessonDetailSimpleListSerializer, \
     CardDetailSimpleSerializer, StudyMaterialListSerializer, StudyMaterialSimpleListSerializer
-from apps.mall.enum_config import StudyStatus, UserType, OrderStatus, ProductType, PaymentMethod
+from apps.mall.enum_config import StudyStatus, UserType, OrderStatus, ProductType, PaymentMethod, PaymentStatus
 from apps.mall.exception import InsertTermContext, OrderException
 from apps.mall.models import Order, Product
 from apps.mall.serializers import OrderDetailSerializer
@@ -128,7 +128,8 @@ class StudyContentService:
         return data
 
     def get_my_term_course(self, course_id):
-        order = Order.objects.filter(user=self.user_id, product__course_id=course_id).get()
+        order = Order.objects.filter(user=self.user_id, product__course_id=course_id, status=PaymentStatus.PAID.value)\
+            .order_by("id").first()
         if order:
             return order.product.term_course
 
