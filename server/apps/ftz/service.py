@@ -36,7 +36,8 @@ class TermCourseService:
         if self.term_course_id:
             self.term_course = TermCourse.objects.filter(id=self.term_course_id).get()
         else:
-            course_schedule_student = CourseScheduleStudent.objects.filter(user=self.user, term_course__course_id=self.course_id).get()
+            course_schedule_student = CourseScheduleStudent.objects\
+                .filter(user=self.user, term_course__course_id=self.course_id).first()
             self.term_course = course_schedule_student.term_course
         return self.term_course
 
