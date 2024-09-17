@@ -35,7 +35,7 @@ class ProductService:
                 logger.info(f"product: {product}")
                 raise ProductException("商品不存在或者已下架", ErrorCode.ProductOff.value)
             user = ExternalUser.objects.get(id=user_id)
-            order = Order.objects.filter(user=user, product=product).filter(
+            order = Order.objects.filter(user=user, product__course_id=product.course_id).filter(
                 status__in=[OrderStatus.PAID.value, OrderStatus.PENDING.value]).first()
             if order:
                 raise OrderExistException('订单已存在', ErrorCode.OrderDuplication.value)
