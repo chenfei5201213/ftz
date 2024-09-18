@@ -335,12 +335,14 @@ class StudyReportView(APIView):
         study_status = request.data.get('study_status')
         study_duration = request.data.get('study_duration', 1)
         card_id = request.data.get('card_id')
+        event_time = timezone.now()
         if study_status not in StudyStatus.__members__ or any(
                 [v is None for v in [course_id, lesson_id, study_material_id, study_status]]):
             return Response(f"study_status: {study_status} 不在{StudyStatus.__members__}中",
                             status=status.HTTP_400_BAD_REQUEST)
-        study_report_task.delay(user_id, course_id, study_material_id, lesson_id, study_status, study_duration, card_id)
-        # study_report_task(user_id, course_id, study_material_id, lesson_id, study_status, study_duration, card_id)
+        study_report_task.delay(user_id, course_id, study_material_id, lesson_id, study_status, study_duration, card_id,
+                                event_time)
+        # study_report_task(user_id, course_id, study_material_id, lesson_id, study_status, study_duration, card_id, event_time)
         return Response(data="上报成功")
 
 

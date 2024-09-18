@@ -129,7 +129,7 @@ class TermCourseService:
         else:
             return []
 
-    def insert_study_content_finish(self, study_material_id, lesson_id, status, study_duration, card_id):
+    def insert_study_content_finish(self, study_material_id, lesson_id, status, study_duration, card_id, event_time):
         """学习过程中，上报学习状态"""
         course_content = CourseScheduleContent.objects.filter(user=self.user_id, lesson=lesson_id,
                                                               study_material=study_material_id).first()
@@ -144,7 +144,8 @@ class TermCourseService:
                 card_id=card_id,
                 # open_time=self.term_course.course_start,
                 open_time=self.term_course.course_start + timedelta(days=lesson_obj.lesson_number - 1),
-                study_status=status
+                study_status=status,
+                finish_time=event_time if status == StudyStatus.COMPLETED.value[0] else None
             )
             course_content.save()
             user_study_record = UserStudyRecord(user=course_content.user, lesson_number=course_content.lesson_number,
@@ -153,10 +154,10 @@ class TermCourseService:
                                                 study_duration=study_duration)
             user_study_record.save()
         else:
-            self.update_study_status(study_material_id, lesson_id, status, study_duration)
+            self.update_study_status(study_material_id, lesson_id, status, study_duration, event_time)
         return course_content
 
-    def update_study_status(self, study_material_id, lesson_id, status, study_duration):
+    def update_study_status(self, study_material_id, lesson_id, status, study_duration, event_time):
         """
         更新学习状态，状态不支持回退
         """
@@ -182,7 +183,7 @@ class TermCourseService:
             course_content.save()
         if course_content and course_content.study_status < status:
             course_content.study_status = status
-            course_content.finish_time = timezone.now()
+            course_content.finish_time = event_time if status == StudyStatus.COMPLETED.value[0] else None
             course_content.save()
             user_study_record = UserStudyRecord(user=course_content.user, lesson_number=course_content.lesson_number,
                                                 lesson=course_content.lesson,

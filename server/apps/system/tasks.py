@@ -113,12 +113,14 @@ def send_class_reminder(openid, course_info):
 
 
 @shared_task
-def study_report_task(user_id, course_id, study_material_id, lesson_id, study_status, study_duration, card_id=None):
+def study_report_task(user_id, course_id, study_material_id, lesson_id, study_status, study_duration, card_id=None,
+                      event_time=None):
     try:
         term_service = TermCourseService(user_id, course_id)
         study_content = term_service.insert_study_content_finish(study_material_id, lesson_id,
                                                                  StudyStatus[study_status].value[0], study_duration,
-                                                                 card_id=card_id)
+                                                                 card_id=card_id,
+                                                                 event_time=event_time)
         if not study_content:
             logger.error(
                 f"user_id:{user_id}, course_id:{course_id},lesson_id:{lesson_id}, study_material_id:{study_material_id} 没有对应的学习内容 ")
