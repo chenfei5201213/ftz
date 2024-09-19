@@ -1,5 +1,8 @@
 from django.urls import path, include
 from rest_framework import routers
+
+from .study_record_view import StudyRecordTotalDurationView, StudyRecordTotalDaysView, StudyRecordCalendarView, \
+    StudyRecordLuckyBagView
 from .views import WechatLogin, WechatEchoStr, ExternalUserView, ExternalOauthView, TermCourseContentView, \
     WechatMiniLogin, UserLogin, WechatCallbackLogin, MyTokenRefreshView, StudyReportView, MyCourseView, \
     CourseLessonListView, CourseLessonDetailView, StudyMaterialDetailView, LearningProgressView, \
@@ -45,5 +48,11 @@ urlpatterns = [
     # 用户收藏
     path('collect/', UserCollectView.as_view()),
     path('collect/check/', UserCollectCheckView.as_view()),
+
+    # 数据分析
+    path('stduy_record/total_duration/', StudyRecordTotalDurationView.as_view()),
+    path('stduy_record/total_days/', StudyRecordTotalDaysView.as_view()),
+    path('stduy_record/calendar/', StudyRecordCalendarView.as_view()),
+    path('stduy_record/lucky_bag/', StudyRecordLuckyBagView.as_view()),
 
 ]
