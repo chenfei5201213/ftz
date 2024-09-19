@@ -28,7 +28,8 @@ from server import settings
 from .enum_config import CollectTypeEnum
 
 from .models import ExternalUser, ExternalOauth
-from .serializers import ExternalUserSerializer, ExternalOauthSerializer, LogReportSerializer, UserCollectSerializer
+from .serializers import ExternalUserSerializer, ExternalOauthSerializer, LogReportSerializer, UserCollectSerializer, \
+    ExternalUserUpdateSerializer
 from .service import ExternalUserService
 from .user_collect_service import UserCollectService
 from .user_habit_service import UserHabitService
@@ -554,7 +555,8 @@ class StudyMaterialDetailView(APIView):
                 # study_content_info = CourseScheduleContentDetailSerializer(study_content).data
                 lesson = Lesson.objects.get(id=lesson_id)
                 study_content_info = {
-                    'study_material_info': StudyMaterialListSerializer(StudyMaterial.objects.get(id=study_material_id)).data,
+                    'study_material_info': StudyMaterialListSerializer(
+                        StudyMaterial.objects.get(id=study_material_id)).data,
                     'lesson_number': lesson.lesson_number
                 }
                 study_service = StudyContentService(user_id)
@@ -737,3 +739,23 @@ class UserCollectCheckView(APIView):
             # 捕获其他异常并返回错误响应
             logger.exception(f'UserCollectCheckView')
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UserProfileView(APIView):
+    authentication_classes = [ExternalUserAuth]
+    permission_classes = [ExternalUserPermission]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        data = ExternalUserSerializer(user).data
+        return Response(data)
+
+    def put(self, request, *args, **kwargs):
+        user = request.user  # 获取请求中的用户对象
+        serializer = ExternalUserUpdateSerializer(user, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

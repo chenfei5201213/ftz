@@ -7,7 +7,8 @@ from .views import WechatLogin, WechatEchoStr, ExternalUserView, ExternalOauthVi
     WechatMiniLogin, UserLogin, WechatCallbackLogin, MyTokenRefreshView, StudyReportView, MyCourseView, \
     CourseLessonListView, CourseLessonDetailView, StudyMaterialDetailView, LearningProgressView, \
     FileViewSet, FreeCourse, StudyMaterialDetailQView, SurveyReportView, LogReportView, BatchLogReportView, \
-    BatchSurveyReportView, UserHabitView, GenWechatSignature, TermCourseView, UserCollectView, UserCollectCheckView
+    BatchSurveyReportView, UserHabitView, GenWechatSignature, TermCourseView, UserCollectView, UserCollectCheckView,\
+    UserProfileView
 
 router = routers.DefaultRouter()
 router.register('user', ExternalUserView, basename='user')
@@ -54,5 +55,8 @@ urlpatterns = [
     path('stduy_record/total_days/', StudyRecordTotalDaysView.as_view()),
     path('stduy_record/calendar/', StudyRecordCalendarView.as_view()),
     path('stduy_record/lucky_bag/', StudyRecordLuckyBagView.as_view()),
+
+    # 个人中心
+    path('user_center/user_profile/', UserProfileView.as_view()),
 
 ]
