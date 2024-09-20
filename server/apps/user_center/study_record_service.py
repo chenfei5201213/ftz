@@ -86,8 +86,8 @@ class StudyRecordService:
 
         # 获取该用户的订单
         contents = CourseScheduleContent.objects.filter(
-            Q(term_course__course_start__year=specific_year)
-            & Q(term_course__course_start__month=specific_month),
+            Q(open_time__year=specific_year)
+            & Q(open_time__month=specific_month),
             user=self.user).all()
         calendar_dict = generate_month_calendar(specific_year, specific_month)
         for content in contents:
