@@ -10,4 +10,6 @@ class RedisKeyPrefixEnum(Enum):
     COURSE_MATERIAL_COUNT = "course_md_count", "课程素材数量"
     LESSON = "lesson", "课时"
     LESSON_MATERIAL_COUNT = "lesson_md_count", "课时素材数量"
+    LESSON_MATERIAL_IDS = "lesson_md_ids", "课时素材id"
     CARD = "card", "卡片"
+    LESSON_WORDS = "lesson_words", "单词"

@@ -15,6 +15,7 @@ from rest_framework.views import APIView
 from apps.system.authentication import ExternalUserAuth
 from apps.system.permission import ExternalUserPermission
 from apps.user_center.study_record_service import StudyRecordService
+from component.cache.lesson_cache_helper import LessonCacheHelper
 from utils.custom_exception import FtzException
 
 logger = logging.getLogger('__name__')
@@ -51,14 +52,18 @@ class StudyRecordLuckyBagView(APIView):
     permission_classes = [ExternalUserPermission]
 
     def get(self, request, *args, **kwargs):
-        """获取用户收藏记录"""
+        """获取用户福袋"""
         try:
             user = request.user
             study_record_service = StudyRecordService(user)
-            total_duration = study_record_service.get_study_total_duration()
-            data = {
-                'total_duration': total_duration
-            }
+            lesson_id = request.query_params.get('lesson_id')
+            term_course_id = request.query_params.get('term_course_id')
+            tab = request.query_params.get('tab')
+            data = []
+            if tab == 'finish':
+                data = study_record_service.get_study_lucky_bag_finish(term_course_id, lesson_id)
+            elif tab == 'collect':
+                data = study_record_service.get_study_lucky_bag_collect(lesson_id)
             return Response(data)
         except FtzException as e:
             logger.exception(f'内部错误：')
