@@ -100,15 +100,15 @@ class StudyRecordService:
                 calendar_dict[open_time]['finish_count'] = calendar_dict[open_time].get('finish_count', 0) + 1
         return calendar_dict
 
-    def get_study_lucky_bag_finish(self, term_course_id, lesson_id):
+    def get_study_lucky_bag_finish(self, term_course_id, lesson_id=None, material_types=None):
         """
         获取已学习的福袋
         """
         # 获取 lesson_word_ids
-        lesson_word_ids = LessonCacheHelper(lesson_id).get_lesson_words()
+        lesson_word_ids = LessonCacheHelper(lesson_id).get_lesson_words() if lesson_id else None
 
         # 福袋类型  50音AB面、语法卡AB面
-        bag_study_material_types = [1, 2, 5, 6]
+        bag_study_material_types = material_types if material_types else [1, 2, 5, 6]
 
         # 构建必须的查询条件
         base_conditions = Q(
@@ -116,6 +116,8 @@ class StudyRecordService:
             study_status=StudyStatus.COMPLETED.value[0],
             term_course_id=term_course_id
         )
+        if lesson_id:
+            base_conditions &= Q(lesson_id=lesson_id)
 
         # 构建可选条件的并集
         optional_conditions = Q()
@@ -138,17 +140,21 @@ class StudyRecordService:
         data = StudyMaterialListSerializer(study_materials, many=True).data
         return data
 
-    def get_study_lucky_bag_collect(self, lesson_id):
+    def get_study_lucky_bag_collect(self, lesson_id=None, material_types=None):
         """
         获取收藏的福袋
         """
         # 获取 lesson_word_ids
-        material_ids = LessonCacheHelper(lesson_id).get_lesson_material_ids()
+        material_ids = LessonCacheHelper(lesson_id).get_lesson_material_ids() if lesson_id else None
 
         # 福袋类型  50音AB面、语法卡AB面、单词卡AB面
-        bag_study_material_types = [1, 2, 5, 6, 3, 4]
-
-        study_materials = StudyMaterial.objects.filter(id__in=material_ids, type__in=bag_study_material_types).all()
+        bag_study_material_types = material_types if material_types else [1, 2, 5, 6, 3, 4]
+        conditions = Q(type__in=bag_study_material_types)
+        if lesson_id:
+            conditions &= Q(lesson_id=lesson_id)
+        if material_ids:
+            conditions = conditions & Q(id__in=material_ids)
+        study_materials = StudyMaterial.objects.filter(conditions).all()
 
         event_ids = UserCollect.objects.filter(user=self.user,
                                                event_id__in=study_materials.values_list('id', flat=True),
