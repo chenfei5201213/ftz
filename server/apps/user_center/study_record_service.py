@@ -150,8 +150,8 @@ class StudyRecordService:
         # 福袋类型  50音AB面、语法卡AB面、单词卡AB面
         bag_study_material_types = material_types if material_types else [1, 2, 5, 6, 3, 4]
         conditions = Q(type__in=bag_study_material_types)
-        if lesson_id:
-            conditions &= Q(lesson_id=lesson_id)
+        # if lesson_id:
+        #     conditions &= Q(lesson_id=lesson_id)
         if material_ids:
             conditions = conditions & Q(id__in=material_ids)
         study_materials = StudyMaterial.objects.filter(conditions).all()
