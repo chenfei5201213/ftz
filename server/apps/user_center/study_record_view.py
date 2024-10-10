@@ -59,13 +59,12 @@ class StudyRecordLuckyBagView(APIView):
             lesson_id = request.query_params.get('lesson_id')
             term_course_id = request.query_params.get('term_course_id')
             tab = request.query_params.get('tab')
-            _material_types = request.query_params.get('material_types')
-            material_types = _material_types.split(',') if _material_types else None
+            lucky_type = request.query_params.get('type')
             data = []
             if tab == 'finish':
-                data = study_record_service.get_study_lucky_bag_finish(term_course_id, lesson_id, material_types)
+                data = study_record_service.get_study_lucky_bag_finish_v2(term_course_id, lucky_type, lesson_id)
             elif tab == 'collect':
-                data = study_record_service.get_study_lucky_bag_collect(lesson_id, material_types)
+                data = study_record_service.get_study_lucky_bag_collect(lesson_id, lucky_type)
             return Response(data)
         except FtzException as e:
             logger.exception(f'内部错误：')

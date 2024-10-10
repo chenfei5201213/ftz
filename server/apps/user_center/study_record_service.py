@@ -8,13 +8,14 @@
 import math
 from datetime import timedelta
 
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, Case, When
 from django.db.models.functions import TruncDate
 
 from apps.ftz.models import CourseScheduleContent, Card, TermCourse, StudyMaterial
 from apps.ftz.serializers import CourseScheduleContentDetailSerializer, StudyMaterialListSerializer
 from apps.mall.enum_config import StudyStatus, OrderStatus
 from apps.mall.models import Order
+from apps.user_center.enum_config import LuckyType
 from apps.user_center.models import ExternalUser, UserCollect
 from component import generate_month_calendar
 from component.cache.lesson_cache_helper import LessonCacheHelper
@@ -100,6 +101,44 @@ class StudyRecordService:
                 calendar_dict[open_time]['finish_count'] = calendar_dict[open_time].get('finish_count', 0) + 1
         return calendar_dict
 
+    def get_study_lucky_bag_finish_v2(self, term_course_id, lucky_type, lesson_id=None):
+        """
+        获取已学习的福袋
+        """
+        lesson_word_ids = []
+        if lucky_type == LuckyType.WORD.value[0]:
+            bag_study_material_types = LuckyType.WORD.value[1]
+            lesson_word_ids = LessonCacheHelper(lesson_id).get_lesson_words() if lesson_id else []
+        elif lucky_type == LuckyType.GRAMMAR.value[0]:
+            bag_study_material_types = LuckyType.GRAMMAR.value[1]
+        elif lucky_type == LuckyType.NOTE_50.value[0]:
+            bag_study_material_types = LuckyType.NOTE_50.value[1]
+        else:
+            return
+        # 构建必须的查询条件
+        base_conditions = Q(
+            user=self.user,
+            study_status=StudyStatus.COMPLETED.value[0],
+            term_course_id=term_course_id
+        )
+        if lesson_id:
+            base_conditions &= Q(lesson_id=lesson_id)
+        if bag_study_material_types:
+            base_conditions &= Q(study_material__type__in=bag_study_material_types)
+        query_conditions = base_conditions
+        # 执行查询
+        content = CourseScheduleContent.objects.filter(query_conditions).distinct().all()
+        study_material_ids = list(content.values_list('study_material_id', flat=True).distinct())
+        if lesson_word_ids:
+            study_material_ids.extend(lesson_word_ids)
+        # 创建一个有序的When...Then序列
+        order = Case(*[When(id=_id, then=pos) for pos, _id in enumerate(study_material_ids)])
+        study_materials = StudyMaterial.objects.filter(id__in=study_material_ids).order_by(order).all()
+        # 序列化数据
+        data = StudyMaterialListSerializer(study_materials, many=True).data
+        return data
+
+
     def get_study_lucky_bag_finish(self, term_course_id, lesson_id=None, material_types=None):
         """
         获取已学习的福袋
@@ -135,15 +174,21 @@ class StudyRecordService:
         data = StudyMaterialListSerializer(study_materials, many=True).data
         return data
 
-    def get_study_lucky_bag_collect(self, lesson_id=None, material_types=None):
+    def get_study_lucky_bag_collect(self, lesson_id=None, lucky_type=None):
         """
         获取收藏的福袋
         """
         # 获取 lesson_word_ids
         material_ids = LessonCacheHelper(lesson_id).get_lesson_material_ids() if lesson_id else None
 
-        # 福袋类型  50音AB面、语法卡AB面、单词卡AB面
-        bag_study_material_types = material_types if material_types else [1, 2, 5, 6, 3, 4]
+        if lucky_type == LuckyType.WORD.value[0]:
+            bag_study_material_types = LuckyType.WORD.value[1]
+        elif lucky_type == LuckyType.GRAMMAR.value[0]:
+            bag_study_material_types = LuckyType.GRAMMAR.value[1]
+        elif lucky_type == LuckyType.NOTE_50.value[0]:
+            bag_study_material_types = LuckyType.NOTE_50.value[1]
+        else:
+            return
         conditions = Q(type__in=bag_study_material_types)
         # if lesson_id:
         #     conditions &= Q(lesson_id=lesson_id)
