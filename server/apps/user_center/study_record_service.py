@@ -125,11 +125,11 @@ class StudyRecordService:
             optional_conditions |= Q(study_material_id__in=lesson_word_ids)
 
         if bag_study_material_types:
-            optional_conditions |= Q(study_material__type__in=bag_study_material_types)
+            base_conditions &= Q(study_material__type__in=bag_study_material_types)
 
         # 将基本条件和可选条件组合
         if optional_conditions:
-            query_conditions = base_conditions & optional_conditions
+            query_conditions = base_conditions | optional_conditions
         else:
             query_conditions = base_conditions
 
