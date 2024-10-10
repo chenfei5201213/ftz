@@ -105,7 +105,7 @@ class StudyRecordService:
         获取已学习的福袋
         """
         # 获取 lesson_word_ids
-        lesson_word_ids = LessonCacheHelper(lesson_id).get_lesson_words() if lesson_id else None
+        lesson_word_ids = LessonCacheHelper(lesson_id).get_lesson_words() if lesson_id else []
 
         # 福袋类型  50音AB面、语法卡AB面
         bag_study_material_types = material_types if material_types else [1, 2, 5, 6]
@@ -118,24 +118,19 @@ class StudyRecordService:
         )
         if lesson_id:
             base_conditions &= Q(lesson_id=lesson_id)
-
-        # 构建可选条件的并集
-        optional_conditions = Q()
-        if lesson_word_ids:
-            optional_conditions |= Q(study_material_id__in=lesson_word_ids)
-
         if bag_study_material_types:
             base_conditions &= Q(study_material__type__in=bag_study_material_types)
 
-        # 将基本条件和可选条件组合
-        if optional_conditions:
-            query_conditions = base_conditions | optional_conditions
-        else:
-            query_conditions = base_conditions
-
+        # # 将基本条件和可选条件组合
+        # if optional_conditions:
+        #     query_conditions = base_conditions | optional_conditions
+        query_conditions = base_conditions
         # 执行查询
         content = CourseScheduleContent.objects.filter(query_conditions).distinct().all()
-        study_materials = StudyMaterial.objects.filter(id__in=content.values_list('study_material_id', flat=True)).all()
+        study_material_ids = list(content.values_list('study_material_id', flat=True).distinct())
+        if lesson_word_ids:
+            study_material_ids.extend(lesson_word_ids)
+        study_materials = StudyMaterial.objects.filter(id__in=study_material_ids).all()
         # 序列化数据
         data = StudyMaterialListSerializer(study_materials, many=True).data
         return data
