@@ -14,7 +14,7 @@ from ..ftz.service import TermCourseService
 
 from ..payments.services.wechat_pay import WeChatPayService
 from ..user_center.models import ExternalUser
-from .enum_config import OrderStatus, PaymentStatus, ProductStatus, PaymentMethod, UserType, StudyStatus
+from .enum_config import OrderStatus, PaymentStatus, ProductStatus, PaymentMethod, UserType, StudyStatus, ProductType
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class ProductService:
             uuid_32bit = str(full_uuid)[:16] + str(full_uuid)[16:32]
             order = Order.objects.create(user=user,
                                          product=product,
-                                         total_amount=total_amount,
+                                         total_amount=0 if product.type == ProductType.FREE.value[0] else total_amount,
                                          order_uuid=uuid_32bit,
                                          status=OrderStatus.PENDING.value)
             serializer = OrderSerializer(order)

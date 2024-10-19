@@ -14,6 +14,7 @@ from rest_framework.viewsets import ModelViewSet
 from utils.custom_exception import FtzException
 from .enum_config import PaymentStatus
 from .models import Product, Order, PaymentRecord
+from .order_service import OrderPaymentSyncService
 from .serializers import ProductSerializer, PaymentRecordSerializer, OrderSerializer, ProductSellSerializer
 from .service import ProductService
 from ..ftz.service import TermCourseService
@@ -21,7 +22,7 @@ from ..ftz.service import TermCourseService
 from ..payments.services.wechat_pay import WeChatPayService
 from ..system.authentication import ExternalUserAuth
 from ..system.permission import ExternalUserPermission
-from ..system.tasks import send_bug_course_success_message
+from ..system.tasks import send_bug_course_success_message, sync_order
 from ..user_center.service import StudyContentService
 
 logger = logging.getLogger(__name__)
@@ -241,3 +242,21 @@ class WxPayNotify(APIView):
             # 更新支付记录和订单状态
             return Response({'code': 'SUCCESS', 'message': '成功'})
         return Response({'code': 'FAILED', 'message': '失败'})
+
+
+class OrderPaymentSyncView(APIView):
+    # authentication_classes = [ExternalUserAuth]
+    # permission_classes = [ExternalUserPermission]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            recent_payment_days = request.data.get('recent_payment_days', 7)
+            unpaid_days_threshold = request.data.get('unpaid_days_threshold', 3)
+            sync_order(recent_payment_days=recent_payment_days, unpaid_days_threshold=unpaid_days_threshold)
+            return Response({'message': '订单支付同步成功'})
+        except FtzException as e:
+            return Response(data=e.__dict__, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # 捕获其他异常并返回错误响应
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

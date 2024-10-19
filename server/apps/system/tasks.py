@@ -16,6 +16,7 @@ from apps.ftz.serializers import SurveyReportSerializer
 from apps.ftz.service import TermCourseService
 from apps.mall.enum_config import StudyStatus
 from apps.mall.models import Order
+from apps.mall.order_service import OrderPaymentSyncService
 from apps.mall.serializers import ProductSellSerializer
 from apps.system.models import RequestLog, Dict
 from apps.user_center.models import UserCollect
@@ -253,6 +254,8 @@ def delete_material_cache(material):
         for card in cards:
             card_cache_helper = CardCacheHelper(card.id)
             card_cache_helper.delete_card()
+
+
 @shared_task
 def sh_stop():
     script_path = '/ftz/server/stop.sh'
@@ -272,3 +275,15 @@ def sh_stop():
 
     except subprocess.CalledProcessError as e:
         logger.exception(f"Error executing script {script_path}: {e}")
+
+
+@shared_task
+def sync_order(*args, **kwargs):
+    recent_payment_days = kwargs.get('recent_payment_days', 7)
+    unpaid_days_threshold = kwargs.get('unpaid_days_threshold', 3)
+    OrderPaymentSyncService().sync(recent_payment_days=recent_payment_days, unpaid_days_threshold=unpaid_days_threshold)
+    try:
+        OrderPaymentSyncService().sync()
+
+    except subprocess.CalledProcessError as e:
+        logger.exception("同步订单状态异常：")
