@@ -1,8 +1,8 @@
 from django.db import models
 from simple_history.models import HistoricalRecords
 
-from apps.user_center.models import ExternalUser
-from utils.model import SoftModel, EnumConfig, get_enum_choices
+
+from utils.model import SoftModel, EnumConfig, get_enum_choices, ExternalUser
 
 
 class Tag(SoftModel):

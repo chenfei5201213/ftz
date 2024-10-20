@@ -19,6 +19,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from component.cache.material_cache_helper import MaterialCacheHelper
 from component.cache.user_habit_cache_helper import UserHabitCacheHelper
 from utils.custom_exception import FtzException
+from utils.model import ExternalOauth, ExternalUser
 from utils.wechat import receive, reply
 from utils.wechat.auto_reply_message import WechatAutoReplyMessage
 from utils.wechat.wechat_enum import WechatMsgType
@@ -27,7 +28,7 @@ from utils.wechat.wechat_util import WechatUtil, WechatMiniUtil
 from server import settings
 from .enum_config import CollectTypeEnum
 
-from .models import ExternalUser, ExternalOauth
+
 from .serializers import ExternalUserSerializer, ExternalOauthSerializer, LogReportSerializer, UserCollectSerializer, \
     ExternalUserUpdateSerializer
 from .service import ExternalUserService
@@ -697,8 +698,8 @@ class UserCollectView(APIView):
         request.data['user'] = request.user.id
         serializer = UserCollectSerializer(data=request.data)
         if serializer.is_valid():
-            user_collect_task.delay(serializer.data)
-            # user_collect_task(serializer.data)
+            # user_collect_task.delay(serializer.data)
+            user_collect_task(serializer.data)
             return Response(data="收藏成功")
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

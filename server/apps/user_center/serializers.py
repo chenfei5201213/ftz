@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from .models import ExternalUser, ExternalOauth, UserBehavior, UserCollect
+from utils.model import ExternalUser, ExternalOauth
+from .models import UserBehavior, UserCollect
 
 
 class ExternalUserUpdateSerializer(serializers.ModelSerializer):

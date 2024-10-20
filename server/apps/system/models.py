@@ -1,8 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.db.models.base import Model
-import django.utils.timezone as timezone
-from django.db.models.query import QuerySet
 
 from utils.model import SoftModel, BaseModel
 from simple_history.models import HistoricalRecords
