@@ -698,8 +698,8 @@ class UserCollectView(APIView):
         request.data['user'] = request.user.id
         serializer = UserCollectSerializer(data=request.data)
         if serializer.is_valid():
-            # user_collect_task.delay(serializer.data)
-            user_collect_task(serializer.data)
+            user_collect_task.delay(serializer.data)
+            # user_collect_task(serializer.data)
             return Response(data="收藏成功")
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

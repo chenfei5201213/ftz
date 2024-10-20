@@ -138,7 +138,6 @@ class StudyRecordService:
         data = StudyMaterialListSerializer(study_materials, many=True).data
         return data
 
-
     def get_study_lucky_bag_finish(self, term_course_id, lesson_id=None, material_types=None):
         """
         获取已学习的福袋
@@ -174,7 +173,7 @@ class StudyRecordService:
         data = StudyMaterialListSerializer(study_materials, many=True).data
         return data
 
-    def get_study_lucky_bag_collect(self, lesson_id=None, lucky_type=None):
+    def get_study_lucky_bag_collect(self, lesson_id=None, lucky_type=None, term_course_id=None):
         """
         获取收藏的福袋
         """
@@ -196,17 +195,17 @@ class StudyRecordService:
             conditions = conditions & Q(id__in=material_ids)
         study_materials = StudyMaterial.objects.filter(conditions).all()
 
-        event_ids = UserCollect.objects.filter(user=self.user,
-                                               event_id__in=study_materials.values_list('id', flat=True),
-                                               collect_type='material')\
-            .all().values_list('event_id', flat=True)
+        collect_conditions = Q(user=self.user,
+                               event_id__in=study_materials.values_list('id', flat=True),
+                               collect_type='material')
+        if term_course_id:
+            collect_conditions &= Q(term_course_id=term_course_id)
+        if lesson_id:
+            collect_conditions &= Q(lesson_id=lesson_id)
+        event_ids = UserCollect.objects.filter(collect_conditions).all().values_list('event_id', flat=True)
 
         # 执行查询
         study_materials = StudyMaterial.objects.filter(id__in=event_ids).all()
         # 序列化数据
         data = StudyMaterialListSerializer(study_materials, many=True).data
         return data
-
-
-
-
