@@ -237,7 +237,11 @@ export default {
         {
           label: "卡片状态",
           value: "status",
-        }
+        },
+        {
+          label: "级别",
+          value: "level",
+        },
       ],
     };
   },

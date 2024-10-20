@@ -11,12 +11,12 @@
                      :value="item.value"></el-option>
         </el-select>
         <el-input
-        v-model="listQuery.search"
-        placeholder="输入课程名称进行搜索"
-        style="width: 300px"
-        class="filter-item"
-        @keyup.native="handleFilter"
-      />
+          v-model="listQuery.search"
+          placeholder="输入课程名称进行搜索"
+          style="width: 300px"
+          class="filter-item"
+          @keyup.native="handleFilter"
+        />
         <el-button
           class="filter-item"
           type="primary"
@@ -53,6 +53,9 @@
       <el-table-column label="课程类型">
         <template slot-scope="scope">{{ scope.row.type_description }}</template>
       </el-table-column>
+      <el-table-column label="课程级别">
+        <template slot-scope="scope">{{ scope.row.level_description }}</template>
+      </el-table-column>
       <el-table-column label="课程数量">
         <template slot-scope="scope">{{ scope.row.lesson_count }}</template>
       </el-table-column>
@@ -88,14 +91,14 @@
         </template>
       </el-table-column>
     </el-table>
-      <el-pagination
-            v-show="tableDataList.count>0"
-            :total="tableDataList.count"
-            :page-size.sync="listQuery.page_size"
-            :layout="prev,pager,next"
-            :current-page.sync="listQuery.page"
-            @current-change="getList"
-          ></el-pagination>
+    <el-pagination
+      v-show="tableDataList.count>0"
+      :total="tableDataList.count"
+      :page-size.sync="listQuery.page_size"
+      :layout="prev,pager,next"
+      :current-page.sync="listQuery.page"
+      @current-change="getList"
+    ></el-pagination>
     <el-dialog
       :visible.sync="dialogVisible"
       :title="dialogType === 'edit' ? '编辑课程' : '新增课程'"
@@ -111,17 +114,31 @@
         </el-form-item>
         <el-form-item label="课程类型" prop="type">
           <el-select
-                v-model="tableData.type"
-                placeholder="请选择"
-                style="width: 90%"
-              >
-                <el-option
-                  v-for="item in dataOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
+            v-model="tableData.type"
+            placeholder="请选择"
+            style="width: 90%"
+          >
+            <el-option
+              v-for="item in typeOptions"
+              :key="item.value"
+              :label="item.name"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="课程级别" prop="type">
+          <el-select
+            v-model="tableData.level"
+            placeholder="请选择"
+            style="width: 90%"
+          >
+            <el-option
+              v-for="item in levelOptions"
+              :key="item.value"
+              :label="item.name"
+              :value="item.value"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="课时数量" prop="lesson_count">
           <el-input-number v-model="tableData.lesson_count" placeholder="课时数量"/>
@@ -187,6 +204,7 @@ export default {
         }
       ],
       typeOptions: [],
+      levelOptions: [],
       listQuery: {
         page: 1,
         page_size: 20,
@@ -195,19 +213,29 @@ export default {
       enumConfigQuery: {
         module: 'course',
         service: 'type'
+      },
+      levelEnumConfigQuery: {
+        module: 'course',
+        service: 'level'
       }
     };
   },
   computed: {},
   created() {
     this.getCourseTypeList();
+    this.getCourseLevelList();
     this.getList();
   },
   methods: {
     checkPermission,
-    getCourseTypeList(){
+    getCourseTypeList() {
       getEnumConfigList(this.enumConfigQuery).then((response) => {
         this.typeOptions = response.data.results;
+      })
+    },
+    getCourseLevelList() {
+      getEnumConfigList(this.levelEnumConfigQuery).then((response) => {
+        this.levelOptions = response.data.results;
       })
     },
     getList(page) {
