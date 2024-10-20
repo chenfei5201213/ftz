@@ -10,14 +10,19 @@ class CourseSerializer(serializers.ModelSerializer):
     课程序列化
     """
     type_description = serializers.SerializerMethodField()
+    level_description = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
-        fields = '__all__'
+        fields = ['id', 'title', 'description', 'type', 'level', 'lesson_count', 'create_time', 'update_time',
+                  'type_description', 'level_description']
 
     def get_type_description(self, obj):
         # 调用Course模型中的type_description属性
         return obj.type_description
+
+    def get_level_description(self, obj):
+        return obj.level_description
 
 
 class LessonListSerializer(serializers.ModelSerializer):

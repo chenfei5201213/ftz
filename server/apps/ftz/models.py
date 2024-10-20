@@ -1,7 +1,6 @@
 from django.db import models
 from simple_history.models import HistoricalRecords
 
-
 from utils.model import SoftModel, EnumConfig, get_enum_choices, ExternalUser
 
 
@@ -24,17 +23,27 @@ class Course(SoftModel):
     title = models.CharField('课程标题', max_length=128, unique=True, blank=False)
     description = models.TextField('描述', blank=True)
     type = models.CharField('课程类型', max_length=128, choices=[])
+    level = models.CharField('课程级别', max_length=128, choices=[])
     lesson_count = models.IntegerField('课程数量', default=0)
     history = HistoricalRecords()
 
     def __init__(self, *args, **kwargs):
         super(Course, self).__init__(*args, **kwargs)
         self._meta.get_field('type').choices = get_enum_choices(module='course', service='type')
+        self._meta.get_field('level').choices = get_enum_choices(module='course', service='level')
 
     @property
     def type_description(self):
         try:
             enum_config = EnumConfig.objects.get(module='course', service='type', value=self.type)
+            return enum_config.name
+        except EnumConfig.DoesNotExist:
+            return None
+
+    @property
+    def level_description(self):
+        try:
+            enum_config = EnumConfig.objects.get(module='course', service='level', value=self.level)
             return enum_config.name
         except EnumConfig.DoesNotExist:
             return None
@@ -96,7 +105,7 @@ class Card(SoftModel):
     study_materials = models.ManyToManyField(StudyMaterial, blank=True, verbose_name='素材',
                                              related_name='study_materials')
     words = models.ManyToManyField(StudyMaterial, blank=True, verbose_name='单词卡',
-                                             related_name='words')
+                                   related_name='words')
     study_duration = models.IntegerField('学习时长', default=10)  # 学习时长
     history = HistoricalRecords()
 
