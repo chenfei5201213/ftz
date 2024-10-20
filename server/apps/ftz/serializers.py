@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import Course, StudyMaterial, Lesson, Card, Tag, EnumConfig, Survey, Question, UserResponse, \
     CourseScheduleContent
 from .models import TermCourse, CourseScheduleStudent, UserStudyRecord
+from ..mall.models import Order
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -383,4 +384,10 @@ class LessonDetailSimpleListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
+        fields = '__all__'
+
+
+class OrderAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
         fields = '__all__'

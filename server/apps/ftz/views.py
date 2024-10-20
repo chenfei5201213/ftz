@@ -1,8 +1,7 @@
 import logging
 
 from django.core.cache import cache
-from django.db.models import Prefetch, Q
-from django.utils import timezone
+from django.db.models import Prefetch
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -18,14 +17,15 @@ from .models import Course, Card, StudyMaterial, Lesson, Tag, EnumConfig, Survey
     CourseScheduleContent
 from .models import TermCourse, CourseScheduleStudent, UserStudyRecord
 from .serializers import CourseSerializer, CardListSerializer, StudyMaterialListSerializer, LessonListSerializer, \
-    CardListSimpleSerializer, CourseScheduleContentSerializer
+    CardListSimpleSerializer, CourseScheduleContentSerializer, OrderAdminSerializer
 from .serializers import TagSerializer, StudyMaterialDetailSerializer, CardDetailSerializer, LessonDetailSerializer
 from .serializers import EnumConfigSerializer, SurveySerializer, QuestionSerializer, UserResponseSerializer
 from .serializers import TermCourseSerializer, CourseScheduleStudentSerializer, UserStudyRecordSerializer
 from .serializers import StudyMaterialSimpleListSerializer
 from .user_course_service import UserCourseService
+from ..mall.models import Order
 from ..system.authentication import ExternalUserTokenObtainPairSerializer
-from ..system.tasks import send_bug_course_success_message, class_reminder, auto_reply_message_task, \
+from ..system.tasks import auto_reply_message_task, \
     auto_replay_message_on_subscribe_task, auto_replay_message_on_click_task, delete_lesson_cache, delete_card_cache, \
     delete_course_cache, delete_material_cache
 from ..user_center.models import ExternalUser
@@ -424,3 +424,19 @@ class WechatMenuDelete(APIView):
         wx = WechatMenu()
         result = wx.delete_menu()
         return Response(data=result)
+
+
+class OrderAdminViewSet(ModelViewSet):
+    """
+    订单-增删改查
+    """
+    perms_map = {'get': '*', 'post': 'role_create',
+                 'put': 'role_update', 'delete': 'role_delete'}
+    queryset = Order.objects.all()
+    serializer_class = OrderAdminSerializer
+    search_fields = ['user__id', 'id']
+    ordering_fields = ['pk']
+    ordering = ['-pk']
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_fields = ['user']
+
