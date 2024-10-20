@@ -149,13 +149,19 @@ export const asyncRoutes = [
     component: Layout,
     redirect: '/ftz/mall/product/',
     name: 'new',
-    meta: { title: '商品列表', icon: 'example', perms: ['course_manage'] },
+    meta: { title: '商城', icon: 'example', perms: ['course_manage'] },
     children: [
       {
         path: 'product',
         name: 'product',
         component: () => import('@/views/ftz/product.vue'),
         meta: { title: '商品列表', icon: 'example', perms: ['workflow_index'] }
+      },
+      {
+        path: 'order',
+        name: 'order',
+        component: () => import('@/views/ftz/order.vue'),
+        meta: { title: '订单列表', icon: 'example', perms: ['workflow_index'] }
       },
     ]
   },
